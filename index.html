@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Anup Giri | Personal Portfolio</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;800&display=swap" rel="stylesheet">
+</head>
+<body>
+
+    <div class="ambient-glow"></div>
+
+    <header class="navbar">
+        <div class="logo">Anup <span>Giri</span></div>
+        <nav>
+            <a href="#about">About</a>
+            <a href="#developer">Developer</a>
+            <a href="#photos">Gallery</a>
+            <a href="#vlogs">Vlogs</a>
+            <a href="#contact">Contact</a>
+            <a href="admin.html" class="btn-glow">Admin Portal</a>
+        </nav>
+    </header>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="badge">✨ Web Developer Portfolio</div>
+        <h1>Building Digital Experiences with <span>Modern Code</span></h1>
+        <p>Hi, I'm Anup Giri. Explore my developer portfolio, image gallery, and video vlogs below.</p>
+        <div class="hero-actions">
+            <a href="#contact" class="btn btn-primary">Get In Touch</a>
+            <a href="#developer" class="btn btn-secondary">View Skills</a>
+        </div>
+    </section>
+
+    <!-- About Me Section -->
+    <section class="section" id="about">
+        <div class="glass-card">
+            <div class="section-header">
+                <h2>About <span>Me</span></h2>
+                <p>Passionate about crafting clean and responsive web interfaces.</p>
+            </div>
+            <div style="line-height: 1.8; color: var(--text-muted); text-align: center; max-width: 800px; margin: 0 auto;">
+                <p>I am a web developer focused on building modern, interactive, and user-friendly web applications. I enjoy turning creative ideas into functional digital projects using modern frontend tools, cloud databases, and clean UI design principles.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Developer Section -->
+    <section class="section" id="developer">
+        <div class="section-header">
+            <h2>Developer <span>Stack & Skills</span></h2>
+            <p>Technologies and tools I work with daily.</p>
+        </div>
+        <div class="grid-container">
+            <div class="glass-card" style="text-align: center;">
+                <h3 style="margin-bottom: 0.5rem; color: var(--text-main);">Frontend Development</h3>
+                <p style="color: var(--text-muted); font-size: 0.95rem;">HTML5, CSS3, JavaScript (ES6+), Glassmorphism UI & Responsive Design</p>
+            </div>
+            <div class="glass-card" style="text-align: center;">
+                <h3 style="margin-bottom: 0.5rem; color: var(--text-main);">Backend & Cloud Services</h3>
+                <p style="color: var(--text-muted); font-size: 0.95rem;">Firebase Firestore, Cloud Database Integration & Real-time Sync</p>
+            </div>
+            <div class="glass-card" style="text-align: center;">
+                <h3 style="margin-bottom: 0.5rem; color: var(--text-main);">Tools & Workflow</h3>
+                <p style="color: var(--text-muted); font-size: 0.95rem;">Git, VS Code, Browser DevTools & REST API Integration</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Gallery Section -->
+    <section class="section" id="photos">
+        <div class="section-header">
+            <h2>Featured <span>Gallery</span></h2>
+            <p>Visual moments and curated captures.</p>
+        </div>
+        <div id="public-photos-grid" class="grid-container">
+            <p>Loading photos...</p>
+        </div>
+    </section>
+
+    <!-- Vlogs Section -->
+    <section class="section" id="vlogs">
+        <div class="section-header">
+            <h2>Latest <span>Vlogs</span></h2>
+            <p>Video content and project showcases.</p>
+        </div>
+        <div id="public-vlogs-grid" class="grid-container">
+            <p>Loading vlogs...</p>
+        </div>
+    </section>
+
+    <!-- Contact Section -->
+    <section class="section" id="contact">
+        <div class="glass-card contact-card">
+            <div class="section-header">
+                <h2>Let's <span>Connect</span></h2>
+                <p>Send a direct message to my database dashboard.</p>
+            </div>
+            <form id="public-contact-form">
+                <div class="form-row">
+                    <input type="text" id="contact-name" placeholder="Your Name" required>
+                    <input type="email" id="contact-email" placeholder="Your Email" required>
+                </div>
+                <textarea id="contact-message" rows="4" placeholder="Write your message here..." required></textarea>
+                <button type="submit" class="btn btn-primary" id="send-btn">Send Message ✨</button>
+                <p id="form-status" class="status-msg"></p>
+            </form>
+        </div>
+    </section>
+
+    <footer>
+        <p>© 2026 Anup Giri. All rights reserved.</p>
+    </footer>
+
+    <script type="module" src="script.js"></script>
+</body>
+</html>
