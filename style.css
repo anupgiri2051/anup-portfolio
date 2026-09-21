@@ -27,7 +27,6 @@ body {
     min-height: 100vh;
 }
 
-/* Ambient Background Glow */
 .ambient-glow {
     position: fixed;
     top: -100px;
@@ -41,7 +40,6 @@ body {
     z-index: 0;
 }
 
-/* Header & Navbar */
 .navbar {
     display: flex;
     justify-content: space-between;
@@ -107,7 +105,6 @@ body {
     border-color: rgba(56, 189, 248, 0.3);
 }
 
-/* Hero Section */
 .hero {
     text-align: center;
     padding: 6.5rem 1.5rem 4.5rem;
@@ -164,7 +161,6 @@ body {
     justify-content: center;
 }
 
-/* Structural Layout */
 .section {
     max-width: 1080px;
     margin: 4.5rem auto;
@@ -197,7 +193,6 @@ body {
     letter-spacing: -0.5px;
 }
 
-/* Glass Cards & Grids */
 .grid-container {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(310px, 1fr));
@@ -245,7 +240,6 @@ body {
     margin-bottom: 0.4rem;
 }
 
-/* Buttons */
 .btn {
     display: inline-flex;
     align-items: center;
@@ -284,7 +278,6 @@ body {
     width: 100%;
 }
 
-/* Form Styling */
 .contact-card {
     max-width: 660px;
     margin: 0 auto;
@@ -317,7 +310,6 @@ form input:focus, form textarea:focus {
     border-color: var(--accent-cyan);
 }
 
-/* Footer */
 .footer {
     text-align: center;
     padding: 3.5rem 1rem;
@@ -334,7 +326,6 @@ form input:focus, form textarea:focus {
     padding: 1.5rem 0;
 }
 
-/* Mobile Layout Responsive Adjustments */
 @media (max-width: 768px) {
     .form-row {
         grid-template-columns: 1fr;

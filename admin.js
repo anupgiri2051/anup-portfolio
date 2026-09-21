@@ -9,46 +9,53 @@ document.addEventListener('DOMContentLoaded', () => {
 
     let selectedFile = null;
 
-    // Handle Local File Selection & Preview
+    // Local file preview handler
     if (photoFileInput) {
         photoFileInput.addEventListener('change', (e) => {
             selectedFile = e.target.files[0];
             if (selectedFile) {
                 const reader = new FileReader();
                 reader.onload = (event) => {
-                    imagePreview.src = event.target.result;
-                    imagePreviewWrapper.style.display = 'block';
+                    if (imagePreview) imagePreview.src = event.target.result;
+                    if (imagePreviewWrapper) imagePreviewWrapper.style.display = 'block';
                 };
                 reader.readAsDataURL(selectedFile);
             } else {
-                imagePreviewWrapper.style.display = 'none';
+                if (imagePreviewWrapper) imagePreviewWrapper.style.display = 'none';
                 selectedFile = null;
             }
         });
     }
 
-    // Upload Image File to Firebase Storage & Firestore Document
+    // Upload Photo to Storage & Save Document in Firestore
     if (addPhotoForm) {
         addPhotoForm.addEventListener('submit', async (e) => {
             e.preventDefault();
-            const photoTitle = document.getElementById('photo-title').value.trim();
+            const photoTitleInput = document.getElementById('photo-title');
+            const photoTitle = photoTitleInput ? photoTitleInput.value.trim() : '';
             const submitBtn = addPhotoForm.querySelector('button[type="submit"]');
 
             if (!selectedFile) {
-                alert('Please select a JPG image file.');
+                alert('Please select an image file.');
                 return;
             }
 
             try {
-                submitBtn.disabled = true;
-                submitBtn.innerText = "Uploading...";
+                if (submitBtn) {
+                    submitBtn.disabled = true;
+                    submitBtn.innerText = "Uploading...";
+                }
 
-                // Upload to Storage
+                // 1. Storage Reference
                 const storageRef = storage.ref(`photos/${Date.now()}_${selectedFile.name}`);
+                
+                // 2. Perform File Upload
                 const snapshot = await storageRef.put(selectedFile);
+                
+                // 3. Get Public Download URL
                 const downloadURL = await snapshot.ref.getDownloadURL();
 
-                // Save Document in Firestore
+                // 4. Save Record in Firestore
                 await db.collection('gallery_photos').add({
                     title: photoTitle,
                     imageUrl: downloadURL,
@@ -57,19 +64,21 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 alert('Photo published successfully to Firebase!');
                 addPhotoForm.reset();
-                imagePreviewWrapper.style.display = 'none';
+                if (imagePreviewWrapper) imagePreviewWrapper.style.display = 'none';
                 selectedFile = null;
             } catch (error) {
-                console.error("Error uploading photo: ", error);
-                alert("Failed to upload photo to Firebase.");
+                console.error("Firebase Storage Upload Error:", error);
+                alert(`Upload failed: ${error.message}`);
             } finally {
-                submitBtn.disabled = false;
-                submitBtn.innerText = "Upload Image";
+                if (submitBtn) {
+                    submitBtn.disabled = false;
+                    submitBtn.innerText = "Upload Image";
+                }
             }
         });
     }
 
-    // Publish Vlog to Firestore
+    // Publish Vlog Entry
     if (publishVlogForm) {
         publishVlogForm.addEventListener('submit', async (e) => {
             e.preventDefault();
@@ -88,13 +97,13 @@ document.addEventListener('DOMContentLoaded', () => {
                 alert('Vlog published successfully!');
                 publishVlogForm.reset();
             } catch (error) {
-                console.error("Error publishing vlog: ", error);
-                alert("Failed to publish vlog.");
+                console.error("Vlog Publish Error:", error);
+                alert(`Failed to publish vlog: ${error.message}`);
             }
         });
     }
 
-    // Real-Time List Handlers in Admin Panel
+    // Admin Panel Real-Time Photos Stream
     if (adminPhotosList) {
         db.collection('gallery_photos').orderBy('createdAt', 'desc').onSnapshot((snapshot) => {
             if (snapshot.empty) {
@@ -104,10 +113,10 @@ document.addEventListener('DOMContentLoaded', () => {
             adminPhotosList.innerHTML = snapshot.docs.map(doc => {
                 const data = doc.data();
                 return `
-                    <div style="display: flex; align-items: center; justify-content: space-between; padding: 0.6rem; background: rgba(8, 11, 17, 0.5); border: 1px solid var(--border-color); border-radius: 8px; margin-bottom: 0.6rem;">
+                    <div style="display: flex; align-items: center; justify-content: space-between; padding: 0.6rem; background: rgba(8, 11, 17, 0.5); border: 1px solid var(--border-color, #333); border-radius: 8px; margin-bottom: 0.6rem;">
                         <div style="display: flex; align-items: center; gap: 0.8rem;">
                             <img src="${data.imageUrl}" style="width: 45px; height: 45px; object-fit: cover; border-radius: 6px;">
-                            <span style="font-weight: 600;">${data.title}</span>
+                            <span style="font-weight: 600;">${data.title || 'Untitled'}</span>
                         </div>
                         <button onclick="deletePhoto('${doc.id}')" style="color: #ef4444; background: none; border: 1px solid rgba(239,68,68,0.3); padding: 0.3rem 0.6rem; border-radius: 6px; cursor: pointer;">Delete</button>
                     </div>
@@ -116,6 +125,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+    // Admin Panel Real-Time Vlogs Stream
     if (adminVlogsList) {
         db.collection('vlogs').orderBy('createdAt', 'desc').onSnapshot((snapshot) => {
             if (snapshot.empty) {
@@ -125,7 +135,7 @@ document.addEventListener('DOMContentLoaded', () => {
             adminVlogsList.innerHTML = snapshot.docs.map(doc => {
                 const data = doc.data();
                 return `
-                    <div style="display: flex; align-items: center; justify-content: space-between; padding: 0.6rem; background: rgba(8, 11, 17, 0.5); border: 1px solid var(--border-color); border-radius: 8px; margin-bottom: 0.6rem;">
+                    <div style="display: flex; align-items: center; justify-content: space-between; padding: 0.6rem; background: rgba(8, 11, 17, 0.5); border: 1px solid var(--border-color, #333); border-radius: 8px; margin-bottom: 0.6rem;">
                         <span>${data.title}</span>
                         <button onclick="deleteVlog('${doc.id}')" style="color: #ef4444; background: none; border: 1px solid rgba(239,68,68,0.3); padding: 0.3rem 0.6rem; border-radius: 6px; cursor: pointer;">Delete</button>
                     </div>
@@ -134,7 +144,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // Delete Firestore Documents
+    // Document Deletion Handlers
     window.deletePhoto = (id) => db.collection('gallery_photos').doc(id).delete();
     window.deleteVlog = (id) => db.collection('vlogs').doc(id).delete();
 });
