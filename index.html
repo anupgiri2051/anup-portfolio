@@ -3,9 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Anup Giri | Web Developer</title>
+    <title>Anup Giri — Web Developer</title>
     <link rel="stylesheet" href="style.css">
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 </head>
 <body>
 
@@ -13,109 +13,142 @@
 
     <!-- Navigation Bar -->
     <header class="navbar">
-        <div class="logo">Anup <span>Giri</span></div>
-        <nav>
+        <a href="#" class="logo">
+            <span>Anup</span><span class="logo-dot">.</span>
+        </a>
+        <nav class="nav-links">
             <a href="#about">About</a>
-            <a href="#developer">Developer</a>
-            <a href="#photos">Gallery</a>
+            <a href="#skills">Skills</a>
+            <a href="#work">Work</a>
+            <a href="#gallery">Gallery</a>
             <a href="#vlogs">Vlogs</a>
-            <a href="#contact" class="nav-btn">Get in Touch</a>
         </nav>
+        <a href="#contact" class="nav-cta">Contact</a>
     </header>
 
-    <!-- Hero Section -->
-    <section class="hero">
-        <div class="badge">🌐 Web Developer & Designer</div>
-        <h1>Crafting Modern & High-Performance <span>Web Solutions</span></h1>
-        <p>Hi, I'm Anup Giri, a web developer based in Baglung, Nepal. I build clean, responsive, and user-centric web applications.</p>
-        <div class="hero-actions">
-            <a href="#contact" class="btn btn-primary">Let's Work Together</a>
-            <a href="#developer" class="btn btn-secondary">Explore Capabilities</a>
-        </div>
-    </section>
-
-    <!-- About Me Section -->
-    <section class="section" id="about">
-        <div class="glass-card">
-            <div class="section-header">
-                <h2>About <span>Me</span></h2>
-                <p>Dedicated to building clean, accessible, and high-performance digital products.</p>
-            </div>
-            <div class="about-content">
-                <p>I specialize in modern frontend development and cloud-connected static web apps. My goal is to combine elegant design with clean, maintainable code to deliver seamless digital experiences. Whether creating interactive web applications or personal project showcases, I prioritize responsiveness, speed, and clean code principles.</p>
-            </div>
-        </div>
-    </section>
-
-    <!-- Developer Capabilities Section -->
-    <section class="section" id="developer">
-        <div class="section-header">
-            <h2>Developer <span>Capabilities</span></h2>
-            <p>Core tools, languages, and architectures utilized in production.</p>
-        </div>
-        <div class="grid-container">
-            <div class="glass-card">
-                <div class="card-icon">💻</div>
-                <h3>Frontend & Backend</h3>
-                <p>HTML5, CSS3, Modern JavaScript (ES6+), Glassmorphic UI, and Fluid Responsive Layouts.</p>
-            </div>
-            <div class="glass-card">
-                <div class="card-icon">☁️</div>
-                <h3>Backend & Cloud Data</h3>
-                <p>Firebase Firestore NoSQL Integration, Real-time Data Synchronization, and Serverless Architecture.</p>
-            </div>
-            <div class="glass-card">
-                <div class="card-icon">🛠️</div>
-                <h3>Tools & Deployment</h3>
-                <p>Git Version Control, GitHub Pages Hosting, Custom Domain DNS Setup, and VS Code.</p>
-            </div>
-        </div>
-    </section>
-
-    <!-- Gallery Section -->
-    <section class="section" id="photos">
-        <div class="section-header">
-            <h2>Featured <span>Gallery</span></h2>
-            <p>A selection of curated visual moments and project showcases.</p>
-        </div>
-        <div id="public-photos-grid" class="grid-container">
-            <p class="loading-text">Loading gallery items...</p>
-        </div>
-    </section>
-
-    <!-- Vlogs Section -->
-    <section class="section" id="vlogs">
-        <div class="section-header">
-            <h2>Latest <span>Vlogs</span></h2>
-            <p>Video showcases, updates, and walkthroughs.</p>
-        </div>
-        <div id="public-vlogs-grid" class="grid-container">
-            <p class="loading-text">Loading video content...</p>
-        </div>
-    </section>
-
-    <!-- Contact Section -->
-    <section class="section" id="contact">
-        <div class="glass-card contact-card">
-            <div class="section-header">
-                <h2>Let's <span>Connect</span></h2>
-                <p>Send a direct message through the contact form below.</p>
-            </div>
-            <form id="public-contact-form">
-                <div class="form-row">
-                    <input type="text" id="contact-name" placeholder="Your Name" required>
-                    <input type="email" id="contact-email" placeholder="Your Email Address" required>
+    <main>
+        <!-- Hero Section -->
+        <section class="hero">
+            <div class="hero-content">
+                <div class="status-pill">
+                    <span class="status-dot"></span> Available for Web Projects
                 </div>
-                <textarea id="contact-message" rows="4" placeholder="How can I help you?" required></textarea>
-                <button type="submit" class="btn btn-primary" id="send-btn">Send Message</button>
-                <p id="form-status" class="status-msg"></p>
-            </form>
-        </div>
-    </section>
+                <h1>Designing & Building <span>Modern Web Experiences</span></h1>
+                <p>Web developer specializing in clean code, responsive interfaces, and high-performance applications.</p>
+                <div class="hero-actions">
+                    <a href="#work" class="btn btn-primary">View Selected Work</a>
+                    <a href="#contact" class="btn btn-secondary">Get in Touch</a>
+                </div>
+            </div>
+        </section>
+
+        <!-- About Section -->
+        <section class="section" id="about">
+            <div class="glass-card minimal-about">
+                <span class="section-tag">ABOUT ME</span>
+                <h2>Clean Architecture & User-Centric Design</h2>
+                <p>
+                    I build fast, responsive, and visually appealing web applications. Focused on user experience, modern frontend tools, and cloud integrations, I turn functional ideas into seamless digital solutions.
+                </p>
+            </div>
+        </section>
+
+        <!-- Skills Section -->
+        <section class="section" id="skills">
+            <div class="section-header">
+                <span class="section-tag">CAPABILITIES</span>
+                <h2>What I Focus On</h2>
+            </div>
+            <div class="grid-container">
+                <div class="glass-card feature-card">
+                    <div class="card-icon">⚡</div>
+                    <h3>Frontend & Bakend</h3>
+                    <p>Fluid responsive design using HTML5, modern CSS3, and JavaScript built for performance across all screen sizes.</p>
+                </div>
+                <div class="glass-card feature-card">
+                    <div class="card-icon">☁️</div>
+                    <h3>Backend & Database</h3>
+                    <p>Firebase integration, real-time data sync, secure architecture setups, and database management.</p>
+                </div>
+                <div class="glass-card feature-card">
+                    <div class="card-icon">🛠️</div>
+                    <h3>Deployment & Tools</h3>
+                    <p>Git version control, custom domain setups, GitHub Pages hosting, and automated web deployment.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Featured Projects -->
+        <section class="section" id="work">
+            <div class="section-header">
+                <span class="section-tag">PORTFOLIO</span>
+                <h2>Featured Projects</h2>
+            </div>
+            <div class="grid-container">
+                <div class="glass-card project-card">
+                    <span class="project-tag">Database System</span>
+                    <h3>Baglung Portal</h3>
+                    <p>A central digital database project powered by cloud architecture for structured regional information management.</p>
+                </div>
+                <div class="glass-card project-card">
+                    <span class="project-tag">Web Application</span>
+                    <h3>Interactive Digital Menu</h3>
+                    <p>A fast, mobile-friendly digital food and beverage menu system built for intuitive user navigation.</p>
+                </div>
+                <div class="glass-card project-card">
+                    <span class="project-tag">Personal Portfolio</span>
+                    <h3>Custom Portfolio Engine</h3>
+                    <p>A clean, glassmorphic personal website layout integrated with dynamic dynamic backend data feeds.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Gallery Section -->
+        <section class="section" id="gallery">
+            <div class="section-header">
+                <span class="section-tag">GALLERY</span>
+                <h2>Visual Moments</h2>
+            </div>
+            <div id="public-photos-grid" class="grid-container">
+                <p class="loading-text">Loading gallery items...</p>
+            </div>
+        </section>
+
+        <!-- Vlogs Section -->
+        <section class="section" id="vlogs">
+            <div class="section-header">
+                <span class="section-tag">VLOGS</span>
+                <h2>Video Showcase</h2>
+            </div>
+            <div id="public-vlogs-grid" class="grid-container">
+                <p class="loading-text">Loading video content...</p>
+            </div>
+        </section>
+
+        <!-- Contact Section -->
+        <section class="section" id="contact">
+            <div class="glass-card contact-card">
+                <div class="section-header text-center">
+                    <span class="section-tag">LET'S CONNECT</span>
+                    <h2>Start a Project</h2>
+                    <p>Have a project in mind or need a custom web solution? Send a direct message below.</p>
+                </div>
+                <form id="public-contact-form" class="clean-form">
+                    <div class="form-row">
+                        <input type="text" id="contact-name" placeholder="Your Name" required>
+                        <input type="email" id="contact-email" placeholder="Your Email Address" required>
+                    </div>
+                    <textarea id="contact-message" rows="4" placeholder="Tell me about your project..." required></textarea>
+                    <button type="submit" class="btn btn-primary btn-block" id="send-btn">Send Message</button>
+                    <p id="form-status" class="status-msg"></p>
+                </form>
+            </div>
+        </section>
+    </main>
 
     <!-- Footer -->
-    <footer>
-        <p>© 2026 Anup Giri. All rights reserved.</p>
+    <footer class="footer">
+        <p>© 2026 Anup Giri. Designed for performance and clarity.</p>
     </footer>
 
     <script type="module" src="script.js"></script>
