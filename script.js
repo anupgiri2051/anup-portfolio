@@ -1,92 +1,62 @@
-import { db } from './firebase-config.js';
-import { collection, addDoc, onSnapshot, query, orderBy } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
-
 document.addEventListener('DOMContentLoaded', () => {
-    loadPhotos();
-    loadVlogs();
+    const publicPhotosGrid = document.getElementById('public-photos-grid');
+    const publicVlogsGrid = document.getElementById('public-vlogs-grid');
 
-    const contactForm = document.getElementById('public-contact-form');
-    if (contactForm) {
-        contactForm.addEventListener('submit', handleContactSubmit);
+    // Convert YouTube URLs into Embed URLs
+    function getEmbedUrl(url) {
+        const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
+        const match = url.match(regExp);
+        return (match && match[2].length === 11) ? `https://www.youtube.com/embed/${match[2]}` : url;
+    }
+
+    // Real-time Photo Stream
+    if (publicPhotosGrid) {
+        db.collection('gallery_photos').orderBy('createdAt', 'desc').onSnapshot((snapshot) => {
+            if (snapshot.empty) {
+                publicPhotosGrid.innerHTML = '<p class="loading-text">No photos published yet.</p>';
+                return;
+            }
+
+            publicPhotosGrid.innerHTML = snapshot.docs.map(doc => {
+                const photo = doc.data();
+                return `
+                    <div class="glass-card" style="padding: 1rem; text-align: center;">
+                        <img src="${photo.imageUrl}" alt="${photo.title}" style="width: 100%; height: 220px; object-fit: cover; border-radius: 10px; border: 1px solid var(--border-color); margin-bottom: 0.8rem;">
+                        <h3 style="font-size: 1.05rem; font-weight: 700;">${photo.title}</h3>
+                    </div>
+                `;
+            }).join('');
+        }, (error) => {
+            console.error("Error fetching photos: ", error);
+            publicPhotosGrid.innerHTML = '<p class="loading-text">Unable to load gallery photos.</p>';
+        });
+    }
+
+    // Real-time Vlog Stream
+    if (publicVlogsGrid) {
+        db.collection('vlogs').orderBy('createdAt', 'desc').onSnapshot((snapshot) => {
+            if (snapshot.empty) {
+                publicVlogsGrid.innerHTML = '<p class="loading-text">No vlogs published yet.</p>';
+                return;
+            }
+
+            publicVlogsGrid.innerHTML = snapshot.docs.map(doc => {
+                const vlog = doc.data();
+                const embedUrl = getEmbedUrl(vlog.url);
+
+                return `
+                    <div class="glass-card" style="padding: 1rem;">
+                        <div style="position: relative; padding-bottom: 56.25%; height: 0; overflow: hidden; border-radius: 10px; margin-bottom: 0.8rem; border: 1px solid var(--border-color);">
+                            <iframe src="${embedUrl}" style="position: absolute; top:0; left:0; width:100%; height:100%; border:0;" allowfullscreen></iframe>
+                        </div>
+                        <h3 style="font-size: 1.1rem; font-weight: 700; margin-bottom: 0.4rem;">${vlog.title}</h3>
+                        ${vlog.description ? `<p style="font-size: 0.9rem; color: var(--text-muted);">${vlog.description}</p>` : ''}
+                    </div>
+                `;
+            }).join('');
+        }, (error) => {
+            console.error("Error fetching vlogs: ", error);
+            publicVlogsGrid.innerHTML = '<p class="loading-text">Unable to load vlogs.</p>';
+        });
     }
 });
-
-function loadPhotos() {
-    const grid = document.getElementById('public-photos-grid');
-    const q = query(collection(db, "photos"), orderBy("createdAt", "desc"));
-
-    onSnapshot(q, (snapshot) => {
-        if (snapshot.empty) {
-            grid.innerHTML = '<p>No photos uploaded yet.</p>';
-            return;
-        }
-
-        grid.innerHTML = snapshot.docs.map(doc => {
-            const data = doc.data();
-            return `
-                <div class="glass-card">
-                    <img src="${data.imageUrl}" alt="${data.title}" style="width:100%; height:180px; object-fit:cover; border-radius:8px;">
-                    <div style="padding-top:10px;">
-                        <h3>${data.title}</h3>
-                        <small style="color:#94a3b8;">${data.date}</small>
-                    </div>
-                </div>
-            `;
-        }).join('');
-    });
-}
-
-function loadVlogs() {
-    const grid = document.getElementById('public-vlogs-grid');
-    const q = query(collection(db, "vlogs"), orderBy("createdAt", "desc"));
-
-    onSnapshot(q, (snapshot) => {
-        if (snapshot.empty) {
-            grid.innerHTML = '<p>No vlogs posted yet.</p>';
-            return;
-        }
-
-        grid.innerHTML = snapshot.docs.map(doc => {
-            const data = doc.data();
-            return `
-                <div class="glass-card">
-                    <iframe src="${data.videoUrl}" style="width:100%; height:180px; border:none; border-radius:8px;" allowfullscreen></iframe>
-                    <div style="padding-top:10px;">
-                        <h3>${data.title}</h3>
-                        <p style="color:#94a3b8; font-size:0.9rem;">${data.description || ''}</p>
-                    </div>
-                </div>
-            `;
-        }).join('');
-    });
-}
-
-async function handleContactSubmit(e) {
-    e.preventDefault();
-    const statusMsg = document.getElementById('form-status');
-    const sendBtn = document.getElementById('send-btn');
-
-    const name = document.getElementById('contact-name').value;
-    const email = document.getElementById('contact-email').value;
-    const message = document.getElementById('contact-message').value;
-
-    statusMsg.innerText = "Sending message...";
-    sendBtn.disabled = true;
-
-    try {
-        await addDoc(collection(db, "messages"), {
-            name, email, message,
-            date: new Date().toLocaleString(),
-            createdAt: Date.now()
-        });
-
-        statusMsg.innerText = "Message sent successfully!";
-        statusMsg.style.color = "#4ade80";
-        document.getElementById('public-contact-form').reset();
-    } catch (err) {
-        statusMsg.innerText = "Error sending message. Try again.";
-        statusMsg.style.color = "#f87171";
-    } finally {
-        sendBtn.disabled = false;
-    }
-}

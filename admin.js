@@ -3,97 +3,138 @@ document.addEventListener('DOMContentLoaded', () => {
     const imagePreviewWrapper = document.getElementById('image-preview-wrapper');
     const imagePreview = document.getElementById('image-preview');
     const addPhotoForm = document.getElementById('add-photo-form');
+    const publishVlogForm = document.getElementById('publish-vlog-form');
     const adminPhotosList = document.getElementById('admin-photos-list');
-    let currentBase64Image = '';
+    const adminVlogsList = document.getElementById('admin-vlogs-list');
 
-    // 1. Function to Display Saved Photos in Admin Interface
-    function renderAdminPhotos() {
-        if (!adminPhotosList) return;
+    let selectedFile = null;
 
-        const existingPhotos = JSON.parse(localStorage.getItem('gallery_photos') || '[]');
-        
-        if (existingPhotos.length === 0) {
-            adminPhotosList.innerHTML = '<p style="color: var(--text-muted); font-size: 0.85rem; padding: 0.5rem 0;">No published photos yet.</p>';
-            return;
-        }
-
-        adminPhotosList.innerHTML = existingPhotos.map((photo, index) => `
-            <div style="display: flex; align-items: center; justify-content: space-between; gap: 0.8rem; padding: 0.6rem; background: rgba(8, 11, 17, 0.5); border: 1px solid var(--border-color); border-radius: 8px; margin-bottom: 0.6rem;">
-                <div style="display: flex; align-items: center; gap: 0.8rem; overflow: hidden;">
-                    <img src="${photo.imageUrl}" alt="${photo.title}" style="width: 45px; height: 45px; object-fit: cover; border-radius: 6px; flex-shrink: 0;">
-                    <span style="font-size: 0.9rem; color: var(--text-main); font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${photo.title}</span>
-                </div>
-                <button onclick="deletePhoto(${index})" class="btn btn-secondary" style="padding: 0.3rem 0.6rem; font-size: 0.75rem; color: #ef4444; border-color: rgba(239, 68, 68, 0.3); cursor: pointer; flex-shrink: 0;">Delete</button>
-            </div>
-        `).join('');
-    }
-
-    // Global Function to Handle Photo Deletion
-    window.deletePhoto = function(index) {
-        let existingPhotos = JSON.parse(localStorage.getItem('gallery_photos') || '[]');
-        existingPhotos.splice(index, 1);
-        localStorage.setItem('gallery_photos', JSON.stringify(existingPhotos));
-        renderAdminPhotos();
-    };
-
-    // 2. Handle Local JPG Selection & Preview
+    // Handle Local File Selection & Preview
     if (photoFileInput) {
         photoFileInput.addEventListener('change', (e) => {
-            const file = e.target.files[0];
-            
-            if (file) {
-                if (!file.type.match('image/jpeg') && !file.type.match('image/jpg')) {
-                    alert('Please select a valid JPG image file.');
-                    photoFileInput.value = '';
-                    imagePreviewWrapper.style.display = 'none';
-                    return;
-                }
-
+            selectedFile = e.target.files[0];
+            if (selectedFile) {
                 const reader = new FileReader();
                 reader.onload = (event) => {
-                    currentBase64Image = event.target.result;
-                    imagePreview.src = currentBase64Image;
+                    imagePreview.src = event.target.result;
                     imagePreviewWrapper.style.display = 'block';
                 };
-                reader.readAsDataURL(file);
+                reader.readAsDataURL(selectedFile);
             } else {
                 imagePreviewWrapper.style.display = 'none';
-                currentBase64Image = '';
+                selectedFile = null;
             }
         });
     }
 
-    // 3. Handle Form Submit & Save to Storage
+    // Upload Image File to Firebase Storage & Firestore Document
     if (addPhotoForm) {
-        addPhotoForm.addEventListener('submit', (e) => {
+        addPhotoForm.addEventListener('submit', async (e) => {
             e.preventDefault();
             const photoTitle = document.getElementById('photo-title').value.trim();
+            const submitBtn = addPhotoForm.querySelector('button[type="submit"]');
 
-            if (!currentBase64Image) {
-                alert('Please select a JPG image file to upload.');
+            if (!selectedFile) {
+                alert('Please select a JPG image file.');
                 return;
             }
 
-            const photoData = {
-                title: photoTitle,
-                imageUrl: currentBase64Image,
-                createdAt: new Date().toISOString()
-            };
+            try {
+                submitBtn.disabled = true;
+                submitBtn.innerText = "Uploading...";
 
-            // Save into localStorage
-            let existingPhotos = JSON.parse(localStorage.getItem('gallery_photos') || '[]');
-            existingPhotos.unshift(photoData);
-            localStorage.setItem('gallery_photos', JSON.stringify(existingPhotos));
+                // Upload to Storage
+                const storageRef = storage.ref(`photos/${Date.now()}_${selectedFile.name}`);
+                const snapshot = await storageRef.put(selectedFile);
+                const downloadURL = await snapshot.ref.getDownloadURL();
 
-            // Reset Form and Refresh List Immediately
-            addPhotoForm.reset();
-            imagePreviewWrapper.style.display = 'none';
-            currentBase64Image = '';
-            
-            renderAdminPhotos(); // Instant update on screen
+                // Save Document in Firestore
+                await db.collection('gallery_photos').add({
+                    title: photoTitle,
+                    imageUrl: downloadURL,
+                    createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                });
+
+                alert('Photo published successfully to Firebase!');
+                addPhotoForm.reset();
+                imagePreviewWrapper.style.display = 'none';
+                selectedFile = null;
+            } catch (error) {
+                console.error("Error uploading photo: ", error);
+                alert("Failed to upload photo to Firebase.");
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.innerText = "Upload Image";
+            }
         });
     }
 
-    // Initial Load
-    renderAdminPhotos();
+    // Publish Vlog to Firestore
+    if (publishVlogForm) {
+        publishVlogForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const vlogTitle = document.getElementById('vlog-title').value.trim();
+            const vlogUrl = document.getElementById('vlog-url').value.trim();
+            const vlogDesc = document.getElementById('vlog-desc').value.trim();
+
+            try {
+                await db.collection('vlogs').add({
+                    title: vlogTitle,
+                    url: vlogUrl,
+                    description: vlogDesc,
+                    createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                });
+
+                alert('Vlog published successfully!');
+                publishVlogForm.reset();
+            } catch (error) {
+                console.error("Error publishing vlog: ", error);
+                alert("Failed to publish vlog.");
+            }
+        });
+    }
+
+    // Real-Time List Handlers in Admin Panel
+    if (adminPhotosList) {
+        db.collection('gallery_photos').orderBy('createdAt', 'desc').onSnapshot((snapshot) => {
+            if (snapshot.empty) {
+                adminPhotosList.innerHTML = '<p class="loading-text">No photos uploaded yet.</p>';
+                return;
+            }
+            adminPhotosList.innerHTML = snapshot.docs.map(doc => {
+                const data = doc.data();
+                return `
+                    <div style="display: flex; align-items: center; justify-content: space-between; padding: 0.6rem; background: rgba(8, 11, 17, 0.5); border: 1px solid var(--border-color); border-radius: 8px; margin-bottom: 0.6rem;">
+                        <div style="display: flex; align-items: center; gap: 0.8rem;">
+                            <img src="${data.imageUrl}" style="width: 45px; height: 45px; object-fit: cover; border-radius: 6px;">
+                            <span style="font-weight: 600;">${data.title}</span>
+                        </div>
+                        <button onclick="deletePhoto('${doc.id}')" style="color: #ef4444; background: none; border: 1px solid rgba(239,68,68,0.3); padding: 0.3rem 0.6rem; border-radius: 6px; cursor: pointer;">Delete</button>
+                    </div>
+                `;
+            }).join('');
+        });
+    }
+
+    if (adminVlogsList) {
+        db.collection('vlogs').orderBy('createdAt', 'desc').onSnapshot((snapshot) => {
+            if (snapshot.empty) {
+                adminVlogsList.innerHTML = '<p class="loading-text">No vlogs published yet.</p>';
+                return;
+            }
+            adminVlogsList.innerHTML = snapshot.docs.map(doc => {
+                const data = doc.data();
+                return `
+                    <div style="display: flex; align-items: center; justify-content: space-between; padding: 0.6rem; background: rgba(8, 11, 17, 0.5); border: 1px solid var(--border-color); border-radius: 8px; margin-bottom: 0.6rem;">
+                        <span>${data.title}</span>
+                        <button onclick="deleteVlog('${doc.id}')" style="color: #ef4444; background: none; border: 1px solid rgba(239,68,68,0.3); padding: 0.3rem 0.6rem; border-radius: 6px; cursor: pointer;">Delete</button>
+                    </div>
+                `;
+            }).join('');
+        });
+    }
+
+    // Delete Firestore Documents
+    window.deletePhoto = (id) => db.collection('gallery_photos').doc(id).delete();
+    window.deleteVlog = (id) => db.collection('vlogs').doc(id).delete();
 });

@@ -13,7 +13,7 @@
 
     <!-- Navigation Header -->
     <header class="navbar">
-        <a href="#" class="brand-logo">
+        <a href="index.html" class="brand-logo" onclick="window.location.href='index.html'; window.location.reload(); return false;">
             <span class="brand-name">ANUP GIRI</span>
             <span class="brand-dot"></span>
         </a>
@@ -157,9 +157,16 @@
 
     <!-- Footer -->
     <footer class="footer">
-        <p>© 2026 <strong>Anup Giri</strong>.</p>
+        <p>© 2026 <strong>Anup Giri</strong>. Designed for simplicity and clarity.</p>
     </footer>
 
-    <script type="module" src="script.js"></script>
+    <!-- Firebase SDK Scripts -->
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-storage-compat.js"></script>
+
+    <!-- Firebase Configuration & Application Logic -->
+    <script src="firebase-config.js"></script>
+    <script src="script.js"></script>
 </body>
 </html>
