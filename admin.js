@@ -9,7 +9,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     let selectedFile = null;
 
-    // Local file preview handler
+    // File selection & preview
     if (photoFileInput) {
         photoFileInput.addEventListener('change', (e) => {
             selectedFile = e.target.files[0];
@@ -27,7 +27,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // Upload Photo to Storage & Save Document in Firestore
+    // Upload photo to Firebase Storage & save metadata to Firestore
     if (addPhotoForm) {
         addPhotoForm.addEventListener('submit', async (e) => {
             e.preventDefault();
@@ -36,7 +36,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const submitBtn = addPhotoForm.querySelector('button[type="submit"]');
 
             if (!selectedFile) {
-                alert('Please select an image file.');
+                alert('Please select an image file to upload.');
                 return;
             }
 
@@ -49,27 +49,51 @@ document.addEventListener('DOMContentLoaded', () => {
                 // 1. Storage Reference
                 const storageRef = storage.ref(`photos/${Date.now()}_${selectedFile.name}`);
                 
-                // 2. Perform File Upload
-                const snapshot = await storageRef.put(selectedFile);
-                
-                // 3. Get Public Download URL
-                const downloadURL = await snapshot.ref.getDownloadURL();
+                // 2. Perform File Upload with Monitoring
+                const uploadTask = storageRef.put(selectedFile);
 
-                // 4. Save Record in Firestore
-                await db.collection('gallery_photos').add({
-                    title: photoTitle,
-                    imageUrl: downloadURL,
-                    createdAt: firebase.firestore.FieldValue.serverTimestamp()
-                });
+                uploadTask.on(
+                    'state_changed',
+                    (snapshot) => {
+                        // Progress calculation
+                        const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+                        if (submitBtn) submitBtn.innerText = `Uploading (${Math.round(progress)}%)...`;
+                    },
+                    (error) => {
+                        // Handle unsuccessful uploads
+                        console.error("Storage upload task error:", error);
+                        alert(`Upload failed: ${error.message}`);
+                        if (submitBtn) {
+                            submitBtn.disabled = false;
+                            submitBtn.innerText = "Upload Image";
+                        }
+                    },
+                    async () => {
+                        // Handle successful uploads
+                        const downloadURL = await uploadTask.snapshot.ref.getDownloadURL();
 
-                alert('Photo published successfully to Firebase!');
-                addPhotoForm.reset();
-                if (imagePreviewWrapper) imagePreviewWrapper.style.display = 'none';
-                selectedFile = null;
+                        // 3. Save Record in Firestore
+                        await db.collection('gallery_photos').add({
+                            title: photoTitle,
+                            imageUrl: downloadURL,
+                            createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                        });
+
+                        alert('Photo published successfully!');
+                        addPhotoForm.reset();
+                        if (imagePreviewWrapper) imagePreviewWrapper.style.display = 'none';
+                        selectedFile = null;
+
+                        if (submitBtn) {
+                            submitBtn.disabled = false;
+                            submitBtn.innerText = "Upload Image";
+                        }
+                    }
+                );
+
             } catch (error) {
                 console.error("Firebase Storage Upload Error:", error);
                 alert(`Upload failed: ${error.message}`);
-            } finally {
                 if (submitBtn) {
                     submitBtn.disabled = false;
                     submitBtn.innerText = "Upload Image";
