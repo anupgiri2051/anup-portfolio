@@ -27,7 +27,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // Upload photo to Firebase Storage & save metadata to Firestore
+    // Direct Base64 Upload to Firestore (Bypasses Storage CORS & Rule errors)
     if (addPhotoForm) {
         addPhotoForm.addEventListener('submit', async (e) => {
             e.preventDefault();
@@ -36,63 +36,56 @@ document.addEventListener('DOMContentLoaded', () => {
             const submitBtn = addPhotoForm.querySelector('button[type="submit"]');
 
             if (!selectedFile) {
-                alert('Please select an image file to upload.');
+                alert('Please select an image file first.');
                 return;
             }
 
             try {
                 if (submitBtn) {
                     submitBtn.disabled = true;
-                    submitBtn.innerText = "Uploading...";
+                    submitBtn.innerText = "Processing & Uploading...";
                 }
 
-                // 1. Storage Reference
-                const storageRef = storage.ref(`photos/${Date.now()}_${selectedFile.name}`);
-                
-                // 2. Perform File Upload with Monitoring
-                const uploadTask = storageRef.put(selectedFile);
+                // Compress and convert file to Data URL
+                const reader = new FileReader();
+                reader.readAsDataURL(selectedFile);
 
-                uploadTask.on(
-                    'state_changed',
-                    (snapshot) => {
-                        // Progress calculation
-                        const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
-                        if (submitBtn) submitBtn.innerText = `Uploading (${Math.round(progress)}%)...`;
-                    },
-                    (error) => {
-                        // Handle unsuccessful uploads
-                        console.error("Storage upload task error:", error);
-                        alert(`Upload failed: ${error.message}`);
-                        if (submitBtn) {
-                            submitBtn.disabled = false;
-                            submitBtn.innerText = "Upload Image";
-                        }
-                    },
-                    async () => {
-                        // Handle successful uploads
-                        const downloadURL = await uploadTask.snapshot.ref.getDownloadURL();
+                reader.onload = async () => {
+                    try {
+                        const base64Data = reader.result;
 
-                        // 3. Save Record in Firestore
+                        // Store directly into Firestore database
                         await db.collection('gallery_photos').add({
-                            title: photoTitle,
-                            imageUrl: downloadURL,
+                            title: photoTitle || 'Untitled',
+                            imageUrl: base64Data,
                             createdAt: firebase.firestore.FieldValue.serverTimestamp()
                         });
 
-                        alert('Photo published successfully!');
+                        alert('Photo uploaded successfully!');
                         addPhotoForm.reset();
                         if (imagePreviewWrapper) imagePreviewWrapper.style.display = 'none';
                         selectedFile = null;
-
+                    } catch (err) {
+                        console.error("Firestore Save Error:", err);
+                        alert(`Upload failed: ${err.message}`);
+                    } finally {
                         if (submitBtn) {
                             submitBtn.disabled = false;
                             submitBtn.innerText = "Upload Image";
                         }
                     }
-                );
+                };
+
+                reader.onerror = (error) => {
+                    alert('Error reading the selected image file.');
+                    if (submitBtn) {
+                        submitBtn.disabled = false;
+                        submitBtn.innerText = "Upload Image";
+                    }
+                };
 
             } catch (error) {
-                console.error("Firebase Storage Upload Error:", error);
+                console.error("Upload Error:", error);
                 alert(`Upload failed: ${error.message}`);
                 if (submitBtn) {
                     submitBtn.disabled = false;
@@ -127,7 +120,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // Admin Panel Real-Time Photos Stream
+    // Real-Time Photos List Stream
     if (adminPhotosList) {
         db.collection('gallery_photos').orderBy('createdAt', 'desc').onSnapshot((snapshot) => {
             if (snapshot.empty) {
@@ -149,7 +142,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // Admin Panel Real-Time Vlogs Stream
+    // Real-Time Vlogs List Stream
     if (adminVlogsList) {
         db.collection('vlogs').orderBy('createdAt', 'desc').onSnapshot((snapshot) => {
             if (snapshot.empty) {
@@ -168,7 +161,6 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // Document Deletion Handlers
     window.deletePhoto = (id) => db.collection('gallery_photos').doc(id).delete();
     window.deleteVlog = (id) => db.collection('vlogs').doc(id).delete();
 });
