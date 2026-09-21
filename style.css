@@ -1,8 +1,8 @@
 :root {
-    --bg-dark: #090d16;
-    --card-bg: rgba(15, 23, 42, 0.65);
+    --bg-dark: #080b11;
+    --card-bg: rgba(15, 23, 42, 0.7);
     --border-color: rgba(255, 255, 255, 0.08);
-    --primary-glow: #3b82f6;
+    --primary-blue: #3b82f6;
     --accent-cyan: #38bdf8;
     --text-main: #f8fafc;
     --text-muted: #94a3b8;
@@ -12,7 +12,7 @@
     box-sizing: border-box;
     margin: 0;
     padding: 0;
-    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
 }
 
 html {
@@ -27,27 +27,27 @@ body {
     min-height: 100vh;
 }
 
-/* Background Ambient Blur */
+/* Ambient Background Glow */
 .ambient-glow {
     position: fixed;
-    top: -120px;
+    top: -100px;
     left: 50%;
     transform: translateX(-50%);
-    width: 700px;
-    height: 350px;
-    background: radial-gradient(circle, rgba(56, 189, 248, 0.12) 0%, rgba(59, 130, 246, 0.05) 60%, transparent 100%);
-    filter: blur(90px);
+    width: 650px;
+    height: 320px;
+    background: radial-gradient(circle, rgba(56, 189, 248, 0.12) 0%, rgba(59, 130, 246, 0.04) 70%, transparent 100%);
+    filter: blur(80px);
     pointer-events: none;
     z-index: 0;
 }
 
-/* Navigation Bar */
+/* Header & Navbar */
 .navbar {
     display: flex;
     justify-content: space-between;
     align-items: center;
     padding: 1.2rem 8%;
-    background: rgba(9, 13, 22, 0.85);
+    background: rgba(8, 11, 17, 0.85);
     backdrop-filter: blur(16px);
     -webkit-backdrop-filter: blur(16px);
     border-bottom: 1px solid var(--border-color);
@@ -56,15 +56,25 @@ body {
     z-index: 100;
 }
 
-.logo {
-    font-size: 1.3rem;
-    font-weight: 800;
-    color: var(--text-main);
+.brand-logo {
+    display: flex;
+    align-items: center;
+    gap: 6px;
     text-decoration: none;
 }
 
-.logo-dot {
-    color: var(--accent-cyan);
+.brand-name {
+    font-size: 1.25rem;
+    font-weight: 800;
+    letter-spacing: 0.5px;
+    color: var(--text-main);
+}
+
+.brand-dot {
+    width: 7px;
+    height: 7px;
+    background-color: var(--accent-cyan);
+    border-radius: 50%;
 }
 
 .nav-links a {
@@ -82,7 +92,7 @@ body {
 
 .nav-cta {
     padding: 0.5rem 1.2rem;
-    background: rgba(255, 255, 255, 0.06);
+    background: rgba(255, 255, 255, 0.05);
     border: 1px solid var(--border-color);
     border-radius: 8px;
     color: var(--text-main);
@@ -100,7 +110,7 @@ body {
 /* Hero Section */
 .hero {
     text-align: center;
-    padding: 7rem 1.5rem 5rem;
+    padding: 6.5rem 1.5rem 4.5rem;
     position: relative;
     z-index: 1;
 }
@@ -113,7 +123,7 @@ body {
     background: rgba(56, 189, 248, 0.08);
     border: 1px solid rgba(56, 189, 248, 0.2);
     border-radius: 20px;
-    font-size: 0.8rem;
+    font-size: 0.82rem;
     color: var(--accent-cyan);
     margin-bottom: 1.5rem;
 }
@@ -126,26 +136,25 @@ body {
     box-shadow: 0 0 8px var(--accent-cyan);
 }
 
-.hero h1 {
-    font-size: 3.4rem;
+.hero-title {
+    font-size: 3.5rem;
     font-weight: 800;
-    max-width: 850px;
-    margin: 0 auto;
-    line-height: 1.2;
     letter-spacing: -1px;
+    margin-bottom: 0.8rem;
+    line-height: 1.15;
 }
 
-.hero h1 span {
+.highlight-name {
     background: linear-gradient(90deg, #60a5fa, #38bdf8);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
 }
 
-.hero p {
+.hero-subtitle {
     color: var(--text-muted);
-    margin: 1.2rem auto 2.5rem;
-    max-width: 580px;
     font-size: 1.1rem;
+    max-width: 580px;
+    margin: 0 auto 2.2rem;
     line-height: 1.6;
 }
 
@@ -155,30 +164,30 @@ body {
     justify-content: center;
 }
 
-/* Sections & Layout */
+/* Structural Layout */
 .section {
-    max-width: 1100px;
-    margin: 5rem auto;
+    max-width: 1080px;
+    margin: 4.5rem auto;
     padding: 0 1.5rem;
     position: relative;
     z-index: 1;
 }
 
 .section-header {
-    margin-bottom: 2.5rem;
+    margin-bottom: 2.2rem;
 }
 
 .section-header.text-center {
     text-align: center;
 }
 
-.section-tag {
+.section-badge {
     display: inline-block;
     font-size: 0.75rem;
     font-weight: 700;
     letter-spacing: 1.5px;
     color: var(--accent-cyan);
-    margin-bottom: 0.5rem;
+    margin-bottom: 0.4rem;
     text-transform: uppercase;
 }
 
@@ -188,10 +197,10 @@ body {
     letter-spacing: -0.5px;
 }
 
-/* Glassmorphism Cards */
+/* Glass Cards & Grids */
 .grid-container {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(310px, 1fr));
     gap: 1.5rem;
 }
 
@@ -200,8 +209,8 @@ body {
     backdrop-filter: blur(16px);
     -webkit-backdrop-filter: blur(16px);
     border: 1px solid var(--border-color);
-    border-radius: 16px;
-    padding: 2rem;
+    border-radius: 14px;
+    padding: 1.8rem;
     transition: transform 0.3s ease, border-color 0.3s ease;
 }
 
@@ -212,11 +221,11 @@ body {
 
 .card-icon {
     font-size: 1.8rem;
-    margin-bottom: 1rem;
+    margin-bottom: 0.8rem;
 }
 
 .glass-card h3 {
-    margin-bottom: 0.6rem;
+    margin-bottom: 0.5rem;
     font-weight: 700;
     color: var(--text-main);
 }
@@ -227,13 +236,13 @@ body {
     line-height: 1.6;
 }
 
-.project-tag {
+.project-category {
     display: inline-block;
     font-size: 0.75rem;
     color: var(--text-muted);
     text-transform: uppercase;
     letter-spacing: 0.5px;
-    margin-bottom: 0.5rem;
+    margin-bottom: 0.4rem;
 }
 
 /* Buttons */
@@ -252,7 +261,7 @@ body {
 }
 
 .btn-primary {
-    background: linear-gradient(135deg, var(--primary-glow), #2563eb);
+    background: linear-gradient(135deg, var(--primary-blue), #2563eb);
     color: #fff;
 }
 
@@ -275,9 +284,9 @@ body {
     width: 100%;
 }
 
-/* Clean Forms */
+/* Form Styling */
 .contact-card {
-    max-width: 680px;
+    max-width: 660px;
     margin: 0 auto;
 }
 
@@ -295,7 +304,7 @@ form input, form textarea {
     width: 100%;
     padding: 0.9rem 1.1rem;
     margin-bottom: 1rem;
-    background: rgba(9, 13, 22, 0.6);
+    background: rgba(8, 11, 17, 0.6);
     border: 1px solid var(--border-color);
     border-radius: 8px;
     color: var(--text-main);
@@ -316,7 +325,7 @@ form input:focus, form textarea:focus {
     font-size: 0.9rem;
     border-top: 1px solid var(--border-color);
     margin-top: 6rem;
-    background: rgba(9, 13, 22, 0.9);
+    background: rgba(8, 11, 17, 0.9);
 }
 
 .loading-text {
@@ -325,13 +334,13 @@ form input:focus, form textarea:focus {
     padding: 1.5rem 0;
 }
 
-/* Mobile Responsiveness */
+/* Mobile Layout Responsive Adjustments */
 @media (max-width: 768px) {
     .form-row {
         grid-template-columns: 1fr;
     }
-    .hero h1 {
-        font-size: 2.2rem;
+    .hero-title {
+        font-size: 2.3rem;
     }
     .nav-links {
         display: none;
