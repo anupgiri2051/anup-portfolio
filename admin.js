@@ -4,7 +4,7 @@ document.addEventListener("DOMContentLoaded", () => {
     setupUploadForm();
 });
 
-// Admin Login & Session Management
+// Admin Authentication Setup
 function initAuth() {
     const loginModal = document.getElementById("login-modal");
     const dashboard = document.getElementById("admin-dashboard");
@@ -53,7 +53,7 @@ function initAuth() {
     }
 }
 
-// Preview Multiple Images Before Upload
+// Multi-image preview before upload
 function setupImagePreview() {
     const fileInput = document.getElementById("photo-file");
     const previewWrapper = document.getElementById("preview-wrapper");
@@ -88,7 +88,7 @@ function setupImagePreview() {
     });
 }
 
-// Upload Multiple Images Sequential Handler
+// Upload Form Handler
 function setupUploadForm() {
     const form = document.getElementById("upload-form");
     const statusMsg = document.getElementById("upload-status");
@@ -156,7 +156,7 @@ function setupUploadForm() {
     });
 }
 
-// Load Gallery with Delete Option
+// Manage Photos in Admin Dashboard
 function loadAdminGallery() {
     const adminGrid = document.getElementById("admin-gallery-grid");
     if (!adminGrid) return;
@@ -193,7 +193,7 @@ function loadAdminGallery() {
     });
 }
 
-// Load Messages with Delete Option
+// Manage Inbox Messages
 function loadMessages() {
     const container = document.getElementById("messages-container");
     if (!container) return;

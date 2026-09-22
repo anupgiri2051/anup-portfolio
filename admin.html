@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Dashboard — Anup Giri</title>
+    <title>Anup Giri — Admin</title>
 
     <!-- Fonts & Icons -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -24,13 +24,13 @@
     <div class="ambient-glow"></div>
 
     <header class="navbar">
-        <a href="index.html" class="brand-logo">
+        <a href="/" class="brand-logo">
             <i class="fa-solid fa-code"></i>
             <span>Anup Giri</span>
             <span class="brand-badge">ADMIN</span>
         </a>
         <div class="nav-actions">
-            <a href="index.html" class="btn btn-secondary"><i class="fa-solid fa-house"></i> View Site</a>
+            <a href="/" class="btn btn-secondary"><i class="fa-solid fa-house"></i> View Site</a>
             <button id="logout-btn" class="btn btn-secondary" style="display: none;"><i class="fa-solid fa-right-from-bracket"></i> Logout</button>
         </div>
     </header>
@@ -72,7 +72,7 @@
                     <input type="text" id="photo-title" placeholder="Enter image title..." required>
                 </div>
                 <div class="form-group">
-                    <label for="photo-file"><i class="fa-solid fa-images"></i> Select Images (Select Multiple Allowed)</label>
+                    <label for="photo-file"><i class="fa-solid fa-images"></i> Select Images (Multiple Allowed)</label>
                     <input type="file" id="photo-file" accept="image/*" multiple required>
                 </div>
                 
@@ -87,7 +87,7 @@
             </form>
         </section>
 
-        <!-- Manage Existing Photos Section -->
+        <!-- Manage Photos Section -->
         <section class="glass-card">
             <div class="section-header">
                 <span class="section-badge">Manage</span>
@@ -96,7 +96,7 @@
             <div id="admin-gallery-grid" class="gallery-grid"></div>
         </section>
 
-        <!-- Messages Inbox Section -->
+        <!-- Messages Section -->
         <section class="glass-card">
             <div class="section-header">
                 <span class="section-badge">Inbox</span>

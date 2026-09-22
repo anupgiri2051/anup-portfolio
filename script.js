@@ -1,42 +1,64 @@
 document.addEventListener("DOMContentLoaded", () => {
+    setupCleanRouting();
     loadGallery();
     setupContactForm();
     setupLightbox();
     setupMobileMenu();
-    setupCleanNavigation();
 });
 
-// Navigation scroll and URL hash (#) cleaner
-function setupCleanNavigation() {
-    const navLinks = document.querySelectorAll('a[href^="#"]');
+// Dynamic Clean URL Routing (/about, /gallery, /contact, /)
+function setupCleanRouting() {
+    const routeLinks = document.querySelectorAll("[data-path]");
 
-    navLinks.forEach(link => {
+    routeLinks.forEach(link => {
         link.addEventListener("click", (e) => {
             e.preventDefault();
-            const targetId = link.getAttribute("href").substring(1);
-            const targetSection = document.getElementById(targetId);
-
-            if (targetSection) {
-                targetSection.scrollIntoView({
-                    behavior: "smooth",
-                    block: "start"
-                });
-
-                // Remove '#' hash from URL bar
-                if (history.pushState) {
-                    history.pushState(null, null, window.location.pathname);
-                }
-
-                const navLinksContainer = document.getElementById("nav-links");
-                if (window.innerWidth <= 768 && navLinksContainer) {
-                    navLinksContainer.style.display = "none";
-                }
-            }
+            const targetPath = link.getAttribute("data-path");
+            navigateTo(targetPath);
         });
     });
+
+    window.addEventListener("popstate", () => {
+        handleCurrentRoute(window.location.pathname);
+    });
+
+    // Handle initial URL path on load
+    handleCurrentRoute(window.location.pathname);
 }
 
-// Load Gallery Photos from Firestore
+function navigateTo(path) {
+    if (window.location.pathname !== path) {
+        history.pushState(null, null, path);
+    }
+    handleCurrentRoute(path);
+
+    // Close mobile menu if open
+    const navLinksContainer = document.getElementById("nav-links");
+    if (window.innerWidth <= 768 && navLinksContainer) {
+        navLinksContainer.style.display = "none";
+    }
+}
+
+function handleCurrentRoute(path) {
+    const sectionMap = {
+        "/": "home-section",
+        "/about": "about-section",
+        "/gallery": "gallery-section",
+        "/contact": "contact-section"
+    };
+
+    const targetId = sectionMap[path] || "home-section";
+    const targetElement = document.getElementById(targetId);
+
+    if (targetElement) {
+        targetElement.scrollIntoView({
+            behavior: "smooth",
+            block: "start"
+        });
+    }
+}
+
+// Firestore Gallery Listener
 function loadGallery() {
     const galleryContainer = document.getElementById("gallery-container");
     if (!galleryContainer) return;
@@ -68,7 +90,7 @@ function loadGallery() {
     });
 }
 
-// Handle Contact Form Submission
+// Contact Form Handler
 function setupContactForm() {
     const contactForm = document.getElementById("contact-form");
     const statusMsg = document.getElementById("contact-status");
@@ -112,7 +134,7 @@ function setupContactForm() {
     });
 }
 
-// Lightbox Modal Setup
+// Lightbox Setup
 function setupLightbox() {
     const modal = document.getElementById("lightbox-modal");
     const closeBtn = document.getElementById("lightbox-close");
@@ -142,7 +164,7 @@ function openLightbox(url, title) {
     modal.style.display = "flex";
 }
 
-// Mobile Responsive Navigation Toggle
+// Mobile Menu Navigation
 function setupMobileMenu() {
     const menuBtn = document.getElementById("mobile-menu-btn");
     const navLinks = document.getElementById("nav-links");
