@@ -4,21 +4,19 @@ function loadGalleryPhotos() {
 
     if (!galleryGrid) return;
 
-    // Listen to real-time updates from Firestore 'photos' collection
     db.collection("photos").orderBy("createdAt", "desc").onSnapshot((snapshot) => {
         if (snapshot.empty) {
             galleryGrid.innerHTML = '<p class="loading-text">No gallery items uploaded yet.</p>';
             return;
         }
 
-        galleryGrid.innerHTML = ''; // Clear loading placeholder
+        galleryGrid.innerHTML = '';
 
         snapshot.forEach((doc) => {
             const data = doc.data();
             const photoUrl = data.imageUrl;
             const photoTitle = data.title || "Gallery Photo";
 
-            // Create Gallery Item Card
             const card = document.createElement('div');
             card.className = 'glass-card gallery-item';
             card.onclick = () => openLightbox(photoUrl);
@@ -39,7 +37,7 @@ function loadGalleryPhotos() {
     });
 }
 
-// Lightbox Modal Functions
+// Lightbox Modal Controls
 function openLightbox(imageSrc) {
     const modal = document.getElementById('lightbox');
     const modalImg = document.getElementById('lightbox-img');
@@ -56,25 +54,54 @@ function closeLightbox() {
     }
 }
 
-// Contact Form Handler
+// Contact Form Handler - Stores messages in Firebase Firestore
 document.addEventListener('DOMContentLoaded', () => {
-    // Start fetching gallery photos from Firestore
     loadGalleryPhotos();
 
     const contactForm = document.getElementById('public-contact-form');
     const formStatus = document.getElementById('form-status');
 
     if (contactForm) {
-        contactForm.addEventListener('submit', (e) => {
+        contactForm.addEventListener('submit', async (e) => {
             e.preventDefault();
-            const name = document.getElementById('contact-name').value;
 
+            const name = document.getElementById('contact-name').value.trim();
+            const email = document.getElementById('contact-email').value.trim();
+            const message = document.getElementById('contact-message').value.trim();
+            const sendBtn = document.getElementById('send-btn');
+
+            if (!name || !email || !message) return;
+
+            if (sendBtn) sendBtn.disabled = true;
             if (formStatus) {
-                formStatus.style.color = '#10b981';
-                formStatus.textContent = `Thank you, ${name}! Your message has been sent successfully.`;
+                formStatus.style.color = '#94a3b8';
+                formStatus.textContent = 'Sending message...';
             }
 
-            contactForm.reset();
+            try {
+                // Add message to Firestore "messages" collection
+                await db.collection("messages").add({
+                    name: name,
+                    email: email,
+                    message: message,
+                    createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                });
+
+                if (formStatus) {
+                    formStatus.style.color = '#10b981';
+                    formStatus.textContent = `Thank you, ${name}! Your message was sent successfully.`;
+                }
+
+                contactForm.reset();
+            } catch (error) {
+                console.error("Error sending message:", error);
+                if (formStatus) {
+                    formStatus.style.color = '#ef4444';
+                    formStatus.textContent = 'Failed to send message: ' + error.message;
+                }
+            } finally {
+                if (sendBtn) sendBtn.disabled = false;
+            }
         });
     }
 });
