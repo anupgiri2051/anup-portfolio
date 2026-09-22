@@ -4,7 +4,7 @@ document.addEventListener("DOMContentLoaded", () => {
     setupUploadForm();
 });
 
-// Authentication Management
+// Admin Login & Session Management
 function initAuth() {
     const loginModal = document.getElementById("login-modal");
     const dashboard = document.getElementById("admin-dashboard");
@@ -53,7 +53,7 @@ function initAuth() {
     }
 }
 
-// Preview Multiple Selected Images
+// Preview Multiple Images Before Upload
 function setupImagePreview() {
     const fileInput = document.getElementById("photo-file");
     const previewWrapper = document.getElementById("preview-wrapper");
@@ -73,8 +73,8 @@ function setupImagePreview() {
                 reader.onload = (evt) => {
                     const img = document.createElement("img");
                     img.src = evt.target.result;
-                    img.style.width = "90px";
-                    img.style.height = "90px";
+                    img.style.width = "80px";
+                    img.style.height = "80px";
                     img.style.objectFit = "cover";
                     img.style.borderRadius = "8px";
                     img.style.border = "1px solid var(--card-border)";
@@ -88,7 +88,7 @@ function setupImagePreview() {
     });
 }
 
-// Upload Form Handler (Multiple Photos)
+// Upload Multiple Images Sequential Handler
 function setupUploadForm() {
     const form = document.getElementById("upload-form");
     const statusMsg = document.getElementById("upload-status");
@@ -156,7 +156,7 @@ function setupUploadForm() {
     });
 }
 
-// Load Gallery with Delete Capability
+// Load Gallery with Delete Option
 function loadAdminGallery() {
     const adminGrid = document.getElementById("admin-gallery-grid");
     if (!adminGrid) return;
@@ -193,7 +193,7 @@ function loadAdminGallery() {
     });
 }
 
-// Load Messages with Delete Capability
+// Load Messages with Delete Option
 function loadMessages() {
     const container = document.getElementById("messages-container");
     if (!container) return;

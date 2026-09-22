@@ -4,123 +4,118 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Anup Giri — Personal Website</title>
-    
+
     <!-- Fonts & Icons -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    
+
     <!-- Firebase Compat SDKs -->
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-storage-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
 
     <!-- Custom CSS -->
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
-    <!-- Web Interface Background Elements -->
     <div class="bg-interface-grid"></div>
     <div class="ambient-glow"></div>
 
-    <!-- Navigation Bar -->
+    <!-- Header / Navbar -->
     <header class="navbar">
-        <a href="#hero" class="brand-logo">
+        <a href="#home" class="brand-logo" id="brand-link">
             <i class="fa-solid fa-code"></i>
             <span>Anup Giri</span>
             <span class="brand-badge">PORTFOLIO</span>
         </a>
-        <nav class="nav-links" id="nav-links">
-            <a href="#about" class="nav-item"><i class="fa-solid fa-user"></i> About</a>
-            <a href="#gallery" class="nav-item"><i class="fa-solid fa-images"></i> Gallery</a>
-            <a href="#contact" class="nav-item"><i class="fa-solid fa-paper-plane"></i> Contact</a>
-        </nav>
-        <button class="mobile-menu-btn" id="mobile-menu-btn" aria-label="Toggle navigation">
+
+        <button class="mobile-menu-btn" id="mobile-menu-btn" aria-label="Toggle Navigation">
             <i class="fa-solid fa-bars"></i>
         </button>
+
+        <nav class="nav-links" id="nav-links">
+            <a href="#home" class="nav-item">Home</a>
+            <a href="#about" class="nav-item">About</a>
+            <a href="#gallery" class="nav-item">Gallery</a>
+            <a href="#contact" class="nav-item">Contact</a>
+            <a href="admin.html" class="btn btn-secondary" style="padding: 0.4rem 0.8rem; font-size: 0.85rem;"><i class="fa-solid fa-lock"></i> Admin</a>
+        </nav>
     </header>
 
-    <!-- Main Content -->
+    <!-- Main Content Container -->
     <main class="main-container">
 
-        <!-- Hero Section -->
-        <section id="hero" class="glass-card hero-section">
-            <div class="hero-content">
-                <span class="section-badge"><i class="fa-solid fa-circle-dot"></i> Welcome to my space</span>
-                <h1 class="hero-title">Hi, I'm <span class="highlight">Anup Giri</span></h1>
-                <p class="hero-sub">Passionate Web Developer focused on building clean, modern, and responsive web applications.</p>
-                <div class="hero-actions">
-                    <a href="#contact" class="btn btn-primary"><i class="fa-solid fa-paper-plane"></i> Get In Touch</a>
-                    <a href="#gallery" class="btn btn-secondary"><i class="fa-solid fa-images"></i> View Gallery</a>
-                </div>
+        <!-- Home / Hero Section -->
+        <section id="home" class="glass-card hero-section">
+            <span class="section-badge">Welcome</span>
+            <h1 class="hero-title">Hi, I'm <span class="highlight">Anup Giri</span></h1>
+            <p class="hero-sub">Welcome to my personal portfolio. Explore my photo gallery, learn more about my background, or get in touch directly.</p>
+            <div class="hero-actions">
+                <a href="#gallery" class="btn btn-primary"><i class="fa-solid fa-images"></i> View Gallery</a>
+                <a href="#contact" class="btn btn-secondary"><i class="fa-solid fa-envelope"></i> Get in Touch</a>
             </div>
         </section>
 
-        <!-- About Me Section -->
+        <!-- About Section -->
         <section id="about" class="glass-card">
             <div class="section-header">
-                <span class="section-badge">Biography</span>
+                <span class="section-badge">Overview</span>
                 <h2>About Me</h2>
             </div>
             <div class="about-grid">
                 <div class="about-info-card">
-                    <i class="fa-solid fa-laptop-code info-icon"></i>
+                    <i class="fa-solid fa-user info-icon"></i>
                     <div>
-                        <h4>Web Development</h4>
-                        <p>Specialized in crafting modern, fluid, and user-friendly web applications and interactive user interfaces.</p>
-                    </div>
-                </div>
-                <div class="about-info-card">
-                    <i class="fa-solid fa-lightbulb info-icon"></i>
-                    <div>
-                        <h4>Digital Solutions</h4>
-                        <p>Providing end-to-end web solutions, database integration, and scalable digital tools tailored to user needs.</p>
+                        <h4>Name</h4>
+                        <p style="color: var(--text-muted);">Anup Giri</p>
                     </div>
                 </div>
                 <div class="about-info-card">
                     <i class="fa-solid fa-location-dot info-icon"></i>
                     <div>
-                        <h4>Location</h4>
-                        <p>Ramrekha-01, Baglung</p>
+                        <h4>Address</h4>
+                        <p style="color: var(--text-muted);">Ramrekha-01, Baglung</p>
+                    </div>
+                </div>
+                <div class="about-info-card">
+                    <i class="fa-solid fa-phone info-icon"></i>
+                    <div>
+                        <h4>Contact Numbers</h4>
+                        <p style="color: var(--text-muted);">+977 9847681038 / +977 9867102729</p>
                     </div>
                 </div>
             </div>
         </section>
 
-        <!-- Dynamic Photo Gallery Section -->
+        <!-- Photo Gallery Section -->
         <section id="gallery" class="glass-card">
             <div class="section-header">
                 <span class="section-badge">Portfolio</span>
                 <h2>Photo Gallery</h2>
             </div>
             <div id="gallery-container" class="gallery-grid">
-                <div class="loading-spinner">
-                    <i class="fa-solid fa-circle-notch fa-spin"></i> Loading gallery...
-                </div>
+                <!-- Gallery photos rendered dynamically via script.js -->
             </div>
         </section>
 
         <!-- Contact Section -->
         <section id="contact" class="glass-card">
             <div class="section-header">
-                <span class="section-badge">Get In Touch</span>
+                <span class="section-badge">Reach Out</span>
                 <h2>Send a Message</h2>
             </div>
             <form id="contact-form" class="clean-form">
-                <div class="form-row-desktop">
-                    <div class="form-group">
-                        <label for="contact-email"><i class="fa-solid fa-envelope"></i> Your Email</label>
-                        <input type="email" id="contact-email" placeholder="name@example.com" required>
-                    </div>
+                <div class="form-group">
+                    <label for="contact-email"><i class="fa-solid fa-at"></i> Your Email Address</label>
+                    <input type="email" id="contact-email" placeholder="example@domain.com" required>
                 </div>
                 <div class="form-group">
-                    <label for="contact-message"><i class="fa-solid fa-message"></i> Message</label>
-                    <textarea id="contact-message" rows="5" placeholder="Write your message here..." required></textarea>
+                    <label for="contact-message"><i class="fa-solid fa-message"></i> Your Message</label>
+                    <textarea id="contact-message" rows="4" placeholder="Write your message here..." required></textarea>
                 </div>
-                <button type="submit" class="btn btn-primary" id="contact-submit-btn">
+                <button type="submit" id="contact-submit-btn" class="btn btn-primary">
                     <i class="fa-solid fa-paper-plane"></i> Send Message
                 </button>
                 <div id="contact-status" class="status-msg"></div>
@@ -129,14 +124,14 @@
 
     </main>
 
-    <!-- Lightbox Modal -->
+    <!-- Lightbox Modal for Full View -->
     <div id="lightbox-modal" class="lightbox-overlay">
-        <span class="lightbox-close" id="lightbox-close">&times;</span>
-        <img class="lightbox-img" id="lightbox-img" src="" alt="Enlarged image">
-        <div class="lightbox-caption" id="lightbox-caption"></div>
+        <span id="lightbox-close" class="lightbox-close">&times;</span>
+        <img id="lightbox-img" class="lightbox-img" src="" alt="Full View">
+        <div id="lightbox-caption" class="lightbox-caption"></div>
     </div>
 
-    <!-- Scripts -->
+    <!-- Firebase & Custom Script -->
     <script src="firebase-config.js"></script>
     <script src="script.js"></script>
 </body>

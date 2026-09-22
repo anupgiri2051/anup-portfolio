@@ -3,9 +3,40 @@ document.addEventListener("DOMContentLoaded", () => {
     setupContactForm();
     setupLightbox();
     setupMobileMenu();
+    setupCleanNavigation();
 });
 
-// Load Gallery Items from Firestore
+// Navigation scroll and URL hash (#) cleaner
+function setupCleanNavigation() {
+    const navLinks = document.querySelectorAll('a[href^="#"]');
+
+    navLinks.forEach(link => {
+        link.addEventListener("click", (e) => {
+            e.preventDefault();
+            const targetId = link.getAttribute("href").substring(1);
+            const targetSection = document.getElementById(targetId);
+
+            if (targetSection) {
+                targetSection.scrollIntoView({
+                    behavior: "smooth",
+                    block: "start"
+                });
+
+                // Remove '#' hash from URL bar
+                if (history.pushState) {
+                    history.pushState(null, null, window.location.pathname);
+                }
+
+                const navLinksContainer = document.getElementById("nav-links");
+                if (window.innerWidth <= 768 && navLinksContainer) {
+                    navLinksContainer.style.display = "none";
+                }
+            }
+        });
+    });
+}
+
+// Load Gallery Photos from Firestore
 function loadGallery() {
     const galleryContainer = document.getElementById("gallery-container");
     if (!galleryContainer) return;
@@ -16,7 +47,7 @@ function loadGallery() {
             return;
         }
 
-        galleryContainer.innerHTML = ""; // Clear loader or existing content
+        galleryContainer.innerHTML = "";
 
         snapshot.forEach(doc => {
             const data = doc.data();
@@ -28,7 +59,6 @@ function loadGallery() {
                 <div class="gallery-item-title">${data.title}</div>
             `;
 
-            // Open full image lightbox on click
             item.addEventListener("click", () => {
                 openLightbox(data.url, data.title);
             });
@@ -38,7 +68,7 @@ function loadGallery() {
     });
 }
 
-// Contact Form Handler
+// Handle Contact Form Submission
 function setupContactForm() {
     const contactForm = document.getElementById("contact-form");
     const statusMsg = document.getElementById("contact-status");
@@ -82,7 +112,7 @@ function setupContactForm() {
     });
 }
 
-// Lightbox Modal Functionality
+// Lightbox Modal Setup
 function setupLightbox() {
     const modal = document.getElementById("lightbox-modal");
     const closeBtn = document.getElementById("lightbox-close");
@@ -112,7 +142,7 @@ function openLightbox(url, title) {
     modal.style.display = "flex";
 }
 
-// Mobile Menu Toggle
+// Mobile Responsive Navigation Toggle
 function setupMobileMenu() {
     const menuBtn = document.getElementById("mobile-menu-btn");
     const navLinks = document.getElementById("nav-links");

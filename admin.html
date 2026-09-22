@@ -14,14 +14,13 @@
     <!-- Firebase Compat SDKs -->
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-storage-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
 
     <!-- Custom CSS -->
-    <link rel="stylesheet" href="admin.css">
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
+    <div class="bg-interface-grid"></div>
     <div class="ambient-glow"></div>
 
     <header class="navbar">
@@ -37,8 +36,8 @@
     </header>
 
     <!-- Login Modal -->
-    <div id="login-modal" class="login-modal-overlay">
-        <div class="glass-card login-card">
+    <div id="login-modal" class="lightbox-overlay" style="display: flex;">
+        <div class="glass-card" style="max-width: 400px; width: 90%;">
             <div class="section-header" style="text-align: center;">
                 <span class="section-badge">Restricted Access</span>
                 <h2>Admin Login</h2>
@@ -46,45 +45,45 @@
             <form id="login-form" class="clean-form">
                 <div class="form-group">
                     <label for="admin-email"><i class="fa-solid fa-user"></i> Admin ID</label>
-                    <input type="text" id="admin-email" placeholder="Enter Admin ID (e.g. admin)" required>
+                    <input type="text" id="admin-email" placeholder="Enter Admin ID" required>
                 </div>
                 <div class="form-group">
                     <label for="admin-password"><i class="fa-solid fa-key"></i> Password</label>
                     <input type="password" id="admin-password" placeholder="••••••••" required>
                 </div>
-                <button type="submit" class="btn btn-primary btn-block"><i class="fa-solid fa-lock-open"></i> Login</button>
-                <div id="login-error" class="error-msg"></div>
+                <button type="submit" class="btn btn-primary"><i class="fa-solid fa-lock-open"></i> Login</button>
+                <div id="login-error" style="color: var(--danger-red); font-size: 0.85rem; margin-top: 0.5rem;"></div>
             </form>
         </div>
     </div>
 
-    <!-- Admin Dashboard Main Screen -->
-    <main id="admin-dashboard" class="admin-container" style="display: none;">
+    <!-- Admin Dashboard Main Container -->
+    <main id="admin-dashboard" class="main-container" style="display: none;">
 
         <!-- Photo Upload Section -->
         <section class="glass-card">
             <div class="section-header">
                 <span class="section-badge">Upload</span>
-                <h2>Add New Photos</h2>
+                <h2>Add Photos</h2>
             </div>
             <form id="upload-form" class="clean-form">
-                <div class="form-row-desktop">
-                    <div class="form-group">
-                        <label for="photo-title"><i class="fa-solid fa-heading"></i> Photo Title / Base Name</label>
-                        <input type="text" id="photo-title" placeholder="Enter title..." required>
-                    </div>
-                    <div class="form-group">
-                        <label for="photo-file"><i class="fa-solid fa-images"></i> Select Images (Multiple Supported)</label>
-                        <input type="file" id="photo-file" accept="image/*" multiple required>
-                    </div>
+                <div class="form-group">
+                    <label for="photo-title"><i class="fa-solid fa-heading"></i> Photo Title / Base Name</label>
+                    <input type="text" id="photo-title" placeholder="Enter image title..." required>
                 </div>
-                <div id="preview-wrapper" class="preview-container" style="display: none;">
-                    <div id="image-preview" style="display: flex; gap: 10px; flex-wrap: wrap; justify-content: center;"></div>
+                <div class="form-group">
+                    <label for="photo-file"><i class="fa-solid fa-images"></i> Select Images (Select Multiple Allowed)</label>
+                    <input type="file" id="photo-file" accept="image/*" multiple required>
                 </div>
-                <button type="submit" id="upload-btn" class="btn btn-primary">
+                
+                <div id="preview-wrapper" style="display: none; margin-top: 0.5rem;">
+                    <div id="image-preview" style="display: flex; gap: 10px; flex-wrap: wrap;"></div>
+                </div>
+
+                <button type="submit" id="upload-btn" class="btn btn-primary" style="margin-top: 0.5rem;">
                     <i class="fa-solid fa-cloud-arrow-up"></i> Upload Photos
                 </button>
-                <div id="upload-status" class="status-msg"></div>
+                <div id="upload-status" style="font-size: 0.9rem; margin-top: 0.5rem;"></div>
             </form>
         </section>
 
@@ -94,7 +93,7 @@
                 <span class="section-badge">Manage</span>
                 <h2>Gallery Items</h2>
             </div>
-            <div id="admin-gallery-grid" class="admin-grid"></div>
+            <div id="admin-gallery-grid" class="gallery-grid"></div>
         </section>
 
         <!-- Messages Inbox Section -->

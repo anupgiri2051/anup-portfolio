@@ -11,7 +11,6 @@
     --text-main: #f3f4f6;
     --text-muted: #9ca3af;
     --danger-red: #ef4444;
-    --danger-hover: #dc2626;
     --radius-lg: 16px;
     --radius-md: 10px;
     --transition-fast: 0.2s ease;
@@ -361,6 +360,38 @@ body {
     pointer-events: none;
 }
 
+.admin-card {
+    position: relative;
+    border-radius: var(--radius-md);
+    overflow: hidden;
+    background: rgba(0, 0, 0, 0.3);
+    border: 1px solid var(--card-border);
+    display: flex;
+    flex-direction: column;
+}
+
+.admin-card img {
+    width: 100%;
+    aspect-ratio: 4/3;
+    object-fit: cover;
+}
+
+.admin-card-info {
+    padding: 0.75rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.admin-card-info h4 {
+    font-size: 0.85rem;
+    color: var(--text-main);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
 .lightbox-overlay {
     display: none;
     position: fixed;
@@ -400,7 +431,7 @@ body {
 }
 
 /* ==========================================================================
-   8. MESSAGES INBOX (ADMIN)
+   8. MESSAGES INBOX
    ========================================================================== */
 .messages-container {
     display: flex;
@@ -413,7 +444,6 @@ body {
     border: 1px solid var(--card-border);
     border-radius: var(--radius-md);
     padding: 1.25rem;
-
     display: flex;
     flex-direction: column;
     gap: 0.75rem;
