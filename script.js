@@ -40,14 +40,22 @@ function navigateTo(path) {
 }
 
 function handleCurrentRoute(path) {
+    if (path === "/" || path === "") {
+        // Scroll completely to top for Home so no content is hidden under navbar
+        window.scrollTo({
+            top: 0,
+            behavior: "smooth"
+        });
+        return;
+    }
+
     const sectionMap = {
-        "/": "home-section",
         "/about": "about-section",
         "/gallery": "gallery-section",
         "/contact": "contact-section"
     };
 
-    const targetId = sectionMap[path] || "home-section";
+    const targetId = sectionMap[path];
     const targetElement = document.getElementById(targetId);
 
     if (targetElement) {

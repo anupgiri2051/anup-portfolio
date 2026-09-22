@@ -13,6 +13,10 @@
     --transition-fast: 0.2s ease;
 }
 
+html {
+    scroll-behavior: smooth;
+}
+
 * {
     margin: 0;
     padding: 0;
@@ -139,6 +143,8 @@ body {
     padding: 2rem;
     backdrop-filter: blur(12px);
     box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
+    /* Accounts for fixed sticky header offset when scrolling */
+    scroll-margin-top: 100px;
 }
 
 .section-header {
