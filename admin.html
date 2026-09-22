@@ -3,89 +3,70 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Dashboard | Anup Giri</title>
-    <link rel="stylesheet" href="style.css">
+    <title>Admin Dashboard — Anup Giri</title>
+    <link rel="stylesheet" href="admin.css">
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-    
-    <!-- Inline Authentication Check -->
-    <script>
-        (function() {
-            const adminId = prompt("Enter Admin ID:");
-            const adminPass = prompt("Enter Password:");
-
-            if (adminId === "admin" && adminPass === "meanup") {
-                alert("Access Granted! Welcome Anup.");
-            } else {
-                alert("Access Denied: Incorrect Admin ID or Password!");
-                window.location.href = "index.html";
-            }
-        })();
-    </script>
 </head>
 <body>
 
+    <div class="ambient-glow"></div>
+
     <header class="navbar">
-        <a href="index.html" class="brand-logo" onclick="window.location.href='index.html'; window.location.reload(); return false;">
-            <span class="brand-name">Anup Giri (Admin)</span>
+        <a href="index.html" class="brand-logo">
+            <span class="brand-name">ANUP GIRI</span>
+            <span class="brand-badge">ADMIN</span>
         </a>
-        <div>
-            <a href="index.html" class="btn btn-secondary" style="margin-right: 0.5rem;">← View Live Site</a>
-        </div>
+        <a href="index.html" class="nav-cta">View Live Site</a>
     </header>
 
-    <main class="section">
-        <div class="grid-container" style="grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));">
+    <main class="admin-container">
+        <!-- Upload Form Card -->
+        <section class="glass-card upload-section">
+            <div class="section-header">
+                <span class="section-badge">MANAGEMENT</span>
+                <h2>Upload Gallery Photo</h2>
+            </div>
+
+            <form id="upload-form" class="clean-form">
+                <div class="form-group">
+                    <label for="photo-title">Photo Title</label>
+                    <input type="text" id="photo-title" placeholder="e.g., Technology & Innovation" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="photo-url">Image Direct URL</label>
+                    <input type="url" id="photo-url" placeholder="https://images.unsplash.com/photo-..." required>
+                </div>
+
+                <!-- Image Preview Box -->
+                <div id="preview-box" class="preview-container" style="display: none;">
+                    <p class="preview-label">Image Preview:</p>
+                    <img id="image-preview" src="" alt="Preview">
+                </div>
+
+                <button type="submit" class="btn btn-primary" id="submit-btn">Publish to Gallery</button>
+                <p id="upload-status" class="status-msg"></p>
+            </form>
+        </section>
+
+        <!-- Manage Existing Photos Section -->
+        <section class="glass-card manage-section">
+            <div class="section-header">
+                <span class="section-badge">CURRENT MEDIA</span>
+                <h2>Manage Uploaded Photos</h2>
+            </div>
             
-            <!-- Upload Photo Section -->
-            <div class="glass-card">
-                <h3>📷 Upload Image</h3>
-                <form id="add-photo-form" style="margin-top: 1rem;">
-                    <input type="text" id="photo-title" placeholder="Image Title" required>
-                    <label style="display: block; font-size: 0.85rem; color: var(--text-muted); margin-bottom: 0.4rem;">Choose Image File:</label>
-                    <input type="file" id="photo-file" accept="image/*" required>
-                    
-                    <div id="image-preview-wrapper" style="display: none; margin: 1rem 0;">
-                        <img id="image-preview" src="" alt="Preview" style="width: 100%; max-height: 180px; object-fit: cover; border-radius: 8px;">
-                    </div>
-                    
-                    <button type="submit" class="btn btn-primary btn-block">Upload Image</button>
-                </form>
-
-                <hr style="border: none; border-top: 1px solid var(--border-color); margin: 1.5rem 0;">
-                
-                <h4 style="margin-bottom: 0.8rem; font-size: 0.95rem;">Published Gallery Images</h4>
-                <div id="admin-photos-list">
-                    <p class="loading-text">Loading items...</p>
-                </div>
+            <div id="admin-photos-grid" class="admin-grid">
+                <p class="loading-text">Loading admin gallery items...</p>
             </div>
-
-            <!-- Publish Vlog Section -->
-            <div class="glass-card">
-                <h3>🎬 Publish Vlog</h3>
-                <form id="publish-vlog-form" style="margin-top: 1rem;">
-                    <input type="text" id="vlog-title" placeholder="Vlog Title" required>
-                    <input type="url" id="vlog-url" placeholder="YouTube Link" required>
-                    <textarea id="vlog-desc" rows="3" placeholder="Short description..."></textarea>
-                    <button type="submit" class="btn btn-primary btn-block">Publish Vlog</button>
-                </form>
-
-                <hr style="border: none; border-top: 1px solid var(--border-color); margin: 1.5rem 0;">
-
-                <h4 style="margin-bottom: 0.8rem; font-size: 0.95rem;">Live Published Vlogs</h4>
-                <div id="admin-vlogs-list">
-                    <p class="loading-text">Loading items...</p>
-                </div>
-            </div>
-
-        </div>
+        </section>
     </main>
 
     <!-- Firebase Compat SDKs -->
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-storage-compat.js"></script>
 
-    <!-- App Scripts -->
+    <!-- Configuration & Scripts -->
     <script src="firebase-config.js"></script>
     <script src="admin.js"></script>
 </body>

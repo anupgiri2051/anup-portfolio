@@ -1,166 +1,111 @@
 document.addEventListener('DOMContentLoaded', () => {
-    const photoFileInput = document.getElementById('photo-file');
-    const imagePreviewWrapper = document.getElementById('image-preview-wrapper');
+    const uploadForm = document.getElementById('upload-form');
+    const photoUrlInput = document.getElementById('photo-url');
+    const photoTitleInput = document.getElementById('photo-title');
+    const previewBox = document.getElementById('preview-box');
     const imagePreview = document.getElementById('image-preview');
-    const addPhotoForm = document.getElementById('add-photo-form');
-    const publishVlogForm = document.getElementById('publish-vlog-form');
-    const adminPhotosList = document.getElementById('admin-photos-list');
-    const adminVlogsList = document.getElementById('admin-vlogs-list');
+    const statusMsg = document.getElementById('upload-status');
+    const submitBtn = document.getElementById('submit-btn');
 
-    let selectedFile = null;
+    // 1. Live Image Preview Handler
+    photoUrlInput.addEventListener('input', () => {
+        const url = photoUrlInput.value.trim();
+        if (url) {
+            imagePreview.src = url;
+            previewBox.style.display = 'block';
+        } else {
+            previewBox.style.display = 'none';
+        }
+    });
 
-    // File selection & preview
-    if (photoFileInput) {
-        photoFileInput.addEventListener('change', (e) => {
-            selectedFile = e.target.files[0];
-            if (selectedFile) {
-                const reader = new FileReader();
-                reader.onload = (event) => {
-                    if (imagePreview) imagePreview.src = event.target.result;
-                    if (imagePreviewWrapper) imagePreviewWrapper.style.display = 'block';
-                };
-                reader.readAsDataURL(selectedFile);
-            } else {
-                if (imagePreviewWrapper) imagePreviewWrapper.style.display = 'none';
-                selectedFile = null;
-            }
-        });
-    }
+    imagePreview.addEventListener('error', () => {
+        previewBox.style.display = 'none';
+    });
 
-    // Direct Base64 Upload to Firestore (Bypasses Storage CORS & Rule errors)
-    if (addPhotoForm) {
-        addPhotoForm.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const photoTitleInput = document.getElementById('photo-title');
-            const photoTitle = photoTitleInput ? photoTitleInput.value.trim() : '';
-            const submitBtn = addPhotoForm.querySelector('button[type="submit"]');
+    // 2. Submit Form & Upload Photo to Firestore
+    uploadForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
 
-            if (!selectedFile) {
-                alert('Please select an image file first.');
-                return;
-            }
+        const title = photoTitleInput.value.trim();
+        const imageUrl = photoUrlInput.value.trim();
 
-            try {
-                if (submitBtn) {
-                    submitBtn.disabled = true;
-                    submitBtn.innerText = "Processing & Uploading...";
-                }
+        if (!title || !imageUrl) return;
 
-                // Compress and convert file to Data URL
-                const reader = new FileReader();
-                reader.readAsDataURL(selectedFile);
+        submitBtn.disabled = true;
+        submitBtn.textContent = 'Publishing...';
+        statusMsg.style.color = '#94a3b8';
+        statusMsg.textContent = 'Connecting to database...';
 
-                reader.onload = async () => {
-                    try {
-                        const base64Data = reader.result;
+        try {
+            await db.collection("photos").add({
+                title: title,
+                imageUrl: imageUrl,
+                createdAt: firebase.firestore.FieldValue.serverTimestamp()
+            });
 
-                        // Store directly into Firestore database
-                        await db.collection('gallery_photos').add({
-                            title: photoTitle || 'Untitled',
-                            imageUrl: base64Data,
-                            createdAt: firebase.firestore.FieldValue.serverTimestamp()
-                        });
+            statusMsg.style.color = '#10b981';
+            statusMsg.textContent = 'Successfully added to public gallery!';
+            
+            // Reset form
+            uploadForm.reset();
+            previewBox.style.display = 'none';
+        } catch (error) {
+            console.error("Upload error:", error);
+            statusMsg.style.color = '#ef4444';
+            statusMsg.textContent = 'Failed to publish: ' + error.message;
+        } finally {
+            submitBtn.disabled = false;
+            submitBtn.textContent = 'Publish to Gallery';
+        }
+    });
 
-                        alert('Photo uploaded successfully!');
-                        addPhotoForm.reset();
-                        if (imagePreviewWrapper) imagePreviewWrapper.style.display = 'none';
-                        selectedFile = null;
-                    } catch (err) {
-                        console.error("Firestore Save Error:", err);
-                        alert(`Upload failed: ${err.message}`);
-                    } finally {
-                        if (submitBtn) {
-                            submitBtn.disabled = false;
-                            submitBtn.innerText = "Upload Image";
-                        }
-                    }
-                };
-
-                reader.onerror = (error) => {
-                    alert('Error reading the selected image file.');
-                    if (submitBtn) {
-                        submitBtn.disabled = false;
-                        submitBtn.innerText = "Upload Image";
-                    }
-                };
-
-            } catch (error) {
-                console.error("Upload Error:", error);
-                alert(`Upload failed: ${error.message}`);
-                if (submitBtn) {
-                    submitBtn.disabled = false;
-                    submitBtn.innerText = "Upload Image";
-                }
-            }
-        });
-    }
-
-    // Publish Vlog Entry
-    if (publishVlogForm) {
-        publishVlogForm.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const vlogTitle = document.getElementById('vlog-title').value.trim();
-            const vlogUrl = document.getElementById('vlog-url').value.trim();
-            const vlogDesc = document.getElementById('vlog-desc').value.trim();
-
-            try {
-                await db.collection('vlogs').add({
-                    title: vlogTitle,
-                    url: vlogUrl,
-                    description: vlogDesc,
-                    createdAt: firebase.firestore.FieldValue.serverTimestamp()
-                });
-
-                alert('Vlog published successfully!');
-                publishVlogForm.reset();
-            } catch (error) {
-                console.error("Vlog Publish Error:", error);
-                alert(`Failed to publish vlog: ${error.message}`);
-            }
-        });
-    }
-
-    // Real-Time Photos List Stream
-    if (adminPhotosList) {
-        db.collection('gallery_photos').orderBy('createdAt', 'desc').onSnapshot((snapshot) => {
-            if (snapshot.empty) {
-                adminPhotosList.innerHTML = '<p class="loading-text">No photos uploaded yet.</p>';
-                return;
-            }
-            adminPhotosList.innerHTML = snapshot.docs.map(doc => {
-                const data = doc.data();
-                return `
-                    <div style="display: flex; align-items: center; justify-content: space-between; padding: 0.6rem; background: rgba(8, 11, 17, 0.5); border: 1px solid var(--border-color, #333); border-radius: 8px; margin-bottom: 0.6rem;">
-                        <div style="display: flex; align-items: center; gap: 0.8rem;">
-                            <img src="${data.imageUrl}" style="width: 45px; height: 45px; object-fit: cover; border-radius: 6px;">
-                            <span style="font-weight: 600;">${data.title || 'Untitled'}</span>
-                        </div>
-                        <button onclick="deletePhoto('${doc.id}')" style="color: #ef4444; background: none; border: 1px solid rgba(239,68,68,0.3); padding: 0.3rem 0.6rem; border-radius: 6px; cursor: pointer;">Delete</button>
-                    </div>
-                `;
-            }).join('');
-        });
-    }
-
-    // Real-Time Vlogs List Stream
-    if (adminVlogsList) {
-        db.collection('vlogs').orderBy('createdAt', 'desc').onSnapshot((snapshot) => {
-            if (snapshot.empty) {
-                adminVlogsList.innerHTML = '<p class="loading-text">No vlogs published yet.</p>';
-                return;
-            }
-            adminVlogsList.innerHTML = snapshot.docs.map(doc => {
-                const data = doc.data();
-                return `
-                    <div style="display: flex; align-items: center; justify-content: space-between; padding: 0.6rem; background: rgba(8, 11, 17, 0.5); border: 1px solid var(--border-color, #333); border-radius: 8px; margin-bottom: 0.6rem;">
-                        <span>${data.title}</span>
-                        <button onclick="deleteVlog('${doc.id}')" style="color: #ef4444; background: none; border: 1px solid rgba(239,68,68,0.3); padding: 0.3rem 0.6rem; border-radius: 6px; cursor: pointer;">Delete</button>
-                    </div>
-                `;
-            }).join('');
-        });
-    }
-
-    window.deletePhoto = (id) => db.collection('gallery_photos').doc(id).delete();
-    window.deleteVlog = (id) => db.collection('vlogs').doc(id).delete();
+    // 3. Render Admin Grid to View & Delete Photos
+    loadAdminGallery();
 });
+
+// Function to fetch and render managed photos
+function loadAdminGallery() {
+    const adminGrid = document.getElementById('admin-photos-grid');
+    if (!adminGrid) return;
+
+    db.collection("photos").orderBy("createdAt", "desc").onSnapshot((snapshot) => {
+        if (snapshot.empty) {
+            adminGrid.innerHTML = '<p class="loading-text">No photos uploaded yet.</p>';
+            return;
+        }
+
+        adminGrid.innerHTML = '';
+
+        snapshot.forEach((doc) => {
+            const data = doc.data();
+            const photoId = doc.id;
+
+            const card = document.createElement('div');
+            card.className = 'admin-card';
+
+            card.innerHTML = `
+                <img src="${data.imageUrl}" alt="${data.title}" onerror="this.src='https://via.placeholder.com/220x140?text=Invalid+URL'">
+                <div class="admin-card-info">
+                    <h4>${data.title || "Untitled Photo"}</h4>
+                    <button class="btn-delete" onclick="deletePhoto('${photoId}')">Delete Photo</button>
+                </div>
+            `;
+
+            adminGrid.appendChild(card);
+        });
+    }, (error) => {
+        console.error("Error loading gallery:", error);
+        adminGrid.innerHTML = '<p class="loading-text">Error loading database photos.</p>';
+    });
+}
+
+// Function to Delete Photo from Firestore
+async function deletePhoto(photoId) {
+    if (confirm("Are you sure you want to remove this photo from your gallery?")) {
+        try {
+            await db.collection("photos").doc(photoId).delete();
+        } catch (error) {
+            alert("Error deleting photo: " + error.message);
+        }
+    }
+}

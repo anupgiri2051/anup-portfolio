@@ -13,12 +13,12 @@
 
     <!-- Navigation Header -->
     <header class="navbar">
-        <!-- Clicking your name auto-redirects to the root/home page -->
         <a href="index.html" class="brand-logo" onclick="window.location.href='index.html'; window.location.reload(); return false;">
             <span class="brand-name">ANUP GIRI</span>
             <span class="brand-dot"></span>
         </a>
         <nav class="nav-links">
+            <a href="index.html" onclick="window.location.href='index.html'; window.location.reload(); return false;">Home</a>
             <a href="#about">About</a>
             <a href="#skills">Services</a>
             <a href="#work">Work</a>
@@ -29,8 +29,12 @@
     </header>
 
     <main>
-        <!-- Hero Section -->
-        <section class="hero">
+        <!-- Hero Section with Header Banner -->
+        <section class="hero-banner" id="home">
+            <div class="banner-image-wrapper">
+                <img src="https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&w=1200&q=80" alt="Technology Banner" class="banner-img">
+                <div class="banner-overlay"></div>
+            </div>
             <div class="hero-content">
                 <div class="status-pill">
                     <span class="status-dot"></span> Web Developer & Designer
@@ -112,7 +116,7 @@
             </div>
         </section>
 
-        <!-- Gallery Section -->
+        <!-- Gallery Section (Populated dynamically via Firestore in script.js) -->
         <section class="section" id="gallery">
             <div class="section-header">
                 <span class="section-badge">GALLERY</span>
@@ -137,23 +141,31 @@
         <!-- Contact Section -->
         <section class="section" id="contact">
             <div class="glass-card contact-card">
-                <div class="section-header text-center">
-                    <span class="section-badge">LET'S TALK</span>
-                    <h2>Get In Touch</h2>
-                    <p>Interested in working together or have a project idea? Send a direct message.</p>
-                </div>
-                <form id="public-contact-form" class="clean-form">
-                    <div class="form-row">
-                        <input type="text" id="contact-name" placeholder="Your Full Name" required>
-                        <input type="email" id="contact-email" placeholder="Your Email Address" required>
+                <div class="contact-content">
+                    <div class="section-header text-center">
+                        <span class="section-badge">LET'S TALK</span>
+                        <h2>Get In Touch</h2>
+                        <p>Interested in working together or have a project idea? Send a direct message.</p>
                     </div>
-                    <textarea id="contact-message" rows="4" placeholder="How can I help you?" required></textarea>
-                    <button type="submit" class="btn btn-primary btn-block" id="send-btn">Send Message</button>
-                    <p id="form-status" class="status-msg"></p>
-                </form>
+                    <form id="public-contact-form" class="clean-form">
+                        <div class="form-row">
+                            <input type="text" id="contact-name" placeholder="Your Full Name" required>
+                            <input type="email" id="contact-email" placeholder="Your Email Address" required>
+                        </div>
+                        <textarea id="contact-message" rows="4" placeholder="How can I help you?" required></textarea>
+                        <button type="submit" class="btn btn-primary btn-block" id="send-btn">Send Message</button>
+                        <p id="form-status" class="status-msg"></p>
+                    </form>
+                </div>
             </div>
         </section>
     </main>
+
+    <!-- Fullscreen Lightbox Modal for Gallery Images -->
+    <div id="lightbox" class="lightbox-modal" onclick="closeLightbox()">
+        <span class="lightbox-close">&times;</span>
+        <img class="lightbox-content" id="lightbox-img" src="" alt="Full view image">
+    </div>
 
     <!-- Footer -->
     <footer class="footer">
@@ -163,7 +175,6 @@
     <!-- Firebase Compat SDKs -->
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-storage-compat.js"></script>
 
     <!-- App Scripts -->
     <script src="firebase-config.js"></script>
