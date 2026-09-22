@@ -1,201 +1,239 @@
-document.addEventListener('DOMContentLoaded', () => {
-    const loginForm = document.getElementById('login-form');
-    const loginOverlay = document.getElementById('login-overlay');
-    const dashboardContent = document.getElementById('admin-dashboard-content');
-    const loginError = document.getElementById('login-error');
-    const logoutBtn = document.getElementById('logout-btn');
-
-    if (localStorage.getItem('adminLoggedIn') === 'true') {
-        showDashboard();
-    }
-
-    loginForm.addEventListener('submit', (e) => {
-        e.preventDefault();
-        const inputId = document.getElementById('admin-id').value.trim();
-        const inputPassword = document.getElementById('admin-password').value.trim();
-
-        if (inputId === 'admin' && inputPassword === 'meanup') {
-            localStorage.setItem('adminLoggedIn', 'true');
-            loginError.textContent = '';
-            showDashboard();
-        } else {
-            loginError.textContent = 'Invalid User ID or Password.';
-        }
-    });
-
-    if (logoutBtn) {
-        logoutBtn.addEventListener('click', () => {
-            localStorage.removeItem('adminLoggedIn');
-            location.reload();
-        });
-    }
-
-    function showDashboard() {
-        loginOverlay.style.display = 'none';
-        dashboardContent.style.display = 'block';
-        initAdminDashboard();
-    }
+document.addEventListener("DOMContentLoaded", () => {
+    initAuth();
+    setupImagePreview();
+    setupUploadForm();
 });
 
-function initAdminDashboard() {
-    const uploadForm = document.getElementById('upload-form');
-    const photoFileInput = document.getElementById('photo-file');
-    const photoTitleInput = document.getElementById('photo-title');
-    const previewBox = document.getElementById('preview-box');
-    const imagePreview = document.getElementById('image-preview');
-    const statusMsg = document.getElementById('upload-status');
-    const submitBtn = document.getElementById('submit-btn');
+// Authentication Management
+function initAuth() {
+    const loginModal = document.getElementById("login-modal");
+    const dashboard = document.getElementById("admin-dashboard");
+    const logoutBtn = document.getElementById("logout-btn");
+    const loginForm = document.getElementById("login-form");
 
-    let base64Image = "";
+    if (sessionStorage.getItem("adminLoggedIn") === "true") {
+        showDashboard();
+    } else {
+        showLoginModal();
+    }
 
-    photoFileInput.addEventListener('change', (e) => {
-        const file = e.target.files[0];
-        if (file) {
-            const reader = new FileReader();
-            reader.onload = (event) => {
-                base64Image = event.target.result;
-                imagePreview.src = base64Image;
-                previewBox.style.display = 'block';
-            };
-            reader.readAsDataURL(file);
-        } else {
-            previewBox.style.display = 'none';
-            base64Image = "";
-        }
-    });
-
-    uploadForm.addEventListener('submit', async (e) => {
+    loginForm.addEventListener("submit", (e) => {
         e.preventDefault();
+        const inputId = document.getElementById("admin-email").value.trim();
+        const inputPassword = document.getElementById("admin-password").value.trim();
+        const errorMsg = document.getElementById("login-error");
 
-        const title = photoTitleInput.value.trim();
-        if (!title || !base64Image) return;
-
-        submitBtn.disabled = true;
-        submitBtn.textContent = 'Uploading...';
-        statusMsg.style.color = '#94a3b8';
-        statusMsg.textContent = 'Saving photo to database...';
-
-        try {
-            await db.collection("photos").add({
-                title: title,
-                imageUrl: base64Image,
-                createdAt: firebase.firestore.FieldValue.serverTimestamp()
-            });
-
-            statusMsg.style.color = '#10b981';
-            statusMsg.textContent = 'Photo published successfully!';
-            uploadForm.reset();
-            previewBox.style.display = 'none';
-            base64Image = "";
-        } catch (error) {
-            console.error("Upload error:", error);
-            statusMsg.style.color = '#ef4444';
-            statusMsg.textContent = 'Upload failed: ' + error.message;
-        } finally {
-            submitBtn.disabled = false;
-            submitBtn.textContent = 'Upload & Publish';
+        if ((inputId === "admin" || inputId === "admin@gmail.com") && inputPassword === "meanup") {
+            sessionStorage.setItem("adminLoggedIn", "true");
+            errorMsg.textContent = "";
+            showDashboard();
+        } else {
+            errorMsg.textContent = "Invalid Admin ID or Password.";
         }
     });
 
-    loadAdminGallery();
-    loadReceivedMessages();
+    logoutBtn.addEventListener("click", () => {
+        sessionStorage.removeItem("adminLoggedIn");
+        showLoginModal();
+    });
+
+    function showDashboard() {
+        loginModal.style.display = "none";
+        dashboard.style.display = "flex";
+        logoutBtn.style.display = "inline-flex";
+
+        loadAdminGallery();
+        loadMessages();
+    }
+
+    function showLoginModal() {
+        loginModal.style.display = "flex";
+        dashboard.style.display = "none";
+        logoutBtn.style.display = "none";
+    }
 }
 
-function loadAdminGallery() {
-    const adminGrid = document.getElementById('admin-photos-grid');
-    if (!adminGrid) return;
+// Preview Multiple Selected Images
+function setupImagePreview() {
+    const fileInput = document.getElementById("photo-file");
+    const previewWrapper = document.getElementById("preview-wrapper");
+    const previewContainer = document.getElementById("image-preview");
 
-    db.collection("photos").orderBy("createdAt", "desc").onSnapshot((snapshot) => {
-        if (snapshot.empty) {
-            adminGrid.innerHTML = '<p style="color: #94a3b8;">No photos uploaded yet.</p>';
+    if (!fileInput || !previewContainer) return;
+
+    fileInput.addEventListener("change", (e) => {
+        const files = Array.from(e.target.files);
+        previewContainer.innerHTML = "";
+
+        if (files.length > 0) {
+            previewWrapper.style.display = "block";
+
+            files.forEach(file => {
+                const reader = new FileReader();
+                reader.onload = (evt) => {
+                    const img = document.createElement("img");
+                    img.src = evt.target.result;
+                    img.style.width = "90px";
+                    img.style.height = "90px";
+                    img.style.objectFit = "cover";
+                    img.style.borderRadius = "8px";
+                    img.style.border = "1px solid var(--card-border)";
+                    previewContainer.appendChild(img);
+                };
+                reader.readAsDataURL(file);
+            });
+        } else {
+            previewWrapper.style.display = "none";
+        }
+    });
+}
+
+// Upload Form Handler (Multiple Photos)
+function setupUploadForm() {
+    const form = document.getElementById("upload-form");
+    const statusMsg = document.getElementById("upload-status");
+    const uploadBtn = document.getElementById("upload-btn");
+
+    if (!form) return;
+
+    form.addEventListener("submit", async (e) => {
+        e.preventDefault();
+
+        const titleInput = document.getElementById("photo-title").value.trim();
+        const fileInput = document.getElementById("photo-file");
+        const files = Array.from(fileInput.files);
+
+        if (!titleInput || files.length === 0) {
+            statusMsg.style.color = "var(--danger-red)";
+            statusMsg.textContent = "Please provide a title and select at least one image.";
             return;
         }
 
-        adminGrid.innerHTML = '';
+        try {
+            uploadBtn.disabled = true;
+            let uploadedCount = 0;
+            uploadBtn.innerHTML = `<i class="fa-solid fa-circle-notch fa-spin"></i> Uploading 0/${files.length}...`;
 
-        snapshot.forEach((doc) => {
+            for (let i = 0; i < files.length; i++) {
+                const file = files[i];
+                const title = files.length > 1 ? `${titleInput} - ${i + 1}` : titleInput;
+
+                await new Promise((resolve, reject) => {
+                    const reader = new FileReader();
+                    reader.readAsDataURL(file);
+                    reader.onload = async () => {
+                        try {
+                            const imageUrl = reader.result;
+                            await db.collection("photos").add({
+                                title: title,
+                                url: imageUrl,
+                                createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                            });
+                            uploadedCount++;
+                            uploadBtn.innerHTML = `<i class="fa-solid fa-circle-notch fa-spin"></i> Uploading ${uploadedCount}/${files.length}...`;
+                            resolve();
+                        } catch (err) {
+                            reject(err);
+                        }
+                    };
+                    reader.onerror = (err) => reject(err);
+                });
+            }
+
+            statusMsg.style.color = "#10b981";
+            statusMsg.textContent = `${uploadedCount} photo(s) uploaded successfully!`;
+            form.reset();
+            document.getElementById("preview-wrapper").style.display = "none";
+            document.getElementById("image-preview").innerHTML = "";
+        } catch (err) {
+            console.error("Upload error:", err);
+            statusMsg.style.color = "var(--danger-red)";
+            statusMsg.textContent = "Upload failed. Please try again.";
+        } finally {
+            uploadBtn.disabled = false;
+            uploadBtn.innerHTML = `<i class="fa-solid fa-cloud-arrow-up"></i> Upload Photos`;
+        }
+    });
+}
+
+// Load Gallery with Delete Capability
+function loadAdminGallery() {
+    const adminGrid = document.getElementById("admin-gallery-grid");
+    if (!adminGrid) return;
+
+    db.collection("photos").orderBy("createdAt", "desc").onSnapshot(snapshot => {
+        if (snapshot.empty) {
+            adminGrid.innerHTML = `<p style="color: var(--text-muted); grid-column: 1/-1;">No photos uploaded.</p>`;
+            return;
+        }
+
+        adminGrid.innerHTML = "";
+        snapshot.forEach(doc => {
             const data = doc.data();
-            const photoId = doc.id;
-
-            const card = document.createElement('div');
-            card.className = 'admin-card';
-
+            const card = document.createElement("div");
+            card.className = "admin-card";
             card.innerHTML = `
-                <img src="${data.imageUrl}" alt="${data.title}">
+                <img src="${data.url}" alt="${data.title}">
                 <div class="admin-card-info">
-                    <h4 style="font-size: 0.95rem; color: #f8fafc;">${data.title || "Untitled Photo"}</h4>
-                    <button class="btn-delete" onclick="deletePhoto('${photoId}')">Delete Photo</button>
+                    <h4>${data.title}</h4>
+                    <button class="btn-delete" data-id="${doc.id}">
+                        <i class="fa-solid fa-trash"></i> Delete
+                    </button>
                 </div>
             `;
+
+            card.querySelector(".btn-delete").addEventListener("click", async () => {
+                if (confirm("Delete this photo permanently?")) {
+                    await db.collection("photos").doc(doc.id).delete();
+                }
+            });
 
             adminGrid.appendChild(card);
         });
-    }, (error) => {
-        console.error("Error loading gallery:", error);
-        adminGrid.innerHTML = '<p style="color: #94a3b8;">Error loading photos.</p>';
     });
 }
 
-async function deletePhoto(photoId) {
-    if (confirm("Are you sure you want to delete this photo?")) {
-        try {
-            await db.collection("photos").doc(photoId).delete();
-        } catch (error) {
-            alert("Error deleting photo: " + error.message);
-        }
-    }
-}
+// Load Messages with Delete Capability
+function loadMessages() {
+    const container = document.getElementById("messages-container");
+    if (!container) return;
 
-function loadReceivedMessages() {
-    const messagesList = document.getElementById('admin-messages-list');
-    if (!messagesList) return;
-
-    db.collection("messages").orderBy("createdAt", "desc").onSnapshot((snapshot) => {
+    db.collection("messages").orderBy("createdAt", "desc").onSnapshot(snapshot => {
         if (snapshot.empty) {
-            messagesList.innerHTML = '<p style="color: #94a3b8;">No received messages yet.</p>';
+            container.innerHTML = `<p style="color: var(--text-muted);">No messages received yet.</p>`;
             return;
         }
 
-        messagesList.innerHTML = '';
+        container.innerHTML = "";
+        snapshot.forEach(doc => {
+            const data = doc.data();
+            const dateStr = data.createdAt ? new Date(data.createdAt.toDate()).toLocaleString() : "Recently";
 
-        snapshot.forEach((doc) => {
-            const msg = doc.data();
-            const msgId = doc.id;
-            const dateStr = msg.createdAt ? new Date(msg.createdAt.toDate()).toLocaleString() : 'Just now';
-
-            const msgCard = document.createElement('div');
-            msgCard.className = 'message-card';
-
-            msgCard.innerHTML = `
+            const card = document.createElement("div");
+            card.className = "message-card";
+            card.innerHTML = `
                 <div class="message-header">
                     <div>
-                        <strong style="color: #f8fafc;">${msg.name}</strong> 
-                        <span class="msg-email">&lt;${msg.email}&gt;</span>
+                        <i class="fa-solid fa-envelope" style="color: var(--primary-blue); margin-right: 6px;"></i>
+                        <strong class="msg-email">${data.email}</strong>
                     </div>
-                    <span class="msg-date">${dateStr}</span>
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        <span class="msg-date">${dateStr}</span>
+                        <button class="btn-delete msg-delete-btn" data-id="${doc.id}">
+                            <i class="fa-solid fa-trash"></i> Delete
+                        </button>
+                    </div>
                 </div>
-                <div>
-                    <p style="color: #f8fafc; font-size: 0.95rem; white-space: pre-wrap;">${msg.message}</p>
-                </div>
-                <div style="display: flex; justify-content: flex-end;">
-                    <button class="btn-delete" onclick="deleteMessage('${msgId}')">Delete Message</button>
-                </div>
+                <p style="color: var(--text-main); white-space: pre-line; margin-top: 0.5rem;">${data.message}</p>
             `;
 
-            messagesList.appendChild(msgCard);
-        });
-    }, (error) => {
-        console.error("Error fetching messages:", error);
-        messagesList.innerHTML = '<p style="color: #94a3b8;">Error loading messages.</p>';
-    });
-}
+            card.querySelector(".msg-delete-btn").addEventListener("click", async () => {
+                if (confirm("Delete this message permanently?")) {
+                    await db.collection("messages").doc(doc.id).delete();
+                }
+            });
 
-async function deleteMessage(msgId) {
-    if (confirm("Are you sure you want to delete this message?")) {
-        try {
-            await db.collection("messages").doc(msgId).delete();
-        } catch (error) {
-            alert("Error deleting message: " + error.message);
-        }
-    }
+            container.appendChild(card);
+        });
+    });
 }

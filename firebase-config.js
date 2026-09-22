@@ -1,6 +1,6 @@
 // Firebase Configuration
 const firebaseConfig = {
-    apiKey: "AIzaSyA-wCUPYUWfGq7eTE6ggwKTna-R4lWUrso",
+    apiKey: "AIzaSyA-wCUPYUwfGq7eTE6ggwKTna-R4lWUrso",
     authDomain: "portfolio-db-9dbc4.firebaseapp.com",
     projectId: "portfolio-db-9dbc4",
     storageBucket: "portfolio-db-9dbc4.firebasestorage.app",
@@ -16,3 +16,4 @@ if (!firebase.apps.length) {
 // Global Firebase Instances
 const db = firebase.firestore();
 const storage = firebase.storage();
+const auth = firebase.auth();

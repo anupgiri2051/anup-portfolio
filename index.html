@@ -3,180 +3,140 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Anup Giri — Web Developer</title>
+    <title>Anup Giri — Personal Website</title>
+    
+    <!-- Fonts & Icons -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Firebase Compat SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-storage-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+
+    <!-- Custom CSS -->
     <link rel="stylesheet" href="style.css">
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 </head>
 <body>
 
+    <!-- Web Interface Background Elements -->
+    <div class="bg-interface-grid"></div>
     <div class="ambient-glow"></div>
 
-    <!-- Navigation Header -->
+    <!-- Navigation Bar -->
     <header class="navbar">
-        <a href="index.html" class="brand-logo" onclick="window.location.href='index.html'; window.location.reload(); return false;">
-            <span class="brand-name">ANUP GIRI</span>
-            <span class="brand-dot"></span>
+        <a href="#hero" class="brand-logo">
+            <i class="fa-solid fa-code"></i>
+            <span>Anup Giri</span>
+            <span class="brand-badge">PORTFOLIO</span>
         </a>
-        <nav class="nav-links">
-            <a href="index.html" onclick="window.location.href='index.html'; window.location.reload(); return false;">Home</a>
-            <a href="#about">About</a>
-            <a href="#skills">Services</a>
-            <a href="#work">Work</a>
-            <a href="#gallery">Gallery</a>
-            <a href="#vlogs">Vlogs</a>
+        <nav class="nav-links" id="nav-links">
+            <a href="#about" class="nav-item"><i class="fa-solid fa-user"></i> About</a>
+            <a href="#gallery" class="nav-item"><i class="fa-solid fa-images"></i> Gallery</a>
+            <a href="#contact" class="nav-item"><i class="fa-solid fa-paper-plane"></i> Contact</a>
         </nav>
-        <a href="#contact" class="nav-cta">Get in Touch</a>
+        <button class="mobile-menu-btn" id="mobile-menu-btn" aria-label="Toggle navigation">
+            <i class="fa-solid fa-bars"></i>
+        </button>
     </header>
 
-    <main>
-        <!-- Hero Section with Header Banner -->
-        <section class="hero-banner" id="home">
-            <div class="banner-image-wrapper">
-                <img src="https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&w=1200&q=80" alt="Technology Banner" class="banner-img">
-                <div class="banner-overlay"></div>
-            </div>
+    <!-- Main Content -->
+    <main class="main-container">
+
+        <!-- Hero Section -->
+        <section id="hero" class="glass-card hero-section">
             <div class="hero-content">
-                <div class="status-pill">
-                    <span class="status-dot"></span> Web Developer & Designer
-                </div>
-                
-                <h1 class="hero-title">
-                    Hi, I'm <span class="highlight-name">Anup Giri</span>
-                </h1>
-                
-                <p class="hero-subtitle">
-                    Building fast, clean, and responsive web applications with modern interface designs.
-                </p>
-
+                <span class="section-badge"><i class="fa-solid fa-circle-dot"></i> Welcome to my space</span>
+                <h1 class="hero-title">Hi, I'm <span class="highlight">Anup Giri</span></h1>
+                <p class="hero-sub">Passionate Web Developer focused on building clean, modern, and responsive web applications.</p>
                 <div class="hero-actions">
-                    <a href="#work" class="btn btn-primary">View Portfolio</a>
-                    <a href="#contact" class="btn btn-secondary">Contact Me</a>
+                    <a href="#contact" class="btn btn-primary"><i class="fa-solid fa-paper-plane"></i> Get In Touch</a>
+                    <a href="#gallery" class="btn btn-secondary"><i class="fa-solid fa-images"></i> View Gallery</a>
                 </div>
             </div>
         </section>
 
-        <!-- About Section -->
-        <section class="section" id="about">
-            <div class="glass-card">
-                <span class="section-badge">ABOUT ME</span>
-                <h2>Crafting Digital Experiences</h2>
-                <p>
-                    I focus on clean web development, creating fast, mobile-friendly interfaces, scalable frontend code, and integrating real-time database backends.
-                </p>
-            </div>
-        </section>
-
-        <!-- Services Section -->
-        <section class="section" id="skills">
+        <!-- About Me Section -->
+        <section id="about" class="glass-card">
             <div class="section-header">
-                <span class="section-badge">WHAT I DO</span>
-                <h2>Services & Solutions</h2>
+                <span class="section-badge">Biography</span>
+                <h2>About Me</h2>
             </div>
-            <div class="grid-container">
-                <div class="glass-card feature-card">
-                    <div class="card-icon">⚡</div>
-                    <h3>Web Development</h3>
-                    <p>Building clean, responsive HTML5, CSS3, and JavaScript websites optimized for speed across all devices.</p>
+            <div class="about-grid">
+                <div class="about-info-card">
+                    <i class="fa-solid fa-laptop-code info-icon"></i>
+                    <div>
+                        <h4>Web Development</h4>
+                        <p>Specialized in crafting modern, fluid, and user-friendly web applications and interactive user interfaces.</p>
+                    </div>
                 </div>
-                <div class="glass-card feature-card">
-                    <div class="card-icon">☁️</div>
-                    <h3>Database Setup</h3>
-                    <p>Firebase cloud database integration, structured data management, and real-time state synchronization.</p>
+                <div class="about-info-card">
+                    <i class="fa-solid fa-lightbulb info-icon"></i>
+                    <div>
+                        <h4>Digital Solutions</h4>
+                        <p>Providing end-to-end web solutions, database integration, and scalable digital tools tailored to user needs.</p>
+                    </div>
                 </div>
-                <div class="glass-card feature-card">
-                    <div class="card-icon">🚀</div>
-                    <h3>Hosting & Deployment</h3>
-                    <p>Custom domain configuration, Git workflow, and automated hosting setup on platforms like GitHub Pages.</p>
-                </div>
-            </div>
-        </section>
-
-        <!-- Work / Projects Section -->
-        <section class="section" id="work">
-            <div class="section-header">
-                <span class="section-badge">PORTFOLIO</span>
-                <h2>Featured Projects</h2>
-            </div>
-            <div class="grid-container">
-                <div class="glass-card project-card">
-                    <span class="project-category">Database Platform</span>
-                    <h3>Baglung Portal</h3>
-                    <p>A cloud-connected regional information database designed for structured public access.</p>
-                </div>
-                <div class="glass-card project-card">
-                    <span class="project-category">Web Application</span>
-                    <h3>Digital Food Menu</h3>
-                    <p>An interactive, fast-loading digital menu system built for modern mobile browsing.</p>
-                </div>
-                <div class="glass-card project-card">
-                    <span class="project-category">Web Showcase</span>
-                    <h3>Personal Web Engine</h3>
-                    <p>A clean, responsive glassmorphic personal website layout integrated with dynamic data feeds.</p>
+                <div class="about-info-card">
+                    <i class="fa-solid fa-location-dot info-icon"></i>
+                    <div>
+                        <h4>Location</h4>
+                        <p>Ramrekha-01, Baglung</p>
+                    </div>
                 </div>
             </div>
         </section>
 
-        <!-- Gallery Section (Populated dynamically via Firestore in script.js) -->
-        <section class="section" id="gallery">
+        <!-- Dynamic Photo Gallery Section -->
+        <section id="gallery" class="glass-card">
             <div class="section-header">
-                <span class="section-badge">GALLERY</span>
-                <h2>Visual Showcase</h2>
+                <span class="section-badge">Portfolio</span>
+                <h2>Photo Gallery</h2>
             </div>
-            <div id="public-photos-grid" class="grid-container">
-                <p class="loading-text">Loading gallery items...</p>
-            </div>
-        </section>
-
-        <!-- Vlogs Section -->
-        <section class="section" id="vlogs">
-            <div class="section-header">
-                <span class="section-badge">VIDEO CONTENT</span>
-                <h2>Featured Vlogs</h2>
-            </div>
-            <div id="public-vlogs-grid" class="grid-container">
-                <p class="loading-text">Loading video content...</p>
+            <div id="gallery-container" class="gallery-grid">
+                <div class="loading-spinner">
+                    <i class="fa-solid fa-circle-notch fa-spin"></i> Loading gallery...
+                </div>
             </div>
         </section>
 
         <!-- Contact Section -->
-        <section class="section" id="contact">
-            <div class="glass-card contact-card">
-                <div class="contact-content">
-                    <div class="section-header text-center">
-                        <span class="section-badge">LET'S TALK</span>
-                        <h2>Get In Touch</h2>
-                        <p>Interested in working together or have a project idea? Send a direct message.</p>
-                    </div>
-                    <form id="public-contact-form" class="clean-form">
-                        <div class="form-row">
-                            <input type="text" id="contact-name" placeholder="Your Full Name" required>
-                            <input type="email" id="contact-email" placeholder="Your Email Address" required>
-                        </div>
-                        <textarea id="contact-message" rows="4" placeholder="How can I help you?" required></textarea>
-                        <button type="submit" class="btn btn-primary btn-block" id="send-btn">Send Message</button>
-                        <p id="form-status" class="status-msg"></p>
-                    </form>
-                </div>
+        <section id="contact" class="glass-card">
+            <div class="section-header">
+                <span class="section-badge">Get In Touch</span>
+                <h2>Send a Message</h2>
             </div>
+            <form id="contact-form" class="clean-form">
+                <div class="form-row-desktop">
+                    <div class="form-group">
+                        <label for="contact-email"><i class="fa-solid fa-envelope"></i> Your Email</label>
+                        <input type="email" id="contact-email" placeholder="name@example.com" required>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="contact-message"><i class="fa-solid fa-message"></i> Message</label>
+                    <textarea id="contact-message" rows="5" placeholder="Write your message here..." required></textarea>
+                </div>
+                <button type="submit" class="btn btn-primary" id="contact-submit-btn">
+                    <i class="fa-solid fa-paper-plane"></i> Send Message
+                </button>
+                <div id="contact-status" class="status-msg"></div>
+            </form>
         </section>
+
     </main>
 
-    <!-- Fullscreen Lightbox Modal for Gallery Images -->
-    <div id="lightbox" class="lightbox-modal" onclick="closeLightbox()">
-        <span class="lightbox-close">&times;</span>
-        <img class="lightbox-content" id="lightbox-img" src="" alt="Full view image">
+    <!-- Lightbox Modal -->
+    <div id="lightbox-modal" class="lightbox-overlay">
+        <span class="lightbox-close" id="lightbox-close">&times;</span>
+        <img class="lightbox-img" id="lightbox-img" src="" alt="Enlarged image">
+        <div class="lightbox-caption" id="lightbox-caption"></div>
     </div>
 
-    <!-- Footer -->
-    <footer class="footer">
-        <p>© 2026 <strong>Anup Giri</strong>. Designed for simplicity and clarity.</p>
-    </footer>
-
-    <!-- Firebase Compat SDKs -->
-    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
-
-    <!-- App Scripts -->
+    <!-- Scripts -->
     <script src="firebase-config.js"></script>
     <script src="script.js"></script>
 </body>
