@@ -1,10 +1,10 @@
 :root {
-    --bg-dark: #0b0f17;
-    --card-bg: rgba(17, 24, 39, 0.7);
-    --card-border: rgba(255, 255, 255, 0.08);
-    --primary-blue: #3b82f6;
-    --primary-hover: #2563eb;
-    --accent-purple: #8b5cf6;
+    --bg-dark: #0a0f1d;
+    --card-bg: rgba(16, 24, 48, 0.85);
+    --card-border: rgba(0, 240, 255, 0.18);
+    --primary-blue: #00f0ff;
+    --primary-hover: #00c8e5;
+    --accent-purple: #a855f7;
     --text-main: #f3f4f6;
     --text-muted: #9ca3af;
     --danger-red: #ef4444;
@@ -33,31 +33,16 @@ body {
     overflow-x: hidden;
 }
 
-.bg-interface-grid {
+/* Background Canvas Positioning */
+#tech-canvas {
     position: fixed;
     top: 0;
     left: 0;
     width: 100vw;
     height: 100vh;
-    background-image: 
-        linear-gradient(to right, rgba(255, 255, 255, 0.03) 1px, transparent 1px),
-        linear-gradient(to bottom, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
-    background-size: 40px 40px;
-    z-index: -2;
-    pointer-events: none;
-}
-
-.ambient-glow {
-    position: fixed;
-    top: -10%;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 600px;
-    height: 600px;
-    background: radial-gradient(circle, rgba(59, 130, 246, 0.15) 0%, rgba(139, 92, 246, 0.05) 50%, transparent 70%);
     z-index: -1;
     pointer-events: none;
-    filter: blur(80px);
+    opacity: 0.85;
 }
 
 .navbar {
@@ -70,7 +55,7 @@ body {
     position: sticky;
     top: 0;
     z-index: 100;
-    background: rgba(11, 15, 23, 0.85);
+    background: rgba(10, 15, 29, 0.85);
     backdrop-filter: blur(12px);
     border-bottom: 1px solid var(--card-border);
 }
@@ -91,11 +76,11 @@ body {
 
 .brand-badge {
     font-size: 0.65rem;
-    background: rgba(59, 130, 246, 0.15);
+    background: rgba(0, 240, 255, 0.1);
     color: var(--primary-blue);
     padding: 2px 8px;
     border-radius: 20px;
-    border: 1px solid rgba(59, 130, 246, 0.3);
+    border: 1px solid rgba(0, 240, 255, 0.3);
     text-transform: uppercase;
     letter-spacing: 0.5px;
 }
@@ -115,7 +100,7 @@ body {
 }
 
 .nav-item:hover {
-    color: var(--text-main);
+    color: var(--primary-blue);
 }
 
 .mobile-menu-btn {
@@ -141,9 +126,8 @@ body {
     border: 1px solid var(--card-border);
     border-radius: var(--radius-lg);
     padding: 2rem;
-    backdrop-filter: blur(12px);
-    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
-    /* Accounts for fixed sticky header offset when scrolling */
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+    backdrop-filter: blur(16px);
     scroll-margin-top: 100px;
 }
 
@@ -203,7 +187,7 @@ body {
 }
 
 .about-info-card {
-    background: rgba(255, 255, 255, 0.02);
+    background: rgba(10, 15, 29, 0.6);
     border: 1px solid var(--card-border);
     border-radius: var(--radius-md);
     padding: 1.5rem;
@@ -215,7 +199,7 @@ body {
 .info-icon {
     font-size: 1.5rem;
     color: var(--primary-blue);
-    background: rgba(59, 130, 246, 0.1);
+    background: rgba(0, 240, 255, 0.1);
     padding: 12px;
     border-radius: var(--radius-md);
 }
@@ -236,11 +220,12 @@ body {
 
 .btn-primary {
     background: var(--primary-blue);
-    color: #fff;
+    color: #0a0f1d;
 }
 
 .btn-primary:hover {
     background: var(--primary-hover);
+    box-shadow: 0 0 15px rgba(0, 240, 255, 0.4);
 }
 
 .btn-secondary {
@@ -251,22 +236,6 @@ body {
 
 .btn-secondary:hover {
     background: rgba(255, 255, 255, 0.1);
-}
-
-.btn-delete {
-    background: rgba(239, 68, 68, 0.15);
-    color: var(--danger-red);
-    border: 1px solid rgba(239, 68, 68, 0.3);
-    padding: 0.4rem 0.8rem;
-    font-size: 0.85rem;
-    border-radius: 6px;
-    cursor: pointer;
-    transition: all var(--transition-fast);
-}
-
-.btn-delete:hover {
-    background: var(--danger-red);
-    color: #fff;
 }
 
 .clean-form {
@@ -289,7 +258,7 @@ body {
 
 .form-group input,
 .form-group textarea {
-    background: rgba(0, 0, 0, 0.2);
+    background: rgba(10, 15, 29, 0.6);
     border: 1px solid var(--card-border);
     color: var(--text-main);
     padding: 0.85rem 1rem;
@@ -301,6 +270,7 @@ body {
 .form-group input:focus,
 .form-group textarea:focus {
     border-color: var(--primary-blue);
+    box-shadow: 0 0 10px rgba(0, 240, 255, 0.2);
 }
 
 .gallery-grid {
@@ -317,7 +287,7 @@ body {
     aspect-ratio: 4 / 3;
     cursor: pointer;
     border: 1px solid var(--card-border);
-    background: rgba(0, 0, 0, 0.3);
+    background: rgba(10, 15, 29, 0.6);
 }
 
 .gallery-item img {
@@ -345,38 +315,6 @@ body {
     pointer-events: none;
 }
 
-.admin-card {
-    position: relative;
-    border-radius: var(--radius-md);
-    overflow: hidden;
-    background: rgba(0, 0, 0, 0.3);
-    border: 1px solid var(--card-border);
-    display: flex;
-    flex-direction: column;
-}
-
-.admin-card img {
-    width: 100%;
-    aspect-ratio: 4/3;
-    object-fit: cover;
-}
-
-.admin-card-info {
-    padding: 0.75rem;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    gap: 0.5rem;
-}
-
-.admin-card-info h4 {
-    font-size: 0.85rem;
-    color: var(--text-main);
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-}
-
 .lightbox-overlay {
     display: none;
     position: fixed;
@@ -384,7 +322,7 @@ body {
     left: 0;
     width: 100vw;
     height: 100vh;
-    background: rgba(0, 0, 0, 0.85);
+    background: rgba(0, 0, 0, 0.9);
     backdrop-filter: blur(8px);
     z-index: 1000;
     justify-content: center;
@@ -415,35 +353,6 @@ body {
     cursor: pointer;
 }
 
-.messages-container {
-    display: flex;
-    flex-direction: column;
-    gap: 1rem;
-}
-
-.message-card {
-    background: rgba(255, 255, 255, 0.02);
-    border: 1px solid var(--card-border);
-    border-radius: var(--radius-md);
-    padding: 1.25rem;
-    display: flex;
-    flex-direction: column;
-    gap: 0.75rem;
-}
-
-.message-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-    padding-bottom: 0.5rem;
-}
-
-.msg-date {
-    font-size: 0.8rem;
-    color: var(--text-muted);
-}
-
 .footer {
     text-align: center;
     padding: 2rem 1.5rem;
@@ -451,7 +360,7 @@ body {
     border-top: 1px solid var(--card-border);
     color: var(--text-muted);
     font-size: 0.9rem;
-    background: rgba(11, 15, 23, 0.6);
+    background: rgba(10, 15, 29, 0.85);
 }
 
 @media (max-width: 768px) {

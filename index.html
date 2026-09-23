@@ -8,7 +8,7 @@
     <!-- Fonts & Icons -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Fira+Code:wght@400;500;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
     <!-- Firebase Compat SDKs -->
@@ -20,8 +20,8 @@
 </head>
 <body>
 
-    <div class="bg-interface-grid"></div>
-    <div class="ambient-glow"></div>
+    <!-- Tech Animated Matrix Background Canvas -->
+    <canvas id="tech-canvas"></canvas>
 
     <!-- Header / Navbar -->
     <header class="navbar">
@@ -127,6 +127,47 @@
         <img id="lightbox-img" class="lightbox-img" src="" alt="Full View">
         <div id="lightbox-caption" class="lightbox-caption"></div>
     </div>
+
+    <!-- Background Tech Matrix Script -->
+    <script>
+        const canvas = document.getElementById('tech-canvas');
+        const ctx = canvas.getContext('2d');
+
+        function resizeCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+        window.addEventListener('resize', resizeCanvas);
+        resizeCanvas();
+
+        const chars = '0110101010<>/{}[]=+#$*';
+        const fontSize = 14;
+        const columns = Math.floor(canvas.width / fontSize);
+        const drops = Array(columns).fill(1);
+
+        function drawTechBackground() {
+            ctx.fillStyle = 'rgba(10, 15, 29, 0.15)';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            ctx.fillStyle = '#00f0ff';
+            ctx.font = fontSize + 'px "Fira Code", monospace';
+
+            for (let i = 0; i < drops.length; i++) {
+                const text = chars[Math.floor(Math.random() * chars.length)];
+                const x = i * fontSize;
+                const y = drops[i] * fontSize;
+
+                ctx.fillText(text, x, y);
+
+                if (y > canvas.height && Math.random() > 0.975) {
+                    drops[i] = 0;
+                }
+                drops[i]++;
+            }
+        }
+
+        setInterval(drawTechBackground, 50);
+    </script>
 
     <!-- Firebase & Custom Script -->
     <script src="firebase-config.js"></script>
