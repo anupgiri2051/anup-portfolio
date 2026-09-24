@@ -8,7 +8,7 @@
     <!-- Font -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 
     <!-- Firebase Compat SDKs -->
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
@@ -19,7 +19,9 @@
 </head>
 <body>
 
+    <div class="tech-grid"></div>
     <div class="ambient-glow"></div>
+    <div class="ambient-glow-2"></div>
 
     <!-- Header / Navbar -->
     <header class="navbar">
@@ -44,7 +46,28 @@
 
         <!-- Home / Hero Section -->
         <section id="home-section" class="glass-card hero-section">
-            <div class="hero-avatar">AG</div>
+            <div class="code-decor" aria-hidden="true">
+                <span class="code-bit" style="top: 12%; left: 6%;">&lt;div&gt;</span>
+                <span class="code-bit" style="top: 68%; left: 10%;">const x = 1;</span>
+                <span class="code-bit" style="top: 18%; right: 8%;">function ai() {}</span>
+                <span class="code-bit" style="top: 72%; right: 7%;">return true;</span>
+            </div>
+            <svg class="robot-icon" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                <defs>
+                    <linearGradient id="robotGradient" x1="0" y1="0" x2="64" y2="64" gradientUnits="userSpaceOnUse">
+                        <stop offset="0" stop-color="#22d3ee"/>
+                        <stop offset="1" stop-color="#818cf8"/>
+                    </linearGradient>
+                </defs>
+                <rect x="16" y="22" width="32" height="26" rx="8" stroke="url(#robotGradient)" stroke-width="3"/>
+                <line x1="32" y1="22" x2="32" y2="12" stroke="url(#robotGradient)" stroke-width="3"/>
+                <circle cx="32" cy="9" r="3.5" fill="url(#robotGradient)"/>
+                <circle cx="25" cy="35" r="3.5" fill="url(#robotGradient)"/>
+                <circle cx="39" cy="35" r="3.5" fill="url(#robotGradient)"/>
+                <line x1="24" y1="44" x2="40" y2="44" stroke="url(#robotGradient)" stroke-width="3" stroke-linecap="round"/>
+                <line x1="8" y1="34" x2="16" y2="34" stroke="url(#robotGradient)" stroke-width="3" stroke-linecap="round"/>
+                <line x1="48" y1="34" x2="56" y2="34" stroke="url(#robotGradient)" stroke-width="3" stroke-linecap="round"/>
+            </svg>
             <span>A project by Anup Giri</span>
             <h1 class="hero-title">Anup <span class="highlight">Giri</span></h1>
             <p class="hero-sub">This site is a personal project I built as a student. Have a look through the gallery, or send a message if you'd like to get in touch.</p>
@@ -72,6 +95,35 @@
                     <h4>Interests</h4>
                     <p>IT and AI</p>
                 </div>
+            </div>
+        </section>
+
+        <!-- Focus / AI Section -->
+        <section id="focus-section" class="glass-card">
+            <div class="section-header">
+                <h2>What I'm exploring</h2>
+            </div>
+            <div class="terminal-card">
+                <div class="terminal-titlebar">
+                    <span class="terminal-dot"></span>
+                    <span class="terminal-dot"></span>
+                    <span class="terminal-dot"></span>
+                    <span class="terminal-filename">about.js</span>
+                </div>
+                <div class="code-block">
+                    <div class="code-line"><span class="line-no">1</span><span class="kw">const</span> developer = {</div>
+                    <div class="code-line"><span class="line-no">2</span>&nbsp;&nbsp;<span class="prop">name</span>: <span class="str">"Anup Giri"</span>,</div>
+                    <div class="code-line"><span class="line-no">3</span>&nbsp;&nbsp;<span class="prop">focus</span>: [<span class="str">"AI"</span>, <span class="str">"IT"</span>, <span class="str">"Web Dev"</span>],</div>
+                    <div class="code-line"><span class="line-no">4</span>&nbsp;&nbsp;<span class="prop">learning</span>: <span class="lit">true</span></div>
+                    <div class="code-line"><span class="line-no">5</span>};</div>
+                    <div class="code-line"><span class="line-no">6</span></div>
+                    <div class="code-line"><span class="line-no">7</span><span class="com">// building small projects along the way</span></div>
+                </div>
+            </div>
+            <div class="ai-tags">
+                <span class="ai-tag">Artificial Intelligence</span>
+                <span class="ai-tag">Information Technology</span>
+                <span class="ai-tag">Web Development</span>
             </div>
         </section>
 

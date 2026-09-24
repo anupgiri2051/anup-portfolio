@@ -188,7 +188,7 @@ function setupMobileMenu() {
             navLinks.style.top = "100%";
             navLinks.style.left = "0";
             navLinks.style.right = "0";
-            navLinks.style.background = "rgba(247, 248, 250, 0.98)";
+            navLinks.style.background = "rgba(10, 14, 23, 0.98)";
             navLinks.style.padding = "1.5rem";
             navLinks.style.borderBottom = "1px solid var(--card-border)";
         }
