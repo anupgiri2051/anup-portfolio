@@ -112,7 +112,7 @@ function setupUploadForm() {
         try {
             uploadBtn.disabled = true;
             let uploadedCount = 0;
-            uploadBtn.innerHTML = `<i class="fa-solid fa-circle-notch fa-spin"></i> Uploading 0/${files.length}...`;
+            uploadBtn.innerHTML = `Uploading 0/${files.length}...`;
 
             for (let i = 0; i < files.length; i++) {
                 const file = files[i];
@@ -130,7 +130,7 @@ function setupUploadForm() {
                                 createdAt: firebase.firestore.FieldValue.serverTimestamp()
                             });
                             uploadedCount++;
-                            uploadBtn.innerHTML = `<i class="fa-solid fa-circle-notch fa-spin"></i> Uploading ${uploadedCount}/${files.length}...`;
+                            uploadBtn.innerHTML = `Uploading ${uploadedCount}/${files.length}...`;
                             resolve();
                         } catch (err) {
                             reject(err);
@@ -151,7 +151,7 @@ function setupUploadForm() {
             statusMsg.textContent = "Upload failed. Please try again.";
         } finally {
             uploadBtn.disabled = false;
-            uploadBtn.innerHTML = `<i class="fa-solid fa-cloud-arrow-up"></i> Upload Photos`;
+            uploadBtn.innerHTML = `Upload photos`;
         }
     });
 }
@@ -177,7 +177,7 @@ function loadAdminGallery() {
                 <div class="admin-card-info">
                     <h4>${data.title}</h4>
                     <button class="btn-delete" data-id="${doc.id}">
-                        <i class="fa-solid fa-trash"></i> Delete
+                        Delete
                     </button>
                 </div>
             `;
@@ -214,13 +214,12 @@ function loadMessages() {
             card.innerHTML = `
                 <div class="message-header">
                     <div>
-                        <i class="fa-solid fa-envelope" style="color: var(--primary-blue); margin-right: 6px;"></i>
                         <strong class="msg-email">${data.email}</strong>
                     </div>
                     <div style="display: flex; align-items: center; gap: 10px;">
                         <span class="msg-date">${dateStr}</span>
                         <button class="btn-delete msg-delete-btn" data-id="${doc.id}">
-                            <i class="fa-solid fa-trash"></i> Delete
+                            Delete
                         </button>
                     </div>
                 </div>

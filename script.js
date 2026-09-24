@@ -120,7 +120,7 @@ function setupContactForm() {
 
         try {
             submitBtn.disabled = true;
-            submitBtn.innerHTML = `<i class="fa-solid fa-circle-notch fa-spin"></i> Sending...`;
+            submitBtn.innerHTML = `Sending...`;
 
             await db.collection("messages").add({
                 email: email,
@@ -137,7 +137,7 @@ function setupContactForm() {
             statusMsg.textContent = "Failed to send message. Please try again.";
         } finally {
             submitBtn.disabled = false;
-            submitBtn.innerHTML = `<i class="fa-solid fa-paper-plane"></i> Send Message`;
+            submitBtn.innerHTML = `Send message`;
         }
     });
 }
@@ -188,7 +188,7 @@ function setupMobileMenu() {
             navLinks.style.top = "100%";
             navLinks.style.left = "0";
             navLinks.style.right = "0";
-            navLinks.style.background = "rgba(11, 15, 23, 0.95)";
+            navLinks.style.background = "rgba(247, 248, 250, 0.98)";
             navLinks.style.padding = "1.5rem";
             navLinks.style.borderBottom = "1px solid var(--card-border)";
         }

@@ -5,93 +5,85 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Anup Giri — Admin</title>
 
-    <!-- Fonts & Icons -->
+    <!-- Font -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
     <!-- Firebase Compat SDKs -->
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 
     <!-- Custom CSS -->
-    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="admin.css">
 </head>
 <body>
 
-    <div class="bg-interface-grid"></div>
-    <div class="ambient-glow"></div>
-
     <header class="navbar">
         <a href="/" class="brand-logo">
-            <i class="fa-solid fa-code"></i>
             <span>Anup Giri</span>
-            <span class="brand-badge">ADMIN</span>
+            <span class="brand-badge">Admin</span>
         </a>
         <div class="nav-actions">
-            <a href="/" class="btn btn-secondary"><i class="fa-solid fa-house"></i> View Site</a>
-            <button id="logout-btn" class="btn btn-secondary" style="display: none;"><i class="fa-solid fa-right-from-bracket"></i> Logout</button>
+            <a href="/" class="btn btn-secondary">View site</a>
+            <button id="logout-btn" class="btn btn-secondary" style="display: none;">Logout</button>
         </div>
     </header>
 
     <!-- Login Modal -->
-    <div id="login-modal" class="lightbox-overlay" style="display: flex;">
-        <div class="glass-card" style="max-width: 400px; width: 90%;">
+    <div id="login-modal" class="login-modal-overlay" style="display: flex;">
+        <div class="glass-card login-card">
             <div class="section-header" style="text-align: center;">
-                <span class="section-badge">Restricted Access</span>
-                <h2>Admin Login</h2>
+                <h2>Admin login</h2>
             </div>
             <form id="login-form" class="clean-form">
                 <div class="form-group">
-                    <label for="admin-email"><i class="fa-solid fa-user"></i> Admin ID</label>
+                    <label for="admin-email">Admin ID</label>
                     <input type="text" id="admin-email" placeholder="Enter Admin ID" required>
                 </div>
                 <div class="form-group">
-                    <label for="admin-password"><i class="fa-solid fa-key"></i> Password</label>
+                    <label for="admin-password">Password</label>
                     <input type="password" id="admin-password" placeholder="••••••••" required>
                 </div>
-                <button type="submit" class="btn btn-primary"><i class="fa-solid fa-lock-open"></i> Login</button>
-                <div id="login-error" style="color: var(--danger-red); font-size: 0.85rem; margin-top: 0.5rem;"></div>
+                <button type="submit" class="btn btn-primary btn-block">Login</button>
+                <div id="login-error" class="error-msg"></div>
             </form>
         </div>
     </div>
 
     <!-- Admin Dashboard Main Container -->
-    <main id="admin-dashboard" class="main-container" style="display: none;">
+    <main id="admin-dashboard" class="admin-container" style="display: none;">
 
         <!-- Photo Upload Section -->
         <section class="glass-card">
             <div class="section-header">
-                <span class="section-badge">Upload</span>
-                <h2>Add Photos</h2>
+                <h2>Add photos</h2>
             </div>
             <form id="upload-form" class="clean-form">
                 <div class="form-group">
-                    <label for="photo-title"><i class="fa-solid fa-heading"></i> Photo Title / Base Name</label>
+                    <label for="photo-title">Photo title / base name</label>
                     <input type="text" id="photo-title" placeholder="Enter image title..." required>
                 </div>
                 <div class="form-group">
-                    <label for="photo-file"><i class="fa-solid fa-images"></i> Select Images (Multiple Allowed)</label>
+                    <label for="photo-file">Select images (multiple allowed)</label>
                     <input type="file" id="photo-file" accept="image/*" multiple required>
                 </div>
-                
-                <div id="preview-wrapper" style="display: none; margin-top: 0.5rem;">
+
+                <div id="preview-wrapper" class="preview-container" style="display: none; margin-top: 0.5rem;">
                     <div id="image-preview" style="display: flex; gap: 10px; flex-wrap: wrap;"></div>
                 </div>
 
                 <button type="submit" id="upload-btn" class="btn btn-primary" style="margin-top: 0.5rem;">
-                    <i class="fa-solid fa-cloud-arrow-up"></i> Upload Photos
+                    Upload photos
                 </button>
-                <div id="upload-status" style="font-size: 0.9rem; margin-top: 0.5rem;"></div>
+                <div id="upload-status" class="status-msg" style="margin-top: 0.5rem;"></div>
             </form>
         </section>
 
         <!-- Manage Photos Section -->
         <section class="glass-card">
             <div class="section-header">
-                <span class="section-badge">Manage</span>
-                <h2>Gallery Items</h2>
+                <h2>Gallery items</h2>
             </div>
             <div id="admin-gallery-grid" class="gallery-grid"></div>
         </section>
@@ -99,8 +91,7 @@
         <!-- Messages Section -->
         <section class="glass-card">
             <div class="section-header">
-                <span class="section-badge">Inbox</span>
-                <h2>Contact Messages</h2>
+                <h2>Contact messages</h2>
             </div>
             <div id="messages-container" class="messages-container"></div>
         </section>

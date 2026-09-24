@@ -5,11 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Anup Giri</title>
 
-    <!-- Fonts & Icons -->
+    <!-- Font -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Fira+Code:wght@400;500;600&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
     <!-- Firebase Compat SDKs -->
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
@@ -20,19 +19,16 @@
 </head>
 <body>
 
-    <!-- Tech Animated Matrix Background Canvas -->
-    <canvas id="tech-canvas"></canvas>
+    <div class="ambient-glow"></div>
 
     <!-- Header / Navbar -->
     <header class="navbar">
         <a href="/" class="brand-logo" data-path="/">
-            <i class="fa-solid fa-code"></i>
             <span>Anup Giri</span>
-            <span class="brand-badge">PORTFOLIO</span>
         </a>
 
         <button class="mobile-menu-btn" id="mobile-menu-btn" aria-label="Toggle Navigation">
-            <i class="fa-solid fa-bars"></i>
+            &#9776;
         </button>
 
         <nav class="nav-links" id="nav-links">
@@ -48,44 +44,41 @@
 
         <!-- Home / Hero Section -->
         <section id="home-section" class="glass-card hero-section">
-            <span class="section-badge">Welcome</span>
-            <h1 class="hero-title">Hi, I'm <span class="highlight">Anup Giri</span></h1>
-            <p class="hero-sub">Welcome to my personal portfolio. Explore my gallery, learn more about my background, or get in touch directly.</p>
+            <div class="hero-avatar">AG</div>
+            <span>A project by Anup Giri</span>
+            <h1 class="hero-title">Anup <span class="highlight">Giri</span></h1>
+            <p class="hero-sub">This site is a personal project I built as a student. Have a look through the gallery, or send a message if you'd like to get in touch.</p>
             <div class="hero-actions">
-                <a href="/gallery" class="btn btn-primary" data-path="/gallery"><i class="fa-solid fa-images"></i> View Gallery</a>
-                <a href="/contact" class="btn btn-secondary" data-path="/contact"><i class="fa-solid fa-envelope"></i> Get in Touch</a>
+                <a href="/gallery" class="btn btn-primary" data-path="/gallery">View gallery</a>
+                <a href="/contact" class="btn btn-secondary" data-path="/contact">Get in touch</a>
             </div>
         </section>
 
         <!-- About Section -->
         <section id="about-section" class="glass-card">
             <div class="section-header">
-                <span class="section-badge">Overview</span>
-                <h2>About Me</h2>
+                <h2>About</h2>
             </div>
             <div class="about-grid">
                 <div class="about-info-card">
-                    <i class="fa-solid fa-user info-icon"></i>
-                    <div>
-                        <h4>Name</h4>
-                        <p style="color: var(--text-muted);">Anup Giri</p>
-                    </div>
+                    <h4>Name</h4>
+                    <p>Anup Giri</p>
                 </div>
                 <div class="about-info-card">
-                    <i class="fa-solid fa-location-dot info-icon"></i>
-                    <div>
-                        <h4>Address</h4>
-                        <p style="color: var(--text-muted);">Ramrekha-01, Baglung</p>
-                    </div>
+                    <h4>Based in</h4>
+                    <p>Ramrekha-01, Baglung</p>
+                </div>
+                <div class="about-info-card">
+                    <h4>Interests</h4>
+                    <p>IT and AI</p>
                 </div>
             </div>
         </section>
 
-        <!-- Photo Gallery Section -->
+        <!-- Gallery Section -->
         <section id="gallery-section" class="glass-card">
             <div class="section-header">
-                <span class="section-badge">Portfolio</span>
-                <h2>Photo Gallery</h2>
+                <h2>Gallery</h2>
             </div>
             <div id="gallery-container" class="gallery-grid">
                 <!-- Dynamically loaded from Firestore -->
@@ -95,20 +88,19 @@
         <!-- Contact Section -->
         <section id="contact-section" class="glass-card">
             <div class="section-header">
-                <span class="section-badge">Reach Out</span>
-                <h2>Send a Message</h2>
+                <h2>Get in touch</h2>
             </div>
             <form id="contact-form" class="clean-form">
                 <div class="form-group">
-                    <label for="contact-email"><i class="fa-solid fa-at"></i> Your Email Address</label>
+                    <label for="contact-email">Your email address</label>
                     <input type="email" id="contact-email" placeholder="example@domain.com" required>
                 </div>
                 <div class="form-group">
-                    <label for="contact-message"><i class="fa-solid fa-message"></i> Your Message</label>
+                    <label for="contact-message">Your message</label>
                     <textarea id="contact-message" rows="4" placeholder="Write your message here..." required></textarea>
                 </div>
                 <button type="submit" id="contact-submit-btn" class="btn btn-primary">
-                    <i class="fa-solid fa-paper-plane"></i> Send Message
+                    Send message
                 </button>
                 <div id="contact-status" class="status-msg"></div>
             </form>
@@ -127,47 +119,6 @@
         <img id="lightbox-img" class="lightbox-img" src="" alt="Full View">
         <div id="lightbox-caption" class="lightbox-caption"></div>
     </div>
-
-    <!-- Background Tech Matrix Script -->
-    <script>
-        const canvas = document.getElementById('tech-canvas');
-        const ctx = canvas.getContext('2d');
-
-        function resizeCanvas() {
-            canvas.width = window.innerWidth;
-            canvas.height = window.innerHeight;
-        }
-        window.addEventListener('resize', resizeCanvas);
-        resizeCanvas();
-
-        const chars = '0110101010<>/{}[]=+#$*';
-        const fontSize = 14;
-        const columns = Math.floor(canvas.width / fontSize);
-        const drops = Array(columns).fill(1);
-
-        function drawTechBackground() {
-            ctx.fillStyle = 'rgba(10, 15, 29, 0.15)';
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-            ctx.fillStyle = '#00f0ff';
-            ctx.font = fontSize + 'px "Fira Code", monospace';
-
-            for (let i = 0; i < drops.length; i++) {
-                const text = chars[Math.floor(Math.random() * chars.length)];
-                const x = i * fontSize;
-                const y = drops[i] * fontSize;
-
-                ctx.fillText(text, x, y);
-
-                if (y > canvas.height && Math.random() > 0.975) {
-                    drops[i] = 0;
-                }
-                drops[i]++;
-            }
-        }
-
-        setInterval(drawTechBackground, 50);
-    </script>
 
     <!-- Firebase & Custom Script -->
     <script src="firebase-config.js"></script>
