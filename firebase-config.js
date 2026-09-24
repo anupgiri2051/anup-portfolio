@@ -17,3 +17,12 @@ if (!firebase.apps.length) {
 const db = firebase.firestore();
 const storage = firebase.storage();
 const auth = firebase.auth();
+
+// Enable Firestore Local Cache for Instant Data Loading
+db.enablePersistence({ synchronizeTabs: true }).catch(err => {
+    if (err.code === 'failed-precondition') {
+        console.warn('Firestore persistence failed: Multiple tabs open.');
+    } else if (err.code === 'unimplemented') {
+        console.warn('Firestore persistence not supported by browser.');
+    }
+});

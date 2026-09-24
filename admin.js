@@ -53,6 +53,36 @@ function initAuth() {
     }
 }
 
+// Helper: Compress Image File to Base64 String for Fast Transfers
+function compressImage(file, maxWidth = 1200, quality = 0.8) {
+    return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.readAsDataURL(file);
+        reader.onload = (event) => {
+            const img = new Image();
+            img.src = event.target.result;
+            img.onload = () => {
+                const canvas = document.createElement("canvas");
+                let width = img.width;
+                let height = img.height;
+
+                if (width > maxWidth) {
+                    height = Math.round((height * maxWidth) / width);
+                    width = maxWidth;
+                }
+
+                canvas.width = width;
+                canvas.height = height;
+                const ctx = canvas.getContext("2d");
+                ctx.drawImage(img, 0, 0, width, height);
+                resolve(canvas.toDataURL("image/jpeg", quality));
+            };
+            img.onerror = (err) => reject(err);
+        };
+        reader.onerror = (err) => reject(err);
+    });
+}
+
 // Multi-image preview before upload
 function setupImagePreview() {
     const fileInput = document.getElementById("photo-file");
@@ -117,27 +147,16 @@ function setupUploadForm() {
             for (let i = 0; i < files.length; i++) {
                 const file = files[i];
                 const title = files.length > 1 ? `${titleInput} - ${i + 1}` : titleInput;
+                const compressedDataUrl = await compressImage(file);
 
-                await new Promise((resolve, reject) => {
-                    const reader = new FileReader();
-                    reader.readAsDataURL(file);
-                    reader.onload = async () => {
-                        try {
-                            const imageUrl = reader.result;
-                            await db.collection("photos").add({
-                                title: title,
-                                url: imageUrl,
-                                createdAt: firebase.firestore.FieldValue.serverTimestamp()
-                            });
-                            uploadedCount++;
-                            uploadBtn.innerHTML = `Uploading ${uploadedCount}/${files.length}...`;
-                            resolve();
-                        } catch (err) {
-                            reject(err);
-                        }
-                    };
-                    reader.onerror = (err) => reject(err);
+                await db.collection("photos").add({
+                    title: title,
+                    url: compressedDataUrl,
+                    createdAt: firebase.firestore.FieldValue.serverTimestamp()
                 });
+
+                uploadedCount++;
+                uploadBtn.innerHTML = `Uploading ${uploadedCount}/${files.length}...`;
             }
 
             statusMsg.style.color = "#10b981";

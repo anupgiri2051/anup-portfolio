@@ -41,7 +41,6 @@ function navigateTo(path) {
 
 function handleCurrentRoute(path) {
     if (path === "/" || path === "") {
-        // Scroll completely to top for Home so no content is hidden under navbar
         window.scrollTo({
             top: 0,
             behavior: "smooth"
@@ -71,7 +70,7 @@ function loadGallery() {
     const galleryContainer = document.getElementById("gallery-container");
     if (!galleryContainer) return;
 
-    db.collection("photos").orderBy("createdAt", "desc").onSnapshot(snapshot => {
+    db.collection("photos").orderBy("createdAt", "desc").onSnapshot({ includeMetadataChanges: true }, snapshot => {
         if (snapshot.empty) {
             galleryContainer.innerHTML = `<p style="color: var(--text-muted); grid-column: 1 / -1; text-align: center;">No photos in gallery yet.</p>`;
             return;
@@ -85,7 +84,7 @@ function loadGallery() {
             const item = document.createElement("div");
             item.className = "gallery-item";
             item.innerHTML = `
-                <img src="${data.url}" alt="${data.title}" loading="lazy">
+                <img src="${data.url}" alt="${data.title}" loading="eager" decoding="async">
                 <div class="gallery-item-title">${data.title}</div>
             `;
 
