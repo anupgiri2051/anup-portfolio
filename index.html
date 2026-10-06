@@ -12,6 +12,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=Instrument+Sans:wght@400;500;600&display=swap" rel="stylesheet">
 <script>document.documentElement.classList.add('js')</script>
 <link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="tech.css">
 <noscript><style>.code .l,.hero-copy>*,.name,.arch,.streak{animation:none!important;opacity:1!important;clip-path:none!important;width:100%}</style></noscript>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
@@ -36,6 +37,7 @@
   <div class="hero-copy">
     <p class="kicker">A project by Anup Giri</p>
     <h1><span class="name">Anup Giri<span class="streak"><i>★</i></span></span></h1>
+    <p class="role" aria-live="off"><span id="role-text"></span><i class="caret"></i></p>
     <p class="lead">This site is a personal project I built as a student. Have a look through the gallery, or send a message if you'd like to get in touch.</p>
     <div class="btns">
       <a class="btn primary" href="/gallery" data-path="/gallery">View gallery</a>
@@ -106,5 +108,6 @@
 
 <script src="firebase-config.js"></script>
 <script src="script.js"></script>
+<script src="effects.js"></script>
 </body>
 </html>
