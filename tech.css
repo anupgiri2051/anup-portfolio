@@ -62,5 +62,5 @@ h2{background:linear-gradient(100deg,#fff,#aab6e8);-webkit-background-clip:text;
 @media(prefers-reduced-motion:reduce){.arch{animation:none}.ticker div{animation:none}.cursor-glow{display:none}}
 
 /* robot photo: smaller so the low-res image stays sharp */
-.robot{width:100%;max-width:280px;min-height:0;aspect-ratio:1/1;justify-self:center}
+.robot{width:100%;max-width:210px;min-height:0;aspect-ratio:1/1;justify-self:center}
 .robot img{min-height:0;height:100%;object-position:center top}
