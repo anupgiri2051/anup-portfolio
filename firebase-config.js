@@ -15,8 +15,6 @@ if (!firebase.apps.length) {
 
 // Global Firebase Instances
 const db = firebase.firestore();
-const storage = firebase.storage();
-const auth = firebase.auth();
 
 // Enable Firestore Local Cache for Instant Data Loading
 db.enablePersistence({ synchronizeTabs: true }).catch(err => {
