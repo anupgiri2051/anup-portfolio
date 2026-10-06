@@ -3,25 +3,27 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Anup Giri — Admin</title>
+    <title>Anup Giri</title>
 
     <!-- Font -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=Instrument+Sans:wght@400;500;600&display=swap" rel="stylesheet">
 
     <!-- Firebase Compat SDKs -->
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 
     <!-- Custom CSS -->
+    <link rel="icon" href="logo.png">
     <link rel="stylesheet" href="admin.css">
 </head>
 <body>
+    <canvas id="bg" aria-hidden="true"></canvas>
 
     <header class="navbar">
         <a href="/" class="brand-logo">
-            <span>Anup Giri</span>
+            <img src="logo.png" alt=""><span>Anup Giri</span>
             <span class="brand-badge">Admin</span>
         </a>
         <div class="nav-actions">
@@ -101,5 +103,6 @@
     <!-- Scripts -->
     <script src="firebase-config.js"></script>
     <script src="admin.js"></script>
+    <script src="admin-fx.js"></script>
 </body>
 </html>
