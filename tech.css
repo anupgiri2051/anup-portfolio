@@ -84,3 +84,12 @@ h2{background:linear-gradient(100deg,#fff,#aab6e8);-webkit-background-clip:text;
 .facts dt{display:flex;align-items:center;gap:.5rem;font:500 .72rem ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;letter-spacing:.14em;text-transform:uppercase;color:var(--cyan)}
 .facts dt::before{content:"";width:6px;height:6px;border-radius:50%;background:var(--star);box-shadow:0 0 8px var(--star)}
 .facts dd,.facts div:hover dd{font:700 1.15rem/1.35 'Bricolage Grotesque',sans-serif;letter-spacing:-.01em;color:var(--text);transform:none}
+
+/* ticker: small mono chips */
+.ticker{padding:.8rem 0;border:0;background:linear-gradient(90deg,transparent,rgba(77,226,255,.05),transparent)}
+.ticker div{gap:.9rem;align-items:center;font:500 .78rem ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;letter-spacing:.12em;text-transform:uppercase;animation-duration:36s}
+.ticker:hover div{animation-play-state:paused}
+.ticker span{color:var(--text-muted)}
+.ticker span:nth-child(odd){padding:.5rem 1.1rem;border:1px solid var(--glass-line);border-radius:99px;background:var(--glass);backdrop-filter:blur(10px);transition:color .2s,border-color .2s,box-shadow .2s}
+.ticker span:nth-child(odd):hover{color:#fff;border-color:var(--cyan);box-shadow:0 0 18px rgba(77,226,255,.25)}
+.ticker span:nth-child(even){font-size:.6rem;color:var(--star);text-shadow:0 0 8px var(--star)}
