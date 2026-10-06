@@ -74,3 +74,13 @@ h2{background:linear-gradient(100deg,#fff,#aab6e8);-webkit-background-clip:text;
 @keyframes orbit{to{rotate:360deg}}
 @media(max-width:900px){.arch{width:min(150px,46vw)}}
 @media(prefers-reduced-motion:reduce){.arch::before,.arch::after{animation:none}}
+
+/* About: compact glass cards with small type */
+#about-section h2{font-size:clamp(1.6rem,4vw,2.3rem);margin-bottom:1.6rem}
+.facts{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:1rem}
+.facts div,.facts div:last-child{position:relative;display:flex;flex-direction:column;gap:.5rem;padding:1.3rem 1.4rem;border:1px solid var(--glass-line);border-radius:18px;background:var(--glass);backdrop-filter:blur(14px);overflow:hidden;transition:transform .3s,border-color .3s,box-shadow .3s}
+.facts div::before{content:"";position:absolute;left:0;top:0;height:2px;width:100%;background:linear-gradient(90deg,var(--cyan),var(--violet),transparent);opacity:.8}
+.facts div:hover{transform:translateY(-4px);border-color:rgba(77,226,255,.5);box-shadow:0 14px 36px rgba(77,226,255,.12)}
+.facts dt{display:flex;align-items:center;gap:.5rem;font:500 .72rem ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;letter-spacing:.14em;text-transform:uppercase;color:var(--cyan)}
+.facts dt::before{content:"";width:6px;height:6px;border-radius:50%;background:var(--star);box-shadow:0 0 8px var(--star)}
+.facts dd,.facts div:hover dd{font:700 1.15rem/1.35 'Bricolage Grotesque',sans-serif;letter-spacing:-.01em;color:var(--text);transform:none}
