@@ -93,3 +93,37 @@ h2{background:linear-gradient(100deg,#fff,#aab6e8);-webkit-background-clip:text;
 .ticker span:nth-child(odd){padding:.5rem 1.1rem;border:1px solid var(--glass-line);border-radius:99px;background:var(--glass);backdrop-filter:blur(10px);transition:color .2s,border-color .2s,box-shadow .2s}
 .ticker span:nth-child(odd):hover{color:#fff;border-color:var(--cyan);box-shadow:0 0 18px rgba(77,226,255,.25)}
 .ticker span:nth-child(even){font-size:.6rem;color:var(--star);text-shadow:0 0 8px var(--star)}
+
+/* white logo, no box behind it */
+.brand img{background:none;padding:0;border-radius:0;height:32px;filter:drop-shadow(0 0 8px rgba(255,255,255,.35))}
+
+/* ===== v2: scroll-driven reveals, numbered sections, bento gallery, shimmer ===== */
+body{counter-reset:sec}
+section:has(>h2),section:has(h2){counter-increment:sec}
+h2::before{content:"0" counter(sec) " /";display:block;margin-bottom:.6rem;font:500 .8rem ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;letter-spacing:.2em;color:var(--cyan);-webkit-text-fill-color:var(--cyan)}
+@supports(animation-timeline:view()){
+  section:not(.hero){animation:sec-in linear both;animation-timeline:view();animation-range:entry 0% entry 40%}
+  @keyframes sec-in{from{opacity:0;transform:translateY(70px) scale(.97);filter:blur(8px)}to{opacity:1;transform:none;filter:none}}
+}
+
+/* name shimmer */
+.name{background:linear-gradient(100deg,#fff 20%,#c9d6ff 38%,var(--cyan) 50%,#c9d6ff 62%,#fff 80%) 0 0/220% 100%;-webkit-background-clip:text;background-clip:text;animation:wipe 1.5s .4s var(--ease) forwards,shine 7s linear 2.2s infinite}
+@keyframes shine{to{background-position:-220% 0}}
+
+/* bento gallery */
+.gallery-grid{grid-auto-flow:dense}
+.gallery-item:nth-child(6n+1){grid-column:span 2;grid-row:span 2;aspect-ratio:auto}
+@media(max-width:600px){.gallery-item:nth-child(6n+1){grid-column:auto;grid-row:auto;aspect-ratio:4/3}}
+
+/* animated gradient border on the form */
+#contact-form{border:1px solid transparent;background:linear-gradient(#0b1129,#0b1129) padding-box,conic-gradient(from var(--a),var(--cyan),var(--violet),var(--star),var(--cyan)) border-box;animation:ring 8s linear infinite}
+
+/* button shine sweep */
+.btn.primary{position:relative;overflow:hidden}
+.btn.primary::after{content:"";position:absolute;inset:0;background:linear-gradient(110deg,transparent 30%,rgba(255,255,255,.35) 50%,transparent 70%);translate:-120% 0;transition:translate .7s}
+.btn.primary:hover::after{translate:120% 0}
+
+/* code window dots */
+.file{display:flex;align-items:center;gap:.4rem}
+.file::before{content:"";width:9px;height:9px;border-radius:50%;background:#ff5f57;box-shadow:15px 0 0 #febc2e,30px 0 0 #28c840;margin-right:2.2rem}
+@media(prefers-reduced-motion:reduce){#contact-form,.name{animation:none}}

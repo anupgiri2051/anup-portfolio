@@ -16,7 +16,7 @@ a:focus-visible,button:focus-visible,input:focus-visible,textarea:focus-visible{
 
 .navbar{position:sticky;top:12px;z-index:100;display:flex;justify-content:space-between;align-items:center;width:min(1080px,92%);margin:12px auto 0;padding:.55rem 1rem;border:1px solid var(--line);border-radius:99px;background:rgba(10,15,36,.6);backdrop-filter:blur(14px);box-shadow:0 10px 40px rgba(0,0,0,.35)}
 .brand-logo{display:flex;align-items:center;gap:.7rem;text-decoration:none;color:var(--text);font-weight:800;font-size:1.1rem}
-.brand-logo img{height:28px;background:#fff;border-radius:8px;padding:2px 6px}
+.brand-logo img{height:30px;filter:drop-shadow(0 0 8px rgba(255,255,255,.35))}
 .brand-badge{background:linear-gradient(120deg,var(--cyan),var(--violet));color:#07101f;font:700 .7rem 'Instrument Sans',sans-serif;padding:2px 10px;border-radius:99px}
 .nav-actions{display:flex;gap:.6rem}
 

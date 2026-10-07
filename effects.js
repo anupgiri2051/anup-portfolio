@@ -32,6 +32,21 @@
     hero.after(t);
   }
 
+  // headings decode into place when they scroll into view
+  if (!calm && "IntersectionObserver" in window) {
+    const chars = "01<>/{}#*";
+    const io = new IntersectionObserver(es => es.forEach(e => {
+      if (!e.isIntersecting) return;
+      io.unobserve(e.target);
+      const el = e.target, text = el.dataset.t; let f = 0;
+      const id = setInterval(() => {
+        el.textContent = [...text].map((ch, i) => ch === " " || i < f / 2 ? ch : chars[Math.random() * chars.length | 0]).join("");
+        if (++f > text.length * 2) { clearInterval(id); el.textContent = text; }
+      }, 32);
+    }), { threshold: .6 });
+    document.querySelectorAll("section h2").forEach(h => { h.dataset.t = h.textContent; io.observe(h); });
+  }
+
   if (calm || !fine) return;
 
   // cursor glow
