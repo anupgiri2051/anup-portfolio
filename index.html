@@ -86,13 +86,20 @@
       <p class="muted">I share bits of what I'm building and learning over on Instagram.</p>
       <a class="btn insta" href="https://www.instagram.com/me_anupgiri/" target="_blank" rel="noopener">@me_anupgiri</a>
     </div>
-    <form id="contact-form">
-      <label for="contact-email">Your email address</label>
-      <input type="email" id="contact-email" placeholder="example@domain.com" required>
-      <label for="contact-message">Your message</label>
-      <textarea id="contact-message" rows="5" placeholder="Write your message here..." required></textarea>
-      <button type="submit" id="contact-submit-btn" class="btn primary">Send message</button>
+    <form id="contact-form" autocomplete="off">
+      <div class="form-head"><span class="live"></span><b>New message</b><small>Delivered straight to my inbox</small></div>
+      <div class="field">
+        <input type="email" id="contact-email" placeholder=" " required>
+        <label for="contact-email">Your email address</label>
+      </div>
+      <div class="field">
+        <textarea id="contact-message" rows="5" maxlength="600" placeholder=" " required></textarea>
+        <label for="contact-message">Your message</label>
+        <span class="count" id="msg-count">0 / 600</span>
+      </div>
+      <button type="submit" id="contact-submit-btn" class="btn primary">Send message &rarr;</button>
       <p id="contact-status" role="status"></p>
+      <div class="sent-ov" aria-hidden="true"><svg viewBox="0 0 52 52"><circle cx="26" cy="26" r="24"/><path d="M14 27l8 8 16-17"/></svg><p>Message sent</p></div>
     </form>
   </div>
 </section>

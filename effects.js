@@ -68,7 +68,7 @@
     const rv = new IntersectionObserver(es => es.forEach(e => {
       if (e.isIntersecting) { e.target.classList.add("in"); rv.unobserve(e.target); }
     }), { threshold: .15 });
-    document.querySelectorAll(".facts div,.areas li,.robot,#contact-form").forEach((el, i, all) => {
+    document.querySelectorAll(".facts div,.areas li,.robot").forEach((el, i, all) => {
       const sib = [...el.parentElement.children].indexOf(el);
       el.style.setProperty("--d", sib * .1 + "s");
       el.classList.add("rv"); rv.observe(el);
@@ -90,6 +90,24 @@
     const el = document.createElement("span");
     el.className = "chip " + c; el.textContent = t; av.appendChild(el);
   });
+
+  // contact form: live counter, sent animation, floating "Message" button
+  const msg = document.getElementById("contact-message"), cnt = document.getElementById("msg-count");
+  if (msg && cnt) msg.addEventListener("input", () => cnt.textContent = msg.value.length + " / 600");
+  const cform = document.getElementById("contact-form"), cstat = document.getElementById("contact-status");
+  if (cform && cstat) new MutationObserver(() => {
+    if (/success/i.test(cstat.textContent)) {
+      cform.classList.add("sent");
+      if (cnt) cnt.textContent = "0 / 600";
+      setTimeout(() => cform.classList.remove("sent"), 3200);
+    }
+  }).observe(cstat, { childList: true, characterData: true, subtree: true });
+  const fab = document.createElement("a");
+  fab.className = "fab"; fab.href = "/contact"; fab.setAttribute("data-path", "/contact"); fab.innerHTML = "<i></i>Message me";
+  document.body.appendChild(fab);
+  const cs = document.getElementById("contact-section");
+  if (cs && "IntersectionObserver" in window)
+    new IntersectionObserver(es => es.forEach(e => fab.classList.toggle("hide", e.isIntersecting)), { threshold: .25 }).observe(cs);
 
   // headings decode into place when they scroll into view
   if (!calm && "IntersectionObserver" in window) {
