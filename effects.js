@@ -1,4 +1,4 @@
-// effects.js — clean version: typing line, ticker, section banners, soft reveals, avatar tilt, form feedback
+// effects.js — clean version: typing line, ticker, soft reveals, avatar tilt, form feedback
 (() => {
   const calm = matchMedia("(prefers-reduced-motion: reduce)").matches;
   const fine = matchMedia("(pointer:fine)").matches;
@@ -31,29 +31,12 @@
     hero.after(t);
   }
 
-  // section banners (gradient, floating icon tile)
-  const svg = p => `<svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="#0f3d91" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${p}</svg>`;
-  const banners = {
-    "about-section": ["About", "A quick look at who I am and what I do.", svg('<circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-7 8-7s8 3 8 7"/>')],
-    "focus-section": ["What I'm exploring", "AI, IT and the web, one small project at a time.", svg('<rect x="6" y="6" width="12" height="12" rx="2"/><path d="M9 2v3M15 2v3M9 19v3M15 19v3M2 9h3M2 15h3M19 9h3M19 15h3"/>')],
-    "gallery-section": ["Gallery", "Tap any photo to view it.", svg('<rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="9" cy="10" r="1.6"/><path d="M21 16l-5-5-8 9"/>')],
-    "contact-section": ["Get in touch", "Send me a message or find me on Instagram.", svg('<rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 7l9 6 9-6"/>')]
-  };
-  Object.entries(banners).forEach(([id, [title, sub, icon]]) => {
-    const sec = document.getElementById(id); if (!sec) return;
-    sec.querySelector("h2")?.classList.add("vh");
-    const b = document.createElement("div");
-    b.className = "banner";
-    b.innerHTML = `<div class="tile"><span>${icon}</span></div><h2>${title}</h2><p>${sub}</p>`;
-    sec.prepend(b);
-  });
-
   // soft staggered reveal
   if (!calm && "IntersectionObserver" in window) {
     const rv = new IntersectionObserver(es => es.forEach(e => {
       if (e.isIntersecting) { e.target.classList.add("in"); rv.unobserve(e.target); }
     }), { threshold: .15 });
-    document.querySelectorAll(".facts div,.areas li,.robot").forEach(el => {
+    document.querySelectorAll("section h2,.facts div,.areas li,.robot").forEach(el => {
       el.style.setProperty("--d", [...el.parentElement.children].indexOf(el) * .1 + "s");
       el.classList.add("rv"); rv.observe(el);
     });
@@ -95,4 +78,69 @@
       arch.style.setProperty("--rx", near ? -y * 12 + "deg" : "0deg");
     }
   }, { passive: true });
+})();
+
+// Background: neural network with data packets, mouse interaction and scan pulses
+(() => {
+  const c = document.getElementById("fx");
+  if (!c || matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+  const x = c.getContext("2d"), m = { x: -999, y: -999 };
+  const LINK = 135, dpr = Math.min(devicePixelRatio || 1, 2);
+  let w, h, nodes = [], packets = [], pulse = null, last = 0;
+  const size = () => {
+    w = innerWidth; h = innerHeight;
+    c.width = w * dpr; c.height = h * dpr; x.setTransform(dpr, 0, 0, dpr, 0, 0);
+    nodes = Array.from({ length: Math.min(75, Math.round(w * h / 19000)) }, () => ({
+      x: Math.random() * w, y: Math.random() * h, z: .45 + Math.random() * .55,
+      vx: (Math.random() - .5) * .25, vy: (Math.random() - .5) * .25, t: Math.random() * 6
+    }));
+    packets = [];
+  };
+  size(); addEventListener("resize", size);
+  addEventListener("pointermove", e => { m.x = e.clientX; m.y = e.clientY; }, { passive: true });
+  (function draw(now) {
+    x.clearRect(0, 0, w, h);
+    nodes.forEach(a => {
+      a.x = (a.x + a.vx * a.z + w) % w; a.y = (a.y + a.vy * a.z + h) % h;
+      const dx = a.x - m.x, dy = a.y - m.y, dm = Math.hypot(dx, dy);
+      if (dm < 140 && dm > 1) { a.x += dx / dm * (140 - dm) * .012; a.y += dy / dm * (140 - dm) * .012; }
+    });
+    const near = [];
+    for (let i = 0; i < nodes.length; i++) for (let j = i + 1; j < nodes.length; j++) {
+      const a = nodes[i], b = nodes[j], d = Math.hypot(a.x - b.x, a.y - b.y);
+      if (d < LINK) {
+        near.push([a, b]);
+        x.strokeStyle = `rgba(120,160,255,${.22 * (1 - d / LINK) * Math.min(a.z, b.z)})`;
+        x.lineWidth = 1; x.beginPath(); x.moveTo(a.x, a.y); x.lineTo(b.x, b.y); x.stroke();
+      }
+    }
+    // data packets travelling along links
+    if (near.length && packets.length < 16 && Math.random() < .07) {
+      const [a, b] = near[Math.random() * near.length | 0];
+      packets.push({ a, b, t: 0, s: .012 + Math.random() * .014, c: Math.random() < .25 ? "255,59,71" : "77,226,255" });
+    }
+    packets = packets.filter(p => (p.t += p.s) < 1);
+    packets.forEach(p => {
+      const px = p.a.x + (p.b.x - p.a.x) * p.t, py = p.a.y + (p.b.y - p.a.y) * p.t;
+      const tx = p.a.x + (p.b.x - p.a.x) * Math.max(0, p.t - .12), ty = p.a.y + (p.b.y - p.a.y) * Math.max(0, p.t - .12);
+      x.strokeStyle = `rgba(${p.c},.7)`; x.lineWidth = 1.6; x.beginPath(); x.moveTo(tx, ty); x.lineTo(px, py); x.stroke();
+      x.fillStyle = `rgba(${p.c},1)`; x.beginPath(); x.arc(px, py, 2, 0, 7); x.fill();
+    });
+    // nodes
+    nodes.forEach(a => {
+      x.fillStyle = `rgba(235,240,255,${(.4 + .4 * Math.sin(now / 900 + a.t)) * a.z})`;
+      x.beginPath(); x.arc(a.x, a.y, 1.9 * a.z, 0, 7); x.fill();
+      const dm = Math.hypot(a.x - m.x, a.y - m.y);
+      if (dm < 160) { x.strokeStyle = `rgba(77,226,255,${.5 * (1 - dm / 160)})`; x.beginPath(); x.moveTo(a.x, a.y); x.lineTo(m.x, m.y); x.stroke(); }
+    });
+    // occasional scan pulse
+    if (!pulse && now - last > 7000 && nodes.length) { const n = nodes[Math.random() * nodes.length | 0]; pulse = { x: n.x, y: n.y, r: 0 }; last = now; }
+    if (pulse) {
+      pulse.r += 3.2;
+      x.strokeStyle = `rgba(139,92,246,${Math.max(0, .5 - pulse.r / 700)})`; x.lineWidth = 1.5;
+      x.beginPath(); x.arc(pulse.x, pulse.y, pulse.r, 0, 7); x.stroke();
+      if (pulse.r > 350) pulse = null;
+    }
+    requestAnimationFrame(draw);
+  })(0);
 })();

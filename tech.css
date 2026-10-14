@@ -264,3 +264,26 @@ body::before,body::after{opacity:.2}
 .insta:hover{background:rgba(255,255,255,.1);box-shadow:none}
 .facts div:hover{box-shadow:none}
 .gallery-item:hover{box-shadow:none}
+
+/* ===== v7: no banners — animated section headings ===== */
+section h2,#about-section h2{font-size:clamp(1.9rem,4.8vw,3rem);margin-bottom:2.2rem}
+h2::after{content:"";display:block;width:72px;height:3px;margin-top:1rem;border-radius:3px;background:linear-gradient(90deg,var(--cyan),var(--violet),var(--star));transform-origin:left;scale:0 1}
+h2.in::after{animation:grow .9s .35s cubic-bezier(.2,.8,.2,1) both}
+@keyframes grow{to{scale:1 1}}
+h2.in::before{animation:label .7s both}
+@keyframes label{from{opacity:0;letter-spacing:.6em}to{opacity:1;letter-spacing:.2em}}
+@media(prefers-reduced-motion:reduce){h2::after{scale:1 1}}
+
+/* ===== v8: tech background ===== */
+#fx{position:fixed;inset:0;width:100%;height:100%;z-index:-1;pointer-events:none}
+html::after{content:"";position:fixed;left:-50%;right:-50%;bottom:-8vh;height:52vh;z-index:-2;pointer-events:none;
+ background-image:linear-gradient(rgba(77,226,255,.28) 1px,transparent 1px),linear-gradient(90deg,rgba(139,92,246,.28) 1px,transparent 1px);
+ background-size:64px 64px;transform:perspective(420px) rotateX(64deg);transform-origin:50% 100%;
+ -webkit-mask-image:linear-gradient(transparent,#000 85%);mask-image:linear-gradient(transparent,#000 85%);
+ opacity:.45;animation:floor 4s linear infinite}
+@keyframes floor{to{background-position:0 64px}}
+
+/* ===== final: tighter section rhythm ===== */
+section{padding:4.5rem 0}
+.hero{padding:3rem 0}
+@media(max-width:900px){section{padding:3.5rem 0}}
