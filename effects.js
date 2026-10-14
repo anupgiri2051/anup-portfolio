@@ -132,6 +132,7 @@
   addEventListener("pointermove", e => { m.x = e.clientX; m.y = e.clientY; }, { passive: true });
   const rr = (a, b, cw, ch, r) => { x.beginPath(); x.roundRect ? x.roundRect(a, b, cw, ch, r) : x.rect(a, b, cw, ch); };
   const robot = now => {
+    if (w < 900) return; // keep text clear on phones and tablets
     const S = Math.min(h * .8, w * .55), W = S * .8, cx = w * .77, cy = h * .5, t = now / 1000;
     const mx = m.x ?? cx + Math.cos(t * .7) * w * .25, my = m.x === null ? cy + Math.sin(t * .5) * h * .2 : m.y;
     x.save(); x.translate(cx, cy); x.rotate(Math.max(-1, Math.min(1, (mx - cx) / w)) * .05);

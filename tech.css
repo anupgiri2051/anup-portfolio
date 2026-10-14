@@ -287,3 +287,59 @@ html::after{content:"";position:fixed;left:-50%;right:-50%;bottom:-8vh;height:52
 section{padding:4.5rem 0}
 .hero{padding:3rem 0}
 @media(max-width:900px){section{padding:3.5rem 0}}
+
+/* robot/AI background: calm the grid floor */
+html::after{opacity:.18}
+
+/* ===== v9: clean, simple, accessible design for everyone ===== */
+:root{--text-muted:#b4bcd3;--glass-line:rgba(255,255,255,.16)}
+html{font-size:17px}
+body{line-height:1.7}
+.skip{position:fixed;left:1rem;top:-4rem;z-index:10000;padding:.7rem 1.1rem;border-radius:10px;background:#fff;color:#080c1a;font-weight:600;text-decoration:none;transition:top .2s}
+.skip:focus{top:1rem}
+a:focus-visible,button:focus-visible,input:focus-visible,textarea:focus-visible{outline:3px solid #fff;outline-offset:3px;box-shadow:0 0 0 6px rgba(255,59,71,.6)}
+
+/* calm background: keep it, but quiet */
+#fx{opacity:.5}
+html::after,.cursor-glow,.ticker,.robot::after{display:none}
+body::before,body::after{opacity:.14}
+
+/* simple navigation, comfortable tap targets */
+.nav{background:rgba(8,12,26,.9);box-shadow:none;border-radius:18px}
+#nav-links a{padding:.65rem 1.05rem;min-height:44px;display:inline-flex;align-items:center;color:#d6dbec}
+#nav-links a:hover,#nav-links a.active{color:#fff;background:rgba(255,255,255,.1)}
+#mobile-menu-btn{min-width:44px;min-height:44px}
+
+/* hero */
+.kicker::before{animation:none}
+.name{animation:wipe 1.2s .2s var(--ease) forwards}
+.role{font-size:1.1rem}
+.lead{color:#c9cfe2;font-size:1.12rem;line-height:1.7}
+.arch::before,.arch::after{display:none}
+.chip{display:none}
+
+/* buttons: solid, large, clear */
+.btn{min-height:48px;padding:.8rem 1.6rem;font-size:1rem;backdrop-filter:none}
+.btn.primary,.btn.primary:hover{background:var(--red);box-shadow:none}
+.btn.primary:hover{background:#c8101f;box-shadow:0 8px 24px rgba(225,29,46,.4)}
+.btn.primary::after{display:none}
+
+/* headings + cards: solid panels, fewer effects */
+h2::before{color:#7fe8ff;-webkit-text-fill-color:#7fe8ff}
+.facts div,.code,.robot,.areas li,.gallery-item,#contact-form{backdrop-filter:none;background:#0d1330}
+.facts div:hover,.gallery-item:hover{box-shadow:none}
+.facts dt{color:#7fe8ff}
+.areas li{color:#d6dbec}
+.spot::after{display:none}
+
+/* gallery: even grid, captions always visible (works on touch) */
+.gallery-item:nth-child(6n+1){grid-column:auto;grid-row:auto;aspect-ratio:4/3}
+.gallery-item-title{transform:none;font-size:.95rem}
+
+/* form */
+#contact-form{border:1px solid var(--glass-line);animation:none;background:#0d1330}
+.field input,.field textarea{font-size:1rem}
+#contact-status{font-size:1rem}
+
+footer{color:#aab2cc}
+@media(max-width:768px){.nav{width:94%}.hero{padding-top:2rem}}
