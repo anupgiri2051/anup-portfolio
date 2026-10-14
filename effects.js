@@ -80,67 +80,127 @@
   }, { passive: true });
 })();
 
-// Background: neural network with data packets, mouse interaction and scan pulses
+// Background: robot / AI circuit board, AI robot head, data pulses, binary stream and scan line
 (() => {
-  const c = document.getElementById("fx");
-  if (!c || matchMedia("(prefers-reduced-motion: reduce)").matches) return;
-  const x = c.getContext("2d"), m = { x: -999, y: -999 };
-  const LINK = 135, dpr = Math.min(devicePixelRatio || 1, 2);
-  let w, h, nodes = [], packets = [], pulse = null, last = 0;
-  const size = () => {
+  const c = document.getElementById("fx"); if (!c) return;
+  const calm = matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const x = c.getContext("2d"), dpr = Math.min(devicePixelRatio || 1, 2), G = 44;
+  const dirs = [[1,0],[1,1],[0,1],[-1,1],[-1,0],[-1,-1],[0,-1],[1,-1]];
+  let w, h, base, paths = [], pulses = [], cols = [];
+  const rnd = n => Math.random() * n | 0;
+
+  const build = () => {
     w = innerWidth; h = innerHeight;
     c.width = w * dpr; c.height = h * dpr; x.setTransform(dpr, 0, 0, dpr, 0, 0);
-    nodes = Array.from({ length: Math.min(75, Math.round(w * h / 19000)) }, () => ({
-      x: Math.random() * w, y: Math.random() * h, z: .45 + Math.random() * .55,
-      vx: (Math.random() - .5) * .25, vy: (Math.random() - .5) * .25, t: Math.random() * 6
+    base = document.createElement("canvas"); base.width = w * dpr; base.height = h * dpr;
+    const b = base.getContext("2d"); b.setTransform(dpr, 0, 0, dpr, 0, 0);
+    b.lineJoin = "round"; b.lineCap = "round";
+    paths = []; pulses = [];
+    for (let i = 0, n = Math.round(w * h / 48000); i < n; i++) {
+      let px = Math.round(Math.random() * w / G) * G, py = Math.round(Math.random() * h / G) * G, d = rnd(4) * 2;
+      const pts = [[px, py]], cum = [0];
+      for (let s = 0, k = 6 + rnd(5); s < k; s++) {
+        const len = (1 + rnd(3)) * G, dx = dirs[d][0] * len, dy = dirs[d][1] * len;
+        px += dx; py += dy; pts.push([px, py]);
+        cum.push(cum[cum.length - 1] + Math.hypot(dx, dy));
+        d = (d + [-1, 1, 0, 0, 0][rnd(5)] + 8) % 8;
+      }
+      paths.push({ pts, cum, total: cum[cum.length - 1] });
+      b.strokeStyle = "rgba(77,226,255,.12)"; b.lineWidth = 1.2;
+      b.beginPath(); pts.forEach(([a, e], j) => j ? b.lineTo(a, e) : b.moveTo(a, e)); b.stroke();
+      pts.forEach(([a, e], j) => { b.fillStyle = "rgba(77,226,255,.22)"; b.beginPath(); b.arc(a, e, j === 0 || j === pts.length - 1 ? 3.5 : 1.6, 0, 7); b.fill(); });
+      const [ex, ey] = pts[pts.length - 1];
+      b.strokeStyle = "rgba(139,92,246,.35)"; b.beginPath(); b.arc(ex, ey, 6, 0, 7); b.stroke();
+    }
+    cols = Array.from({ length: Math.ceil(w / 90) }, (_, i) => ({
+      x: i * 90 + 25 + rnd(40), y: rnd(h), s: .35 + Math.random() * .7,
+      t: Array.from({ length: 12 }, () => rnd(2))
     }));
-    packets = [];
   };
-  size(); addEventListener("resize", size);
+  build();
+  addEventListener("resize", build);
+  if (calm) { x.drawImage(base, 0, 0, w, h); return; }
+
+  const at = (p, d) => {
+    let i = 1; while (i < p.cum.length - 1 && p.cum[i] < d) i++;
+    const f = (d - p.cum[i - 1]) / (p.cum[i] - p.cum[i - 1]), a = p.pts[i - 1], b = p.pts[i];
+    return [a[0] + (b[0] - a[0]) * f, a[1] + (b[1] - a[1]) * f];
+  };
+
+  // AI robot head: tracks the cursor, blinks, scans, and "speaks" with an equalizer mouth
+  const m = { x: null, y: 0 };
   addEventListener("pointermove", e => { m.x = e.clientX; m.y = e.clientY; }, { passive: true });
+  const rr = (a, b, cw, ch, r) => { x.beginPath(); x.roundRect ? x.roundRect(a, b, cw, ch, r) : x.rect(a, b, cw, ch); };
+  const robot = now => {
+    const S = Math.min(h * .8, w * .55), W = S * .8, cx = w * .77, cy = h * .5, t = now / 1000;
+    const mx = m.x ?? cx + Math.cos(t * .7) * w * .25, my = m.x === null ? cy + Math.sin(t * .5) * h * .2 : m.y;
+    x.save(); x.translate(cx, cy); x.rotate(Math.max(-1, Math.min(1, (mx - cx) / w)) * .05);
+    x.lineWidth = 1.5; x.strokeStyle = "rgba(77,226,255,.2)";
+    rr(-W / 2, -S * .42, W, S * .84, S * .14); x.stroke();
+    x.beginPath(); x.moveTo(0, -S * .42); x.lineTo(0, -S * .5); x.stroke();
+    x.fillStyle = `rgba(255,59,71,${.55 + .4 * Math.sin(t * 3)})`; x.beginPath(); x.arc(0, -S * .5, 5 + 2 * Math.sin(t * 3), 0, 7); x.fill();
+    rr(-W / 2 - S * .05, -S * .08, S * .05, S * .2, 6); x.stroke();
+    rr(W / 2, -S * .08, S * .05, S * .2, 6); x.stroke();
+    rr(-W * .15, S * .42, W * .3, S * .08, 6); x.stroke();
+    // visor with a red scan bar
+    x.strokeStyle = "rgba(77,226,255,.28)"; x.fillStyle = "rgba(77,226,255,.04)";
+    rr(-W * .38, -S * .27, W * .76, S * .22, S * .08); x.fill(); x.stroke();
+    const vx = -W * .38 + ((now / 9) % (W * .76));
+    x.strokeStyle = "rgba(255,59,71,.35)"; x.beginPath(); x.moveTo(vx, -S * .25); x.lineTo(vx, -S * .07); x.stroke();
+    // eyes follow the pointer
+    const blink = now % 4300 < 140 ? .12 : 1;
+    [-1, 1].forEach(side => {
+      const ex = cx + side * W * .18, ey = cy - S * .16, r = S * .055;
+      const dx = mx - ex, dy = my - ey, dist = Math.hypot(dx, dy) || 1, k = Math.min(.45, dist / 600);
+      const px = side * W * .18 + dx / dist * r * k * 1.6, py = -S * .16 + dy / dist * r * k * 1.6;
+      const g = x.createRadialGradient(px, py, 0, px, py, r * 2.4);
+      g.addColorStop(0, "rgba(77,226,255,.5)"); g.addColorStop(1, "rgba(77,226,255,0)");
+      x.fillStyle = g; x.beginPath(); x.arc(px, py, r * 2.4, 0, 7); x.fill();
+      x.strokeStyle = "rgba(77,226,255,.35)"; x.beginPath(); x.arc(side * W * .18, -S * .16, r * 1.25, 0, 7); x.stroke();
+      x.fillStyle = "rgba(190,245,255,.85)"; x.beginPath(); x.ellipse(px, py, r * .55, r * .55 * blink, 0, 0, 7); x.fill();
+    });
+    // equalizer mouth
+    x.fillStyle = "rgba(77,226,255,.28)";
+    for (let i = 0; i < 9; i++) {
+      const bh = S * .015 + S * .05 * (.5 + .5 * Math.sin(now / 170 + i * 1.3));
+      x.fillRect(-W * .27 + i * W * .0675, S * .32 - bh / 2, W * .04, bh);
+    }
+    x.restore();
+  };
+
   (function draw(now) {
     x.clearRect(0, 0, w, h);
-    nodes.forEach(a => {
-      a.x = (a.x + a.vx * a.z + w) % w; a.y = (a.y + a.vy * a.z + h) % h;
-      const dx = a.x - m.x, dy = a.y - m.y, dm = Math.hypot(dx, dy);
-      if (dm < 140 && dm > 1) { a.x += dx / dm * (140 - dm) * .012; a.y += dy / dm * (140 - dm) * .012; }
+    x.drawImage(base, 0, 0, w, h);
+
+    // binary data stream
+    x.font = "11px ui-monospace,Menlo,Consolas,monospace";
+    cols.forEach(col => {
+      col.y += col.s; if (col.y - 170 > h) col.y = -10;
+      if (Math.random() < .03) col.t[rnd(12)] = rnd(2);
+      col.t.forEach((v, k) => { x.fillStyle = `rgba(77,226,255,${.2 * (1 - k / 12)})`; x.fillText(v, col.x, col.y - k * 14); });
     });
-    const near = [];
-    for (let i = 0; i < nodes.length; i++) for (let j = i + 1; j < nodes.length; j++) {
-      const a = nodes[i], b = nodes[j], d = Math.hypot(a.x - b.x, a.y - b.y);
-      if (d < LINK) {
-        near.push([a, b]);
-        x.strokeStyle = `rgba(120,160,255,${.22 * (1 - d / LINK) * Math.min(a.z, b.z)})`;
-        x.lineWidth = 1; x.beginPath(); x.moveTo(a.x, a.y); x.lineTo(b.x, b.y); x.stroke();
+
+    robot(now);
+
+    // data pulses running along the circuit traces
+    if (paths.length && pulses.length < 14 && Math.random() < .05)
+      pulses.push({ p: paths[rnd(paths.length)], d: 0, s: 1.6 + Math.random() * 2.2, c: Math.random() < .25 ? "255,59,71" : "77,226,255" });
+    pulses = pulses.filter(q => (q.d += q.s) < q.p.total + 40);
+    pulses.forEach(q => {
+      for (let k = 0; k < 9; k++) {
+        const d = Math.min(q.d, q.p.total) - k * 7; if (d < 0) break;
+        const [px, py] = at(q.p, d);
+        x.fillStyle = `rgba(${q.c},${1 - k / 9})`; x.beginPath(); x.arc(px, py, 2.6 - k * .22, 0, 7); x.fill();
       }
-    }
-    // data packets travelling along links
-    if (near.length && packets.length < 16 && Math.random() < .07) {
-      const [a, b] = near[Math.random() * near.length | 0];
-      packets.push({ a, b, t: 0, s: .012 + Math.random() * .014, c: Math.random() < .25 ? "255,59,71" : "77,226,255" });
-    }
-    packets = packets.filter(p => (p.t += p.s) < 1);
-    packets.forEach(p => {
-      const px = p.a.x + (p.b.x - p.a.x) * p.t, py = p.a.y + (p.b.y - p.a.y) * p.t;
-      const tx = p.a.x + (p.b.x - p.a.x) * Math.max(0, p.t - .12), ty = p.a.y + (p.b.y - p.a.y) * Math.max(0, p.t - .12);
-      x.strokeStyle = `rgba(${p.c},.7)`; x.lineWidth = 1.6; x.beginPath(); x.moveTo(tx, ty); x.lineTo(px, py); x.stroke();
-      x.fillStyle = `rgba(${p.c},1)`; x.beginPath(); x.arc(px, py, 2, 0, 7); x.fill();
+      const [hx, hy] = at(q.p, Math.min(q.d, q.p.total));
+      x.fillStyle = `rgba(${q.c},.18)`; x.beginPath(); x.arc(hx, hy, 9, 0, 7); x.fill();
     });
-    // nodes
-    nodes.forEach(a => {
-      x.fillStyle = `rgba(235,240,255,${(.4 + .4 * Math.sin(now / 900 + a.t)) * a.z})`;
-      x.beginPath(); x.arc(a.x, a.y, 1.9 * a.z, 0, 7); x.fill();
-      const dm = Math.hypot(a.x - m.x, a.y - m.y);
-      if (dm < 160) { x.strokeStyle = `rgba(77,226,255,${.5 * (1 - dm / 160)})`; x.beginPath(); x.moveTo(a.x, a.y); x.lineTo(m.x, m.y); x.stroke(); }
-    });
-    // occasional scan pulse
-    if (!pulse && now - last > 7000 && nodes.length) { const n = nodes[Math.random() * nodes.length | 0]; pulse = { x: n.x, y: n.y, r: 0 }; last = now; }
-    if (pulse) {
-      pulse.r += 3.2;
-      x.strokeStyle = `rgba(139,92,246,${Math.max(0, .5 - pulse.r / 700)})`; x.lineWidth = 1.5;
-      x.beginPath(); x.arc(pulse.x, pulse.y, pulse.r, 0, 7); x.stroke();
-      if (pulse.r > 350) pulse = null;
-    }
+
+    // slow scan line
+    const sy = (now / 18) % (h + 260) - 130, g = x.createLinearGradient(0, sy - 60, 0, sy + 60);
+    g.addColorStop(0, "rgba(77,226,255,0)"); g.addColorStop(.5, "rgba(77,226,255,.07)"); g.addColorStop(1, "rgba(77,226,255,0)");
+    x.fillStyle = g; x.fillRect(0, sy - 60, w, 120);
+
     requestAnimationFrame(draw);
   })(0);
 })();
