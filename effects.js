@@ -36,7 +36,7 @@
     const rv = new IntersectionObserver(es => es.forEach(e => {
       if (e.isIntersecting) { e.target.classList.add("in"); rv.unobserve(e.target); }
     }), { threshold: .15 });
-    document.querySelectorAll("section h2,.facts div,.areas li,.robot").forEach(el => {
+    document.querySelectorAll("section h2,.facts div,.skills article,.robot").forEach(el => {
       el.style.setProperty("--d", [...el.parentElement.children].indexOf(el) * .1 + "s");
       el.classList.add("rv"); rv.observe(el);
     });

@@ -343,3 +343,20 @@ h2::before{color:#7fe8ff;-webkit-text-fill-color:#7fe8ff}
 
 footer{color:#aab2cc}
 @media(max-width:768px){.nav{width:94%}.hero{padding-top:2rem}}
+
+/* ===== v10: portfolio look + custom icons ===== */
+.ic{width:18px;height:18px;flex:none;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.facts dt::before{display:none}
+.facts dt .ic{color:var(--star)}
+.skills{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:1rem;margin-top:2.5rem}
+.skills article{background:#0d1330;border:1px solid var(--glass-line);border-radius:18px;padding:1.5rem;transition:transform .3s,border-color .3s}
+.skills article:hover{transform:translateY(-4px);border-color:rgba(77,226,255,.5)}
+.skills .ico{width:48px;height:48px;display:grid;place-items:center;margin-bottom:1rem;border-radius:14px;color:var(--cyan);border:1px solid var(--glass-line);background:linear-gradient(135deg,rgba(77,226,255,.16),rgba(139,92,246,.16))}
+.skills .ico .ic{width:24px;height:24px}
+.skills h3{font:700 1.15rem 'Bricolage Grotesque',sans-serif;margin-bottom:.4rem}
+.skills p{color:var(--text-muted);font-size:.97rem}
+.socials{display:flex;gap:.7rem;margin-top:1.5rem;animation:rise .9s 1.9s both}
+.socials a{width:46px;height:46px;display:grid;place-items:center;border:1px solid var(--glass-line);border-radius:50%;color:var(--text);background:#0d1330;transition:transform .2s,border-color .2s,color .2s}
+.socials a:hover{transform:translateY(-3px);border-color:var(--cyan);color:var(--cyan)}
+.socials .ic{width:20px;height:20px}
+.insta{gap:.6rem}

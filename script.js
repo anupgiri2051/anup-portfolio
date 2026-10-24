@@ -46,12 +46,13 @@ function setupCleanRouting() {
     });
 
     // Handle initial URL path on load
-    handleCurrentRoute(window.location.pathname);
+    handleCurrentRoute(window.location.pathname, true);
 }
 
 function navigateTo(path) {
     if (window.location.pathname !== path) {
-        history.pushState(null, null, path);
+        // pushState is blocked when the page is opened as a local file; routing still works
+        try { history.pushState(null, null, path); } catch (e) {}
     }
     handleCurrentRoute(path);
 
@@ -62,7 +63,25 @@ function navigateTo(path) {
     }
 }
 
-function handleCurrentRoute(path) {
+// Gallery and About are their own views: hidden on the home page, shown after clicking them
+function setView(name) {
+    const was = ["gallery", "about"].find(v => document.body.classList.contains("view-" + v)) || "home";
+    document.body.classList.toggle("view-gallery", name === "gallery");
+    document.body.classList.toggle("view-about", name === "about");
+    if (name !== was) window.scrollTo(0, 0);
+}
+
+function handleCurrentRoute(path, initial) {
+    setView(/^\/gallery(\/|$)/.test(path) ? "gallery" : /^\/about\/?$/.test(path) ? "about" : "home");
+    // /gallery/<photo-id> opens that photo (shareable link, back button closes it)
+    const photo = path.match(/^\/gallery\/([^\/]+)\/?$/);
+    if (photo) {
+        openPhotoById(decodeURIComponent(photo[1]), initial);
+        return;
+    }
+    closeLightbox(false);
+    path = path.length > 1 ? path.replace(/\/+$/, "") : path;
+
     if (path === "/" || path === "") {
         // Scroll completely to top for Home so no content is hidden under navbar
         window.scrollTo({
@@ -89,13 +108,32 @@ function handleCurrentRoute(path) {
     }
 }
 
+// Photos opened by URL (/gallery/<id>)
+let photoCache = {};
+let pendingPhoto = null;
+
+function openPhotoById(id, scrollToGallery) {
+    if (scrollToGallery) {
+        const sec = document.getElementById("gallery-section");
+        if (sec) sec.scrollIntoView();
+    }
+    if (photoCache[id]) {
+        pendingPhoto = null;
+        openLightbox(photoCache[id].url, photoCache[id].title);
+    } else {
+        pendingPhoto = id; // opens as soon as the gallery has loaded
+    }
+}
+
 // Firestore Gallery Listener
 function loadGallery() {
     const galleryContainer = document.getElementById("gallery-container");
     if (!galleryContainer) return;
 
     db.collection("photos").orderBy("createdAt", "desc").onSnapshot(snapshot => {
+        photoCache = {};
         if (snapshot.empty) {
+            if (pendingPhoto && !snapshot.metadata.fromCache) { pendingPhoto = null; try { history.replaceState(null, null, "/gallery"); } catch (e) {} }
             galleryContainer.innerHTML = `<p style="color: var(--text-muted); grid-column: 1 / -1; text-align: center;">No photos in gallery yet.</p>`;
             return;
         }
@@ -104,6 +142,7 @@ function loadGallery() {
 
         snapshot.forEach(doc => {
             const data = doc.data();
+            photoCache[doc.id] = data;
 
             const item = document.createElement("div");
             item.className = "gallery-item";
@@ -114,11 +153,20 @@ function loadGallery() {
             `;
 
             item.addEventListener("click", () => {
-                openLightbox(data.url, data.title);
+                navigateTo("/gallery/" + encodeURIComponent(doc.id));
             });
 
             galleryContainer.appendChild(item);
         });
+
+        if (pendingPhoto) {
+            if (photoCache[pendingPhoto]) {
+                openPhotoById(pendingPhoto, false);
+            } else if (!snapshot.metadata.fromCache) {
+                pendingPhoto = null;
+                try { history.replaceState(null, null, "/gallery"); } catch (e) {}
+            }
+        }
     });
 }
 
@@ -173,14 +221,14 @@ function setupLightbox() {
 
     if (!modal || !closeBtn) return;
 
-    closeBtn.addEventListener("click", () => {
-        modal.style.display = "none";
-    });
+    closeBtn.addEventListener("click", () => closeLightbox());
 
     modal.addEventListener("click", (e) => {
-        if (e.target === modal) {
-            modal.style.display = "none";
-        }
+        if (e.target === modal) closeLightbox();
+    });
+
+    document.addEventListener("keydown", (e) => {
+        if (e.key === "Escape" && modal.style.display === "flex") closeLightbox();
     });
 }
 
@@ -192,8 +240,22 @@ function openLightbox(url, title) {
     if (!modal || !img || !caption) return;
 
     img.src = url;
+    img.alt = title || "";
     caption.textContent = title;
     modal.style.display = "flex";
+    document.title = title + " | Anup Giri";
+}
+
+// updateUrl=false when the route change itself is closing the photo
+function closeLightbox(updateUrl = true) {
+    const modal = document.getElementById("lightbox-modal");
+    if (!modal || modal.style.display !== "flex") return;
+
+    modal.style.display = "none";
+    document.title = "Anup Giri";
+    if (updateUrl && /^\/gallery\/[^\/]+/.test(window.location.pathname)) {
+        try { history.pushState(null, null, "/gallery"); } catch (e) {}
+    }
 }
 
 // Mobile Menu Navigation
