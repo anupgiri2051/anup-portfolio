@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script>if(location.protocol!=="file:"&&/^\/gallery\/[^\/]+/.test(location.pathname))document.write('<base href="/">')</script>
+<title>Anup Giri</title>
+<meta name="description" content="Personal portfolio of Anup Giri, a student from Baglung exploring IT, AI and web development.">
+<meta name="theme-color" content="#e9edf1">
+<link rel="icon" type="image/svg+xml" href="favicon.svg">
+<link rel="alternate icon" href="favicon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Work+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="template.css">
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+<div class="orb o1" aria-hidden="true"></div><div class="orb o2" aria-hidden="true"></div><div class="orb o3" aria-hidden="true"></div>
+<div id="bar"></div>
+
+<header class="nav">
+  <a class="brand" href="/" data-path="/"><span class="mark">A</span><span>Anup Giri</span></a>
+  <button id="mobile-menu-btn" aria-label="Open menu">☰</button>
+  <nav id="nav-links">
+    <a href="/" data-path="/" class="active">Home</a>
+    <a href="/about" data-path="/about">About</a>
+    <a href="/gallery" data-path="/gallery">Gallery</a>
+    <a href="/contact" data-path="/contact" class="cta">Contact</a>
+  </nav>
+</header>
+
+<main id="main">
+<section id="home" class="hero">
+  <div class="hero-copy">
+    <h1>Hello, I’m<br>Anup Giri</h1>
+    <p class="lead">I’m a student from Baglung, Nepal, exploring <mark>IT</mark>, <mark>AI</mark> and <mark>web development</mark>. I build small projects and share what I learn along the way.</p>
+    <div class="btns">
+      <a class="btn primary" href="/contact" data-path="/contact">Say Hello!</a>
+      <a class="btn ghost" href="/gallery" data-path="/gallery">View gallery</a>
+    </div>
+    <div class="stats">
+      <div><b data-count="3">3</b><span>Focus areas</span></div>
+      <div><b>IT + AI</b><span>Interests</span></div>
+      <div><b>Baglung</b><span>Based in</span></div>
+    </div>
+  </div>
+  <div class="photo-card">
+    <img src="profile.png" alt="Portrait of Anup Giri">
+    <span class="chip">Lets travel together</span>
+  </div>
+</section>
+
+<section id="about-section">
+  <a class="back" href="/" data-path="/">&larr; Back to home</a>
+  <p class="eyebrow">About</p>
+  <h2>A little about me</h2>
+  <dl class="facts">
+    <div><dt><svg class="ic" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-7 8-7s8 3 8 7"/></svg>Name</dt><dd>Anup Giri</dd></div>
+    <div><dt><svg class="ic" viewBox="0 0 24 24"><path d="M12 22s7-6.2 7-12a7 7 0 10-14 0c0 5.8 7 12 7 12z"/><circle cx="12" cy="10" r="2.5"/></svg>Based in</dt><dd>Ramrekha-01, Baglung</dd></div>
+    <div><dt><svg class="ic" viewBox="0 0 24 24"><path d="M12 3l1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8z"/><path d="M19 16l.7 2 2 .7-2 .7-.7 2-.7-2-2-.7 2-.7z"/></svg>Interests</dt><dd>IT and AI</dd></div>
+  </dl>
+</section>
+
+<section id="focus-section">
+  <p class="eyebrow">Focus</p>
+  <h2>What I’m exploring</h2>
+  <div class="duo">
+    <figure class="robot"><img src="robot.jpg" alt="A humanoid robot in a futuristic lab"></figure>
+    <div class="code" aria-label="about.js">
+      <div class="file">about.js</div>
+      <p><u class="k">const</u> developer = {</p>
+      <p>&nbsp;&nbsp;name: <u class="s">"Anup Giri"</u>,</p>
+      <p>&nbsp;&nbsp;focus: [<u class="s">"AI"</u>, <u class="s">"IT"</u>, <u class="s">"Web Dev"</u>],</p>
+      <p>&nbsp;&nbsp;learning: <u class="k">true</u></p>
+      <p>};</p>
+      <p><u class="c">// building small projects along the way</u></p>
+    </div>
+  </div>
+  <div class="skills">
+    <article><span class="ico"><svg class="ic" viewBox="0 0 24 24"><path d="M12 3l1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8z"/><path d="M19 16l.7 2 2 .7-2 .7-.7 2-.7-2-2-.7 2-.7z"/></svg></span><h3>Artificial Intelligence</h3><p>Exploring how AI works and trying small experiments.</p></article>
+    <article><span class="ico"><svg class="ic" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="7" rx="2"/><rect x="3" y="13" width="18" height="7" rx="2"/><path d="M7 7.5h.01M7 16.5h.01"/></svg></span><h3>Information Technology</h3><p>Learning how systems, networks and tools fit together.</p></article>
+    <article><span class="ico"><svg class="ic" viewBox="0 0 24 24"><path d="M8 8l-5 4 5 4M16 8l5 4-5 4M14 5l-4 14"/></svg></span><h3>Web Development</h3><p>Building clean, fast websites like this one.</p></article>
+  </div>
+</section>
+
+<section id="gallery-section">
+  <a class="back" href="/" data-path="/">&larr; Back to home</a>
+  <p class="eyebrow">Gallery</p>
+  <h2>Photo gallery</h2>
+  <div id="gallery-container" class="gallery-grid"></div>
+</section>
+
+<section id="contact-section">
+  <p class="eyebrow">Contact</p>
+  <h2>Get in touch</h2>
+  <div class="duo">
+    <div>
+      <p class="muted">I share bits of what I’m building and learning over on Instagram. You can also send me a message here.</p>
+      <a class="btn ghost insta" href="https://www.instagram.com/me_anupgiri/" target="_blank" rel="noopener"><svg class="ic" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><path d="M17.5 6.5h.01"/></svg>@me_anupgiri</a>
+    </div>
+    <form id="contact-form">
+      <label for="contact-email">Your email address</label>
+      <input type="email" id="contact-email" placeholder="example@domain.com" required>
+      <label for="contact-message">Your message</label>
+      <textarea id="contact-message" rows="5" placeholder="Write your message here..." required></textarea>
+      <button type="submit" id="contact-submit-btn" class="btn primary">Send message</button>
+      <p id="contact-status" role="status"></p>
+    </form>
+  </div>
+</section>
+</main>
+
+<footer>© 2026 Anup Giri. All rights reserved.</footer>
+
+<div id="lightbox-modal">
+  <button id="lightbox-close" aria-label="Close">×</button>
+  <img id="lightbox-img" alt="">
+  <p id="lightbox-caption">Full View</p>
+</div>
+
+<script src="firebase-config.js"></script>
+<script src="script.js"></script>
+<script src="template.js"></script>
+</body>
+</html>
