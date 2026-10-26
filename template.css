@@ -143,3 +143,23 @@ body.view-gallery #home,body.view-gallery #contact-section,body.view-about #home
 .photo-card img{object-fit:contain;object-position:center;border-radius:0;filter:drop-shadow(0 14px 28px rgba(60,40,120,.22))}
 .chip{bottom:1.6rem}
 .chip{display:none}
+
+/* smaller profile photo */
+.photo-card{width:min(340px,100%)}
+@media(max-width:900px){.photo-card{width:min(290px,100%)}}
+
+/* ===== profile photo: ring, glow and floating chips ===== */
+@property --a{syntax:"<angle>";initial-value:0deg;inherits:false}
+@keyframes ringspin{to{--a:360deg}}
+.photo-card{padding:1.4rem;background:linear-gradient(145deg,#fff,#f1e8fd)}
+.photo-card img{aspect-ratio:1/1;border-radius:50%;object-fit:cover;object-position:50% 35%;filter:none;background:#fff;box-shadow:0 14px 34px rgba(60,40,120,.22);transition:transform .5s,filter .5s}
+.photo-card:hover img{transform:scale(1.03);filter:saturate(1.08) contrast(1.03)}
+.photo-card::before{content:"";position:absolute;inset:.7rem;border-radius:50%;pointer-events:none;background:conic-gradient(from var(--a),#9333ea,#ec4899,#4de2ff,#9333ea);-webkit-mask:radial-gradient(farthest-side,transparent calc(100% - 4px),#000 calc(100% - 3px));mask:radial-gradient(farthest-side,transparent calc(100% - 4px),#000 calc(100% - 3px));animation:ringspin 6s linear infinite}
+.photo-card::after{content:"";position:absolute;inset:18%;z-index:-1;border-radius:50%;background:linear-gradient(135deg,rgba(147,51,234,.55),rgba(236,72,153,.45));filter:blur(46px);animation:pulse 4s ease-in-out infinite}
+@keyframes pulse{50%{opacity:.55;scale:1.08}}
+.fx{position:absolute;z-index:3;display:flex;align-items:center;gap:.5rem;padding:.4rem .9rem;background:#fff;border:1px solid var(--line);border-radius:12px;box-shadow:0 12px 30px rgba(60,40,120,.2);font-weight:600;font-size:.85rem;animation:bob 4s ease-in-out infinite}
+.fx::before{content:"";width:8px;height:8px;border-radius:50%;background:var(--p);box-shadow:0 0 8px var(--p)}
+.f1{top:10%;left:-16px}
+.f2{right:-18px;top:46%;animation-delay:-1.4s}.f2::before{background:var(--pink);box-shadow:0 0 8px var(--pink)}
+.f3{bottom:9%;left:-6px;animation-delay:-2.6s}.f3::before{background:#4de2ff;box-shadow:0 0 8px #4de2ff}
+@media(max-width:900px){.f1{left:-8px}.f2{right:-8px}}
