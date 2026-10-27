@@ -5,6 +5,8 @@ document.addEventListener("DOMContentLoaded", () => {
     setupLightbox();
     setupMobileMenu();
     setupScrollReveal();
+    syncSiteSettings();
+    countVisit();
 });
 
 // Fade-in-on-scroll micro-interaction for bento cards
@@ -82,6 +84,12 @@ function handleCurrentRoute(path, initial) {
     closeLightbox(false);
     path = path.length > 1 ? path.replace(/\/+$/, "") : path;
 
+    // Unknown address (typo, old link, /index.html): show the home page and tidy the URL
+    if (!["/", "", "/about", "/gallery", "/contact"].includes(path)) {
+        try { history.replaceState(null, null, "/"); } catch (e) {}
+        path = "/";
+    }
+
     if (path === "/" || path === "") {
         // Scroll completely to top for Home so no content is hidden under navbar
         window.scrollTo({
@@ -130,6 +138,9 @@ function loadGallery() {
     const galleryContainer = document.getElementById("gallery-container");
     if (!galleryContainer) return;
 
+    // loading placeholders until the first data arrives
+    galleryContainer.innerHTML = Array.from({ length: 6 }, () => '<div class="gallery-skel"></div>').join("");
+
     db.collection("photos").orderBy("createdAt", "desc").onSnapshot(snapshot => {
         photoCache = {};
         if (snapshot.empty) {
@@ -167,49 +178,98 @@ function loadGallery() {
                 try { history.replaceState(null, null, "/gallery"); } catch (e) {}
             }
         }
+    }, err => {
+        console.error("Gallery error:", err);
+        galleryContainer.innerHTML = `<p style="color: var(--text-muted); grid-column: 1 / -1; text-align: center;">Photos could not be loaded right now. Please refresh in a moment.</p>`;
     });
 }
 
-// Contact Form Handler
+// Site settings edited in the admin panel (intro text, location, Instagram link)
+function syncSiteSettings() {
+    db.collection("settings").doc("site").onSnapshot(doc => {
+        if (!doc.exists) return;
+        const s = doc.data() || {};
+        const each = (sel, fn) => document.querySelectorAll(sel).forEach(fn);
+        if (s.intro) each('[data-site="intro"]', el => { el.textContent = s.intro; });
+        if (s.location) each('[data-site="location"]', el => { el.textContent = s.location; });
+        if (s.instagram && /^https:\/\//i.test(s.instagram)) {
+            each("[data-site-instagram]", a => { a.href = s.instagram; });
+            const handle = "@" + s.instagram.replace(/[?#].*$/, "").replace(/\/+$/, "").split("/").pop();
+            each('[data-site="instagram-handle"]', el => { el.textContent = handle; });
+        }
+    }, () => {});
+}
+
+// Counts one visit per browser session (shown in the admin overview)
+function countVisit() {
+    if (window.location.protocol === "file:") return;
+    try {
+        if (sessionStorage.getItem("visitCounted")) return;
+        sessionStorage.setItem("visitCounted", "1");
+    } catch (e) {}
+    db.collection("stats").doc("visits")
+        .set({ count: firebase.firestore.FieldValue.increment(1) }, { merge: true })
+        .catch(() => {});
+}
+
+// Contact Form Handler (validation, spam trap, 60 second cooldown)
 function setupContactForm() {
     const contactForm = document.getElementById("contact-form");
     const statusMsg = document.getElementById("contact-status");
     const submitBtn = document.getElementById("contact-submit-btn");
+    const COOLDOWN_MS = 60000;
 
     if (!contactForm) return;
+
+    const say = (text, ok) => {
+        statusMsg.style.color = ok ? "#10b981" : "var(--danger-red)";
+        statusMsg.textContent = text;
+    };
 
     contactForm.addEventListener("submit", async (e) => {
         e.preventDefault();
 
         const email = document.getElementById("contact-email").value.trim();
         const message = document.getElementById("contact-message").value.trim();
+        const trap = document.getElementById("contact-website");
 
-        if (!email || !message) {
-            statusMsg.style.color = "var(--danger-red)";
-            statusMsg.textContent = "Please fill in all fields.";
+        // Hidden field only bots fill in: pretend it worked, send nothing
+        if (trap && trap.value) {
+            say("Your message has been sent successfully!", true);
+            contactForm.reset();
             return;
         }
 
+        if (!email || !message) { say("Please fill in all fields."); return; }
+        if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email)) { say("Please enter a valid email address."); return; }
+        if (message.length < 5) { say("Please write a slightly longer message."); return; }
+        if (message.length > 2000) { say("Please keep your message under 2000 characters."); return; }
+
+        let last = 0;
+        try { last = Number(localStorage.getItem("lastMessageAt")) || 0; } catch (err) {}
+        const wait = Math.ceil((COOLDOWN_MS - (Date.now() - last)) / 1000);
+        if (wait > 0) { say(`Please wait ${wait} seconds before sending another message.`); return; }
+
         try {
             submitBtn.disabled = true;
-            submitBtn.innerHTML = `Sending...`;
+            submitBtn.textContent = "Sending...";
 
             await db.collection("messages").add({
                 email: email,
                 message: message,
+                read: false,
                 createdAt: firebase.firestore.FieldValue.serverTimestamp()
             });
 
-            statusMsg.style.color = "#10b981";
-            statusMsg.textContent = "Your message has been sent successfully!";
+            try { localStorage.setItem("lastMessageAt", String(Date.now())); } catch (err) {}
+            say("Your message has been sent successfully!", true);
             contactForm.reset();
         } catch (err) {
             console.error("Error sending message:", err);
-            statusMsg.style.color = "var(--danger-red)";
-            statusMsg.textContent = "Failed to send message. Please try again.";
+            say("Failed to send message. Please try again.");
         } finally {
             submitBtn.disabled = false;
-            submitBtn.innerHTML = `Send message`;
+            submitBtn.textContent = "Send message";
         }
     });
 }

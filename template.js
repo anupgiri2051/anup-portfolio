@@ -139,3 +139,12 @@
     }
   }, { threshold: .5 }).observe(term);
 })();
+
+// Back-to-top button
+(() => {
+  const b = document.createElement("button");
+  b.className = "totop"; b.type = "button"; b.setAttribute("aria-label", "Back to top"); b.textContent = "↑";
+  b.addEventListener("click", () => scrollTo({ top: 0, behavior: "smooth" }));
+  document.body.appendChild(b);
+  addEventListener("scroll", () => b.classList.toggle("show", scrollY > 700), { passive: true });
+})();

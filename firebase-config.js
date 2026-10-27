@@ -15,6 +15,8 @@ if (!firebase.apps.length) {
 
 // Global Firebase Instances
 const db = firebase.firestore();
+// Authentication is only loaded on the admin page
+const auth = typeof firebase.auth === "function" ? firebase.auth() : null;
 
 // Enable Firestore Local Cache for Instant Data Loading
 db.enablePersistence({ synchronizeTabs: true }).catch(err => {

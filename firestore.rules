@@ -1,0 +1,44 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // CHANGE THIS to the email of the admin user you create in Firebase Authentication
+    function isAdmin() {
+      return request.auth != null && request.auth.token.email == "YOUR-ADMIN-EMAIL@example.com";
+    }
+
+    // Public gallery: anyone can read, only the admin can change
+    match /photos/{id} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    // Contact form: visitors may only CREATE a valid message; only the admin can read/edit/delete
+    match /messages/{id} {
+      allow create: if request.resource.data.keys().hasOnly(['email', 'message', 'read', 'createdAt'])
+                    && request.resource.data.email is string
+                    && request.resource.data.email.size() > 3
+                    && request.resource.data.email.size() < 200
+                    && request.resource.data.message is string
+                    && request.resource.data.message.size() >= 5
+                    && request.resource.data.message.size() <= 2000
+                    && request.resource.data.read == false;
+      allow read, update, delete: if isAdmin();
+    }
+
+    // Site settings (intro text, location, Instagram link): public read, admin write
+    match /settings/{id} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    // Visit counter: visitors can only add +1 to "count"; only the admin can read it
+    match /stats/{id} {
+      allow read: if isAdmin();
+      allow create: if request.resource.data.keys().hasOnly(['count']) && request.resource.data.count == 1;
+      allow update: if isAdmin()
+                    || (request.resource.data.diff(resource.data).affectedKeys().hasOnly(['count'])
+                        && request.resource.data.count == resource.data.count + 1);
+    }
+  }
+}

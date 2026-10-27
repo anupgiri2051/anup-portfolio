@@ -207,3 +207,15 @@ body.view-gallery #code-section,body.view-about #code-section{display:none}
 .term-body .ok{color:#86efac}
 .cur{display:inline-block;width:.55ch;height:1.1em;background:#38bdf8;vertical-align:-.18em;animation:blinkc 1s steps(1) infinite}
 @media(max-width:560px){.term-body{font-size:.82rem;padding:1rem}.term-body .out{padding-left:.9rem}}
+
+/* ===== website essentials: loading skeleton, spam trap, privacy note, footer links, back to top ===== */
+.gallery-skel{aspect-ratio:4/3;border-radius:18px;background:linear-gradient(100deg,#d6e8f5 30%,#eaf4fb 50%,#d6e8f5 70%);background-size:200% 100%;animation:skel 1.4s linear infinite}
+@keyframes skel{to{background-position:-200% 0}}
+.hp{position:absolute;left:-9999px;width:1px;height:1px;overflow:hidden}
+.privacy{margin:.2rem 0 0;font-size:.82rem;color:var(--text-muted)}
+footer{display:flex;flex-wrap:wrap;justify-content:center;gap:.4rem 1.4rem}
+footer a{color:inherit;text-decoration:none;border-bottom:1px solid currentColor}
+footer a:hover{color:#0ea5e9}
+.totop{position:fixed;right:1.2rem;bottom:1.2rem;z-index:250;width:46px;height:46px;border:0;border-radius:50%;background:#0ea5e9;color:#fff;font-size:1.3rem;line-height:1;cursor:pointer;box-shadow:0 10px 26px rgba(14,165,233,.4);opacity:0;visibility:hidden;translate:0 14px;transition:opacity .3s,visibility .3s,translate .3s,background .2s}
+.totop.show{opacity:1;visibility:visible;translate:0 0}
+.totop:hover{background:#0284c7}

@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="robots" content="noindex, nofollow">
     <title>Anup Giri</title>
 
     <!-- Font -->
@@ -12,9 +13,9 @@
 
     <!-- Firebase Compat SDKs -->
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 
-    <!-- Custom CSS -->
     <link rel="icon" type="image/svg+xml" href="favicon.svg">
     <link rel="alternate icon" href="favicon.png">
     <link rel="stylesheet" href="admin.css">
@@ -41,21 +42,56 @@
             </div>
             <form id="login-form" class="clean-form">
                 <div class="form-group">
-                    <label for="admin-email">Admin ID</label>
-                    <input type="text" id="admin-email" placeholder="Enter Admin ID" required>
+                    <label for="admin-email">Admin email</label>
+                    <input type="email" id="admin-email" placeholder="you@example.com" autocomplete="username" required>
                 </div>
                 <div class="form-group">
                     <label for="admin-password">Password</label>
-                    <input type="password" id="admin-password" placeholder="••••••••" required>
+                    <input type="password" id="admin-password" placeholder="••••••••" autocomplete="current-password" required>
                 </div>
-                <button type="submit" class="btn btn-primary btn-block">Login</button>
-                <div id="login-error" class="error-msg"></div>
+                <button type="submit" id="login-btn" class="btn btn-primary btn-block">Login</button>
+                <button type="button" id="reset-pass" class="link-btn">Forgot password?</button>
+                <div id="login-error" class="error-msg" role="alert"></div>
             </form>
         </div>
     </div>
 
     <!-- Admin Dashboard Main Container -->
     <main id="admin-dashboard" class="admin-container" style="display: none;">
+
+        <!-- Overview -->
+        <section class="stats-row" aria-label="Overview">
+            <div class="stat-card"><b id="stat-photos">0</b><span>Photos</span></div>
+            <div class="stat-card"><b id="stat-messages">0</b><span>Messages</span></div>
+            <div class="stat-card accent"><b id="stat-unread">0</b><span>Unread</span></div>
+            <div class="stat-card"><b id="stat-visits">0</b><span>Site visits</span></div>
+        </section>
+
+        <!-- Site settings -->
+        <section class="glass-card">
+            <div class="section-header">
+                <h2>Site settings</h2>
+                <p class="hint">Changes appear on the live site within a few seconds. Leave a field empty to keep the default text.</p>
+            </div>
+            <form id="settings-form" class="clean-form">
+                <div class="form-group">
+                    <label for="set-intro">Home page intro</label>
+                    <textarea id="set-intro" rows="3" maxlength="400" placeholder="I’m a student from Baglung, Nepal, exploring IT, AI and web development..."></textarea>
+                </div>
+                <div class="form-row-desktop">
+                    <div class="form-group">
+                        <label for="set-location">Based in (home page card)</label>
+                        <input type="text" id="set-location" maxlength="40" placeholder="Baglung">
+                    </div>
+                    <div class="form-group">
+                        <label for="set-instagram">Instagram link</label>
+                        <input type="url" id="set-instagram" placeholder="https://www.instagram.com/your_name/">
+                    </div>
+                </div>
+                <button type="submit" id="settings-btn" class="btn btn-primary">Save settings</button>
+                <div id="settings-status" class="status-msg" role="status"></div>
+            </form>
+        </section>
 
         <!-- Photo Upload Section -->
         <section class="glass-card">
@@ -65,7 +101,7 @@
             <form id="upload-form" class="clean-form">
                 <div class="form-group">
                     <label for="photo-title">Photo title / base name</label>
-                    <input type="text" id="photo-title" placeholder="Enter image title..." required>
+                    <input type="text" id="photo-title" placeholder="Enter image title..." maxlength="80" required>
                 </div>
                 <div class="form-group">
                     <label for="photo-file">Select images (multiple allowed)</label>
@@ -79,7 +115,7 @@
                 <button type="submit" id="upload-btn" class="btn btn-primary" style="margin-top: 0.5rem;">
                     Upload photos
                 </button>
-                <div id="upload-status" class="status-msg" style="margin-top: 0.5rem;"></div>
+                <div id="upload-status" class="status-msg" style="margin-top: 0.5rem;" role="status"></div>
             </form>
         </section>
 
@@ -95,6 +131,15 @@
         <section class="glass-card">
             <div class="section-header">
                 <h2>Contact messages</h2>
+            </div>
+            <div class="toolbar">
+                <input type="search" id="msg-search" placeholder="Search messages..." aria-label="Search messages">
+                <select id="msg-filter" aria-label="Filter messages">
+                    <option value="all">All</option>
+                    <option value="unread">Unread only</option>
+                </select>
+                <button type="button" id="msg-readall" class="btn btn-secondary btn-sm">Mark all read</button>
+                <button type="button" id="msg-export" class="btn btn-secondary btn-sm">Export CSV</button>
             </div>
             <div id="messages-container" class="messages-container"></div>
         </section>

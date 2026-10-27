@@ -95,3 +95,24 @@ input[type=file]::file-selector-button{background:#fff;color:var(--text)}
 .admin-card:hover{box-shadow:0 16px 40px rgba(20,30,70,.12);border-color:rgba(14,165,233,.4)}
 .msg-email{color:#0ea5e9}
 .message-card{border-left-color:#0ea5e9}
+
+/* ===== backend additions: stats, toolbar, inbox actions ===== */
+.stats-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:1rem;width:100%}
+.stat-card{padding:1.2rem 1.4rem;background:#fff;border:1px solid var(--line);border-radius:var(--radius-md);box-shadow:0 8px 28px rgba(20,30,70,.06)}
+.stat-card b{display:block;font:800 2rem/1.1 'Bricolage Grotesque','Instrument Sans',sans-serif;color:var(--text)}
+.stat-card span{font-size:.8rem;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--text-muted)}
+.stat-card.accent b{color:#0ea5e9}
+.hint{margin-top:.3rem;font-size:.88rem;color:var(--text-muted)}
+.link-btn{display:block;margin:.8rem auto 0;background:none;border:0;color:var(--text-muted);font:inherit;font-size:.85rem;cursor:pointer;text-decoration:underline}
+.link-btn:hover{color:#0ea5e9}
+.toolbar{display:flex;flex-wrap:wrap;gap:.6rem;margin-bottom:1.1rem}
+.toolbar input,.toolbar select{flex:1 1 200px;padding:.6rem .9rem;background:#f3f5f9;border:1px solid var(--line);border-radius:var(--radius-md);color:var(--text);font:inherit;font-size:.9rem}
+.toolbar select{flex:0 0 auto}
+.btn-sm{padding:.55rem 1rem;font-size:.8rem}
+.card-actions{display:flex;flex-wrap:wrap;gap:.4rem}
+.btn-mini{display:inline-flex;align-items:center;padding:.35rem .8rem;background:#fff;color:var(--text);border:1px solid var(--line);border-radius:var(--radius-sm);font:600 .8rem 'Instrument Sans',sans-serif;text-decoration:none;cursor:pointer;transition:background .2s}
+.btn-mini:hover{background:#f3f5f9}
+.msg-body{white-space:pre-line;color:var(--text);margin:.2rem 0 .6rem;overflow-wrap:anywhere}
+.message-card.unread{border-left-color:#0ea5e9;background:#f4faff}
+.new-tag{margin-left:.3rem;padding:1px 8px;border-radius:99px;background:#0ea5e9;color:#fff;font-size:.68rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase}
+.admin-card-info{flex-wrap:wrap}
