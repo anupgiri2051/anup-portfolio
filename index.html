@@ -113,10 +113,49 @@
     </div>
   </div>
   <div class="skills">
-    <article><span class="ico"><svg class="ic" viewBox="0 0 24 24"><path d="M12 3l1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8z"/><path d="M19 16l.7 2 2 .7-2 .7-.7 2-.7-2-2-.7 2-.7z"/></svg></span><h3>Artificial Intelligence</h3><p>Exploring how AI works and trying small experiments.</p></article>
-    <article><span class="ico"><svg class="ic" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="7" rx="2"/><rect x="3" y="13" width="18" height="7" rx="2"/><path d="M7 7.5h.01M7 16.5h.01"/></svg></span><h3>Information Technology</h3><p>Learning how systems, networks and tools fit together.</p></article>
-    <article><span class="ico"><svg class="ic" viewBox="0 0 24 24"><path d="M8 8l-5 4 5 4M16 8l5 4-5 4M14 5l-4 14"/></svg></span><h3>Web Development</h3><p>Building clean, fast websites like this one.</p></article>
+    <article data-topic="ai" tabindex="0" role="button" aria-haspopup="dialog"><span class="ico"><svg class="ic" viewBox="0 0 24 24"><path d="M12 3l1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8z"/><path d="M19 16l.7 2 2 .7-2 .7-.7 2-.7-2-2-.7 2-.7z"/></svg></span><h3>Artificial Intelligence</h3><p>Exploring how AI works and trying small experiments.</p><span class="more-link">Learn more <i aria-hidden="true">→</i></span></article>
+    <article data-topic="it" tabindex="0" role="button" aria-haspopup="dialog"><span class="ico"><svg class="ic" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="7" rx="2"/><rect x="3" y="13" width="18" height="7" rx="2"/><path d="M7 7.5h.01M7 16.5h.01"/></svg></span><h3>Information Technology</h3><p>Learning how systems, networks and tools fit together.</p><span class="more-link">Learn more <i aria-hidden="true">→</i></span></article>
+    <article data-topic="web" tabindex="0" role="button" aria-haspopup="dialog"><span class="ico"><svg class="ic" viewBox="0 0 24 24"><path d="M8 8l-5 4 5 4M16 8l5 4-5 4M14 5l-4 14"/></svg></span><h3>Web Development</h3><p>Building clean, fast websites like this one.</p><span class="more-link">Learn more <i aria-hidden="true">→</i></span></article>
   </div>
+  <template id="topic-ai">
+    <p class="t-intro">AI is the area I’m most curious about right now. I like understanding how a computer can learn patterns from data instead of being told every single rule.</p>
+    <h4>What I’m learning</h4>
+    <ul>
+      <li>How machine learning models are trained, tested and improved</li>
+      <li>Using AI tools and chatbots well, and knowing their limits</li>
+      <li>Python basics for data and small experiments</li>
+      <li>Computer vision: how computers “see” images</li>
+    </ul>
+    <h4>Topics I’m exploring</h4>
+    <div class="chips"><span>Machine learning</span><span>Python</span><span>Chatbots</span><span>Computer vision</span><span>Prompting</span><span>Data basics</span></div>
+    <p class="t-goal"><b>My goal:</b> build a few small AI experiments and explain them in plain language on this site.</p>
+  </template>
+  <template id="topic-it">
+    <p class="t-intro">Information Technology is the foundation behind everything I build: the computers, networks and tools that make software work in the real world.</p>
+    <h4>What I’m learning</h4>
+    <ul>
+      <li>How networks and the internet move data (IP, DNS and HTTP)</li>
+      <li>Operating systems and working with the command line</li>
+      <li>Databases and how data is stored safely</li>
+      <li>Security basics and keeping accounts and websites safe</li>
+    </ul>
+    <h4>Topics I’m exploring</h4>
+    <div class="chips"><span>Networking</span><span>Command line</span><span>Databases</span><span>Security basics</span><span>Troubleshooting</span></div>
+    <p class="t-goal"><b>My goal:</b> understand the whole path from a click in the browser to the server and back.</p>
+  </template>
+  <template id="topic-web">
+    <p class="t-intro">Web development is how I turn ideas into something people can open and use. This website is one of my own projects.</p>
+    <h4>What I’m learning</h4>
+    <ul>
+      <li>HTML, CSS and JavaScript for clean, responsive pages</li>
+      <li>Using Firebase for a database, login and an admin panel</li>
+      <li>Putting a site online (this one runs on Vercel)</li>
+      <li>Design basics: layout, color, speed and accessibility</li>
+    </ul>
+    <h4>Tools I use</h4>
+    <div class="chips"><span>HTML</span><span>CSS</span><span>JavaScript</span><span>Firebase</span><span>Vercel</span><span>Responsive design</span></div>
+    <p class="t-goal"><b>My goal:</b> keep improving this site and build more small projects.</p>
+  </template>
 </section>
 
 <section id="gallery-section">

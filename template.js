@@ -148,3 +148,48 @@
   document.body.appendChild(b);
   addEventListener("scroll", () => b.classList.toggle("show", scrollY > 700), { passive: true });
 })();
+
+// Skill cards (About page): click or press Enter to read more about each topic
+(() => {
+  const cards = document.querySelectorAll(".skills article[data-topic]");
+  if (!cards.length) return;
+
+  const overlay = document.createElement("div");
+  overlay.className = "topic-overlay"; overlay.hidden = true;
+  overlay.innerHTML = '<div class="topic-card" role="dialog" aria-modal="true" aria-labelledby="topic-title"><button class="topic-close" type="button" aria-label="Close">×</button><div class="topic-head"><span class="ico"></span><h3 id="topic-title"></h3></div><div class="topic-body"></div></div>';
+  document.body.appendChild(overlay);
+  const card = overlay.querySelector(".topic-card");
+  const closeBtn = overlay.querySelector(".topic-close");
+  let opener = null;
+
+  const open = el => {
+    const tpl = document.getElementById("topic-" + el.dataset.topic);
+    if (!tpl) return;
+    opener = el;
+    overlay.querySelector(".ico").innerHTML = el.querySelector(".ico").innerHTML;
+    overlay.querySelector("h3").textContent = el.querySelector("h3").textContent;
+    overlay.querySelector(".topic-body").replaceChildren(tpl.content.cloneNode(true));
+    overlay.hidden = false;
+    document.body.classList.add("topic-open");
+    card.scrollTop = 0;
+    closeBtn.focus();
+  };
+  const close = () => {
+    if (overlay.hidden) return;
+    overlay.hidden = true;
+    document.body.classList.remove("topic-open");
+    if (opener) opener.focus();
+  };
+
+  cards.forEach(el => {
+    el.addEventListener("click", () => open(el));
+    el.addEventListener("keydown", e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); open(el); } });
+  });
+  closeBtn.addEventListener("click", close);
+  overlay.addEventListener("click", e => { if (e.target === overlay) close(); });
+  document.addEventListener("keydown", e => {
+    if (overlay.hidden) return;
+    if (e.key === "Escape") close();
+    if (e.key === "Tab") { e.preventDefault(); closeBtn.focus(); } // the close button is the only control inside
+  });
+})();
