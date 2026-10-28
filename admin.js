@@ -28,11 +28,21 @@ function authError(code) {
         case "auth/too-many-requests":
             return "Too many attempts. Please try again later.";
         case "auth/network-request-failed":
-            return "Network error. Check your connection.";
+            return "Network error. Check your connection, or turn off ad blockers for this site.";
         case "auth/operation-not-allowed":
-            return "Email/password sign-in is not enabled in Firebase yet.";
+            return "Email/password sign-in is not enabled in Firebase yet (Authentication → Sign-in method).";
+        case "auth/user-disabled":
+            return "This account is disabled in Firebase.";
+        case "auth/unauthorized-domain":
+            return "This website address is not allowed in Firebase (Authentication → Settings → Authorized domains).";
+        case "auth/invalid-api-key":
+        case "auth/api-key-not-valid.-please-pass-a-valid-api-key.":
+            return "The Firebase API key is not valid. Check firebase-config.js.";
         default:
-            return "Could not sign in. Please try again.";
+            if (/requests-from-referer|referer/i.test(code || "")) {
+                return "This website address is blocked by the Firebase API key restrictions (Google Cloud → Credentials).";
+            }
+            return "Could not sign in (" + (code || "unknown error") + "). Please try again.";
     }
 }
 
@@ -56,6 +66,7 @@ function initAuth() {
             await auth.signInWithEmailAndPassword($("admin-email").value.trim(), $("admin-password").value);
             $("admin-password").value = "";
         } catch (err) {
+            console.error("Sign-in error:", err.code, err.message);
             errorMsg.textContent = authError(err.code);
         } finally {
             btn.disabled = false;
