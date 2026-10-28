@@ -4,7 +4,7 @@ service cloud.firestore {
 
     // CHANGE THIS to the email of the admin user you create in Firebase Authentication
     function isAdmin() {
-      return request.auth != null && request.auth.token.email == "YOUR-ADMIN-EMAIL@example.com";
+      return request.auth != null && request.auth.token.email == "anupgiri2051@gmail.com";
     }
 
     // Public gallery: anyone can read, only the admin can change
