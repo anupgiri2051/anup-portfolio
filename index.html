@@ -162,7 +162,15 @@
   <a class="back" href="/" data-path="/">&larr; Back to home</a>
   <p class="eyebrow">Gallery</p>
   <h2>Photo gallery</h2>
-  <div id="gallery-container" class="gallery-grid"></div>
+  <div class="gallery-bar">
+    <p id="gallery-count" class="gallery-count" aria-live="polite"></p>
+    <input type="search" id="gallery-search" placeholder="Search photos..." aria-label="Search photos">
+    <div class="layout-toggle" role="group" aria-label="Gallery layout">
+      <button type="button" data-layout="mosaic" aria-pressed="true">Mosaic</button>
+      <button type="button" data-layout="masonry" aria-pressed="false">Masonry</button>
+    </div>
+  </div>
+  <div id="gallery-container" class="gallery-grid" data-layout="mosaic"></div>
 </section>
 
 <section id="contact-section">
@@ -191,8 +199,11 @@
 
 <div id="lightbox-modal">
   <button id="lightbox-close" aria-label="Close">×</button>
+  <button id="lightbox-prev" aria-label="Previous photo">‹</button>
+  <button id="lightbox-next" aria-label="Next photo">›</button>
   <img id="lightbox-img" alt="">
   <p id="lightbox-caption">Full View</p>
+  <p id="lightbox-count"></p>
 </div>
 
 <script src="firebase-config.js"></script>

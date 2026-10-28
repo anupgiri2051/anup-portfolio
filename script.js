@@ -7,6 +7,7 @@ document.addEventListener("DOMContentLoaded", () => {
     setupScrollReveal();
     syncSiteSettings();
     countVisit();
+    setupGalleryTools();
 });
 
 // Fade-in-on-scroll micro-interaction for bento cards
@@ -118,6 +119,8 @@ function handleCurrentRoute(path, initial) {
 
 // Photos opened by URL (/gallery/<id>)
 let photoCache = {};
+let photoOrder = [];
+let currentPhotoId = null;
 let pendingPhoto = null;
 
 function openPhotoById(id, scrollToGallery) {
@@ -127,7 +130,7 @@ function openPhotoById(id, scrollToGallery) {
     }
     if (photoCache[id]) {
         pendingPhoto = null;
-        openLightbox(photoCache[id].url, photoCache[id].title);
+        openLightbox(photoCache[id].url, photoCache[id].title, id);
     } else {
         pendingPhoto = id; // opens as soon as the gallery has loaded
     }
@@ -143,7 +146,9 @@ function loadGallery() {
 
     db.collection("photos").orderBy("createdAt", "desc").onSnapshot(snapshot => {
         photoCache = {};
+        photoOrder = [];
         if (snapshot.empty) {
+            updateGalleryCount(0, 0);
             if (pendingPhoto && !snapshot.metadata.fromCache) { pendingPhoto = null; try { history.replaceState(null, null, "/gallery"); } catch (e) {} }
             galleryContainer.innerHTML = `<p style="color: var(--text-muted); grid-column: 1 / -1; text-align: center;">No photos in gallery yet.</p>`;
             return;
@@ -154,21 +159,34 @@ function loadGallery() {
         snapshot.forEach(doc => {
             const data = doc.data();
             photoCache[doc.id] = data;
+            photoOrder.push(doc.id);
+
+            let when = "";
+            try { when = data.createdAt ? data.createdAt.toDate().toLocaleDateString(undefined, { month: "short", year: "numeric" }) : ""; } catch (e) {}
 
             const item = document.createElement("div");
             item.className = "gallery-item";
+            item.tabIndex = 0;
+            item.setAttribute("role", "button");
+            item.setAttribute("aria-label", "Open photo: " + (data.title || "Untitled"));
+            item.dataset.title = (data.title || "").toLowerCase();
             item.style.animationDelay = Math.min(galleryContainer.children.length, 12) * 0.06 + "s";
             item.innerHTML = `
-                <img src="${data.url}" alt="${esc(data.title)}" loading="lazy">
-                <div class="gallery-item-title">${esc(data.title)}</div>
+                <img src="${esc(data.url)}" alt="${esc(data.title)}" loading="lazy">
+                <span class="gallery-open" aria-hidden="true">↗</span>
+                <div class="gallery-item-title"><span>${esc(data.title)}</span>${when ? `<small>${esc(when)}</small>` : ""}</div>
             `;
 
-            item.addEventListener("click", () => {
-                navigateTo("/gallery/" + encodeURIComponent(doc.id));
+            const open = () => navigateTo("/gallery/" + encodeURIComponent(doc.id));
+            item.addEventListener("click", open);
+            item.addEventListener("keydown", (e) => {
+                if (e.key === "Enter" || e.key === " ") { e.preventDefault(); open(); }
             });
 
             galleryContainer.appendChild(item);
         });
+
+        applyGalleryFilter();
 
         if (pendingPhoto) {
             if (photoCache[pendingPhoto]) {
@@ -182,6 +200,60 @@ function loadGallery() {
         console.error("Gallery error:", err);
         galleryContainer.innerHTML = `<p style="color: var(--text-muted); grid-column: 1 / -1; text-align: center;">Photos could not be loaded right now. Please refresh in a moment.</p>`;
     });
+}
+
+// Gallery toolbar: photo count, search by title, layout switch (mosaic / masonry)
+function updateGalleryCount(shown, total) {
+    const el = document.getElementById("gallery-count");
+    if (!el) return;
+    if (!total) { el.textContent = ""; return; }
+    el.textContent = shown === total
+        ? total + (total === 1 ? " photo" : " photos")
+        : shown + " of " + total + " photos";
+}
+
+function applyGalleryFilter() {
+    const grid = document.getElementById("gallery-container");
+    const search = document.getElementById("gallery-search");
+    if (!grid) return;
+    const q = search ? search.value.trim().toLowerCase() : "";
+    const items = grid.querySelectorAll(".gallery-item");
+    let shown = 0;
+    items.forEach(it => {
+        const match = !q || it.dataset.title.includes(q);
+        it.classList.toggle("is-hidden", !match);
+        if (match) shown++;
+    });
+    let msg = grid.querySelector(".gallery-empty");
+    if (items.length && !shown) {
+        if (!msg) {
+            msg = document.createElement("p");
+            msg.className = "gallery-empty";
+            msg.textContent = "No photos match your search.";
+            grid.appendChild(msg);
+        }
+    } else if (msg) {
+        msg.remove();
+    }
+    updateGalleryCount(shown, items.length);
+}
+
+function setupGalleryTools() {
+    const grid = document.getElementById("gallery-container");
+    if (!grid) return;
+    const buttons = document.querySelectorAll(".layout-toggle button");
+    const setLayout = (layout) => {
+        grid.dataset.layout = layout;
+        buttons.forEach(b => b.setAttribute("aria-pressed", String(b.dataset.layout === layout)));
+        try { localStorage.setItem("galleryLayout", layout); } catch (e) {}
+    };
+    let saved = "mosaic";
+    try { saved = localStorage.getItem("galleryLayout") || "mosaic"; } catch (e) {}
+    setLayout(saved === "masonry" ? "masonry" : "mosaic");
+    buttons.forEach(b => b.addEventListener("click", () => setLayout(b.dataset.layout)));
+
+    const search = document.getElementById("gallery-search");
+    if (search) search.addEventListener("input", applyGalleryFilter);
 }
 
 // Site settings edited in the admin panel (intro text, location, Instagram link)
@@ -288,22 +360,58 @@ function setupLightbox() {
     });
 
     document.addEventListener("keydown", (e) => {
-        if (e.key === "Escape" && modal.style.display === "flex") closeLightbox();
+        if (modal.style.display !== "flex") return;
+        if (e.key === "Escape") closeLightbox();
+        if (e.key === "ArrowLeft") stepPhoto(-1);
+        if (e.key === "ArrowRight") stepPhoto(1);
     });
+
+    const prev = document.getElementById("lightbox-prev");
+    const next = document.getElementById("lightbox-next");
+    if (prev) prev.addEventListener("click", (e) => { e.stopPropagation(); stepPhoto(-1); });
+    if (next) next.addEventListener("click", (e) => { e.stopPropagation(); stepPhoto(1); });
+
+    // swipe left / right on touch screens
+    let startX = null;
+    modal.addEventListener("touchstart", (e) => { startX = e.touches[0].clientX; }, { passive: true });
+    modal.addEventListener("touchend", (e) => {
+        if (startX === null) return;
+        const dx = e.changedTouches[0].clientX - startX;
+        startX = null;
+        if (Math.abs(dx) > 50) stepPhoto(dx < 0 ? 1 : -1);
+    }, { passive: true });
 }
 
-function openLightbox(url, title) {
+function openLightbox(url, title, id) {
     const modal = document.getElementById("lightbox-modal");
     const img = document.getElementById("lightbox-img");
     const caption = document.getElementById("lightbox-caption");
 
     if (!modal || !img || !caption) return;
 
+    currentPhotoId = id || null;
     img.src = url;
     img.alt = title || "";
     caption.textContent = title;
     modal.style.display = "flex";
     document.title = title + " | Anup Giri";
+
+    // counter and previous/next buttons (hidden when there is only one photo)
+    const idx = photoOrder.indexOf(currentPhotoId);
+    const count = document.getElementById("lightbox-count");
+    const many = photoOrder.length > 1 && idx > -1;
+    if (count) count.textContent = idx > -1 ? (idx + 1) + " / " + photoOrder.length : "";
+    ["lightbox-prev", "lightbox-next"].forEach(bid => {
+        const btn = document.getElementById(bid);
+        if (btn) btn.style.display = many ? "" : "none";
+    });
+}
+
+function stepPhoto(dir) {
+    const n = photoOrder.length;
+    const i = photoOrder.indexOf(currentPhotoId);
+    if (n < 2 || i < 0) return;
+    navigateTo("/gallery/" + encodeURIComponent(photoOrder[(i + dir + n) % n]));
 }
 
 // updateUrl=false when the route change itself is closing the photo
@@ -312,6 +420,7 @@ function closeLightbox(updateUrl = true) {
     if (!modal || modal.style.display !== "flex") return;
 
     modal.style.display = "none";
+    currentPhotoId = null;
     document.title = "Anup Giri";
     if (updateUrl && /^\/gallery\/[^\/]+/.test(window.location.pathname)) {
         try { history.pushState(null, null, "/gallery"); } catch (e) {}
