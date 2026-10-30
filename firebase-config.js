@@ -1,6 +1,6 @@
 // Firebase Configuration
 const firebaseConfig = {
-    apiKey: "AIzaSyA-wCUPYUwfGq7eTE6ggwKTna-R4lWUrso",
+    apiKey: "AIzaSyA-wcUPYUWfGq7eTE6gGwKTna-R4lWUrso",
     authDomain: "portfolio-db-9dbc4.firebaseapp.com",
     projectId: "portfolio-db-9dbc4",
     storageBucket: "portfolio-db-9dbc4.firebasestorage.app",
