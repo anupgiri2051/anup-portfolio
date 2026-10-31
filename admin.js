@@ -21,6 +21,7 @@ document.addEventListener("DOMContentLoaded", () => {
 function authError(code) {
     switch (code) {
         case "auth/invalid-credential":
+        case "auth/invalid-login-credentials":
         case "auth/wrong-password":
         case "auth/user-not-found":
         case "auth/invalid-email":
@@ -61,6 +62,7 @@ function initAuth() {
         e.preventDefault();
         const btn = $("login-btn");
         errorMsg.textContent = "";
+        errorMsg.style.color = "";
         btn.disabled = true;
         try {
             await auth.signInWithEmailAndPassword($("admin-email").value.trim(), $("admin-password").value);
