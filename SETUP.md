@@ -13,7 +13,7 @@ If you deploy without doing these steps, you will not be able to log in.
 ## 2. Lock down the database
 1. Go to **Build -> Firestore Database -> Rules**.
 2. Replace everything with the contents of `firestore.rules`.
-3. In that file, change `YOUR-ADMIN-EMAIL@example.com` to the email from step 1.
+3. In that file, change `anupgiri2051@gmail.com` to the email from step 1.
 4. Click **Publish**.
 
 What the rules do:
@@ -26,8 +26,8 @@ In **Authentication -> Settings -> Authorized domains**, make sure `anupgiri.com
 (add it if not). `localhost` is already allowed for testing.
 
 ## 4. Deploy
-Upload all files (including `vercel.json`, `robots.txt`, `sitemap.xml`, `manifest.webmanifest`) and redeploy.
-Open `https://anupgiri.com/admin.html` (or `/admin`) and log in with the email and password from step 1.
+Upload all files (including `vercel.json`, which makes the admin open at /admin and redirects /admin.html to it, `robots.txt`, `sitemap.xml`, `manifest.webmanifest`) and redeploy.
+Open `https://anupgiri.com/admin` and log in with the email and password from step 1.
 
 ## What the admin panel can do
 - Overview: photo count, message count, unread messages, site visits.
@@ -39,3 +39,10 @@ Open `https://anupgiri.com/admin.html` (or `/admin`) and log in with the email a
 - Existing messages that were saved before this update have no "read" flag, so they show as "New" until you open or mark them.
 - The visit counter counts one visit per browser session.
 - Photos are stored inside Firestore (compressed). Firestore documents are limited to about 1 MB, which is fine for the 1200px photos the uploader creates.
+
+## Admin portal at /admin (new)
+- The admin now opens at `https://anupgiri.com/admin` (the old `/admin.html` address redirects there).
+- Sections: Overview (stats, 7-day message chart, recent messages), Photos, Messages, Site settings, Account.
+- Account: change your password (you must type the current one), see your last sign-in, sign out.
+- For safety you are signed out automatically after 30 minutes without activity.
+- `admin-fx.js` is no longer used and does not need to be uploaded.

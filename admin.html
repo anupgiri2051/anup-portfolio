@@ -4,14 +4,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="robots" content="noindex, nofollow">
+    <meta name="theme-color" content="#0b1730">
     <title>Anup Giri</title>
 
-    <!-- Font -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=Instrument+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@600;700&display=swap" rel="stylesheet">
 
-    <!-- Firebase Compat SDKs -->
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
@@ -21,134 +20,232 @@
     <link rel="stylesheet" href="admin.css">
 </head>
 <body>
-    <canvas id="bg" aria-hidden="true"></canvas>
 
-    <header class="navbar">
-        <a href="/" class="brand-logo">
-            <img src="logo.png" alt=""><span>Anup Giri</span>
-            <span class="brand-badge">Admin</span>
-        </a>
-        <div class="nav-actions">
-            <a href="/" class="btn btn-secondary">View site</a>
-            <button id="logout-btn" class="btn btn-secondary" style="display: none;">Logout</button>
+<!-- ================= Login ================= -->
+<div id="login-modal" class="login-screen" style="display: flex;">
+    <div class="login-brand">
+        <div class="lb-top"><img src="logo.png" alt=""><span>Anup Giri</span></div>
+        <div>
+            <h1>Admin portal</h1>
+            <p>Manage your photos, read your messages and update your website from one place.</p>
+            <ul>
+                <li>Secure sign-in with Firebase</li>
+                <li>Live site settings</li>
+                <li>Message inbox with search and export</li>
+            </ul>
         </div>
-    </header>
-
-    <!-- Login Modal -->
-    <div id="login-modal" class="login-modal-overlay" style="display: flex;">
-        <div class="glass-card login-card">
-            <div class="section-header" style="text-align: center;">
-                <h2>Admin login</h2>
-            </div>
-            <form id="login-form" class="clean-form">
+        <small>© 2026 Anup Giri</small>
+    </div>
+    <div class="login-panel">
+        <div class="login-card">
+            <h2>Welcome back</h2>
+            <p class="sub">Sign in to continue to your dashboard.</p>
+            <form id="login-form" class="clean-form" novalidate>
                 <div class="form-group">
-                    <label for="admin-email">Admin email</label>
+                    <label for="admin-email">Email</label>
                     <input type="email" id="admin-email" placeholder="you@example.com" autocomplete="username" required>
                 </div>
                 <div class="form-group">
                     <label for="admin-password">Password</label>
-                    <input type="password" id="admin-password" placeholder="••••••••" autocomplete="current-password" required>
+                    <div class="pw-wrap">
+                        <input type="password" id="admin-password" placeholder="••••••••" autocomplete="current-password" required>
+                        <button type="button" id="toggle-pass" class="pw-toggle" aria-label="Show password">Show</button>
+                    </div>
                 </div>
-                <button type="submit" id="login-btn" class="btn btn-primary btn-block">Login</button>
+                <button type="submit" id="login-btn" class="btn btn-primary btn-block">Sign in</button>
                 <button type="button" id="reset-pass" class="link-btn">Forgot password?</button>
                 <div id="login-error" class="error-msg" role="alert"></div>
             </form>
+            <a class="back-site" href="/">← Back to website</a>
         </div>
     </div>
+</div>
 
-    <!-- Admin Dashboard Main Container -->
-    <main id="admin-dashboard" class="admin-container" style="display: none;">
+<!-- ================= App ================= -->
+<div id="admin-dashboard" class="app" style="display: none;">
+    <aside class="sidebar" id="sidebar">
+        <div class="sb-brand"><img src="logo.png" alt=""><span>Anup Giri</span><em>Admin</em></div>
+        <nav class="sb-nav" aria-label="Admin sections">
+            <a href="#overview" data-view="overview" class="active"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="9" rx="1.5"/><rect x="14" y="3" width="7" height="5" rx="1.5"/><rect x="14" y="12" width="7" height="9" rx="1.5"/><rect x="3" y="16" width="7" height="5" rx="1.5"/></svg>Overview</a>
+            <a href="#photos" data-view="photos"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="9" cy="10" r="1.6"/><path d="M21 16l-5-5-8 9"/></svg>Photos<b class="count" id="nav-photos"></b></a>
+            <a href="#messages" data-view="messages"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 7l9 6 9-6"/></svg>Messages<b class="count badge" id="nav-unread" hidden></b></a>
+            <a href="#settings" data-view="settings"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 00.3 1.8l.1.1a2 2 0 11-2.8 2.8l-.1-.1a1.7 1.7 0 00-1.8-.3 1.7 1.7 0 00-1 1.5V21a2 2 0 11-4 0v-.1a1.7 1.7 0 00-1.1-1.5 1.7 1.7 0 00-1.8.3l-.1.1a2 2 0 11-2.8-2.8l.1-.1a1.7 1.7 0 00.3-1.8 1.7 1.7 0 00-1.5-1H3a2 2 0 110-4h.1a1.7 1.7 0 001.5-1.1 1.7 1.7 0 00-.3-1.8l-.1-.1a2 2 0 112.8-2.8l.1.1a1.7 1.7 0 001.8.3H9a1.7 1.7 0 001-1.5V3a2 2 0 114 0v.1a1.7 1.7 0 001 1.5 1.7 1.7 0 001.8-.3l.1-.1a2 2 0 112.8 2.8l-.1.1a1.7 1.7 0 00-.3 1.8V9a1.7 1.7 0 001.5 1H21a2 2 0 110 4h-.1a1.7 1.7 0 00-1.5 1z"/></svg>Site settings</a>
+            <a href="#account" data-view="account"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-7 8-7s8 3 8 7"/></svg>Account</a>
+        </nav>
+        <div class="sb-foot">
+            <a class="sb-link" href="/" target="_blank" rel="noopener">View website ↗</a>
+            <button id="logout-btn" class="sb-signout" type="button">Sign out</button>
+        </div>
+    </aside>
+    <div class="sb-scrim" id="sb-scrim"></div>
 
-        <!-- Overview -->
-        <section class="stats-row" aria-label="Overview">
-            <div class="stat-card"><b id="stat-photos">0</b><span>Photos</span></div>
-            <div class="stat-card"><b id="stat-messages">0</b><span>Messages</span></div>
-            <div class="stat-card accent"><b id="stat-unread">0</b><span>Unread</span></div>
-            <div class="stat-card"><b id="stat-visits">0</b><span>Site visits</span></div>
-        </section>
+    <div class="main">
+        <header class="topbar">
+            <button id="menu-btn" class="menu-btn" type="button" aria-label="Open menu">☰</button>
+            <h1 id="page-title">Overview</h1>
+            <div class="user"><span id="user-email"></span><span class="avatar" id="user-avatar">A</span></div>
+        </header>
 
-        <!-- Site settings -->
-        <section class="glass-card">
-            <div class="section-header">
-                <h2>Site settings</h2>
-                <p class="hint">Changes appear on the live site within a few seconds. Leave a field empty to keep the default text.</p>
-            </div>
-            <form id="settings-form" class="clean-form">
-                <div class="form-group">
-                    <label for="set-intro">Home page intro</label>
-                    <textarea id="set-intro" rows="3" maxlength="400" placeholder="I’m a student from Baglung, Nepal, exploring IT, AI and web development..."></textarea>
+        <main class="content">
+
+            <!-- Overview -->
+            <section class="view" id="view-overview">
+                <div class="hello">
+                    <h2 id="greeting">Welcome back</h2>
+                    <p class="sub">Here is what is happening on your site.</p>
                 </div>
-                <div class="form-row-desktop">
-                    <div class="form-group">
-                        <label for="set-location">Based in (home page card)</label>
-                        <input type="text" id="set-location" maxlength="40" placeholder="Baglung">
+
+                <div class="stats">
+                    <div class="stat"><span class="s-ico c1"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="9" cy="10" r="1.6"/><path d="M21 16l-5-5-8 9"/></svg></span><div><b id="stat-photos">0</b><span>Photos</span></div></div>
+                    <div class="stat"><span class="s-ico c2"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 7l9 6 9-6"/></svg></span><div><b id="stat-messages">0</b><span>Messages</span></div></div>
+                    <div class="stat"><span class="s-ico c3"><svg viewBox="0 0 24 24"><path d="M18 8a6 6 0 10-12 0c0 7-3 9-3 9h18s-3-2-3-9M13.7 21a2 2 0 01-3.4 0"/></svg></span><div><b id="stat-unread">0</b><span>Unread</span></div></div>
+                    <div class="stat"><span class="s-ico c4"><svg viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg></span><div><b id="stat-visits">0</b><span>Site visits</span></div></div>
+                </div>
+
+                <div class="grid-2">
+                    <div class="card">
+                        <div class="card-head"><h3>Messages · last 7 days</h3><span class="pill" id="chart-total">0</span></div>
+                        <div id="chart7" class="chart" aria-label="Messages received in the last 7 days"></div>
                     </div>
-                    <div class="form-group">
-                        <label for="set-instagram">Instagram link</label>
-                        <input type="url" id="set-instagram" placeholder="https://www.instagram.com/your_name/">
+                    <div class="card">
+                        <div class="card-head"><h3>Recent messages</h3><a href="#messages" data-view="messages" class="text-link">View all</a></div>
+                        <div id="recent-messages" class="recent"></div>
                     </div>
                 </div>
-                <button type="submit" id="settings-btn" class="btn btn-primary">Save settings</button>
-                <div id="settings-status" class="status-msg" role="status"></div>
-            </form>
-        </section>
 
-        <!-- Photo Upload Section -->
-        <section class="glass-card">
-            <div class="section-header">
-                <h2>Add photos</h2>
-            </div>
-            <form id="upload-form" class="clean-form">
-                <div class="form-group">
-                    <label for="photo-title">Photo title / base name</label>
-                    <input type="text" id="photo-title" placeholder="Enter image title..." maxlength="80" required>
+                <div class="card quick">
+                    <h3>Quick actions</h3>
+                    <div class="quick-row">
+                        <a href="#photos" data-view="photos" class="btn btn-primary">Upload photos</a>
+                        <a href="#settings" data-view="settings" class="btn btn-secondary">Edit site text</a>
+                        <a href="/" target="_blank" rel="noopener" class="btn btn-secondary">Open website ↗</a>
+                    </div>
                 </div>
-                <div class="form-group">
-                    <label for="photo-file">Select images (multiple allowed)</label>
-                    <input type="file" id="photo-file" accept="image/*" multiple required>
+            </section>
+
+            <!-- Photos -->
+            <section class="view" id="view-photos" hidden>
+                <div class="card">
+                    <div class="card-head"><h3>Add photos</h3></div>
+                    <form id="upload-form" class="clean-form">
+                        <div class="form-group">
+                            <label for="photo-title">Photo title / base name</label>
+                            <input type="text" id="photo-title" placeholder="Enter image title..." maxlength="80" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="photo-file">Images</label>
+                            <div class="dropzone" id="dropzone">
+                                <p><strong>Drag and drop images here</strong> or choose files</p>
+                                <input type="file" id="photo-file" accept="image/*" multiple required>
+                            </div>
+                        </div>
+                        <div id="preview-wrapper" class="preview-container" style="display: none;">
+                            <div id="image-preview" class="previews"></div>
+                        </div>
+                        <div class="progress" id="upload-progress" hidden><i></i></div>
+                        <div class="row">
+                            <button type="submit" id="upload-btn" class="btn btn-primary">Upload photos</button>
+                            <div id="upload-status" class="status-msg" role="status"></div>
+                        </div>
+                    </form>
                 </div>
 
-                <div id="preview-wrapper" class="preview-container" style="display: none; margin-top: 0.5rem;">
-                    <div id="image-preview" style="display: flex; gap: 10px; flex-wrap: wrap;"></div>
+                <div class="card">
+                    <div class="card-head"><h3>Gallery items</h3></div>
+                    <div id="admin-gallery-grid" class="gallery-grid"></div>
                 </div>
+            </section>
 
-                <button type="submit" id="upload-btn" class="btn btn-primary" style="margin-top: 0.5rem;">
-                    Upload photos
-                </button>
-                <div id="upload-status" class="status-msg" style="margin-top: 0.5rem;" role="status"></div>
-            </form>
-        </section>
+            <!-- Messages -->
+            <section class="view" id="view-messages" hidden>
+                <div class="card">
+                    <div class="toolbar">
+                        <input type="search" id="msg-search" placeholder="Search messages..." aria-label="Search messages">
+                        <select id="msg-filter" aria-label="Filter messages">
+                            <option value="all">All</option>
+                            <option value="unread">Unread only</option>
+                        </select>
+                        <button type="button" id="msg-readall" class="btn btn-secondary btn-sm">Mark all read</button>
+                        <button type="button" id="msg-export" class="btn btn-secondary btn-sm">Export CSV</button>
+                    </div>
+                    <div id="messages-container" class="messages-container"></div>
+                </div>
+            </section>
 
-        <!-- Manage Photos Section -->
-        <section class="glass-card">
-            <div class="section-header">
-                <h2>Gallery items</h2>
-            </div>
-            <div id="admin-gallery-grid" class="gallery-grid"></div>
-        </section>
+            <!-- Site settings -->
+            <section class="view" id="view-settings" hidden>
+                <div class="card narrow">
+                    <div class="card-head"><h3>Website text and links</h3></div>
+                    <p class="hint">Changes appear on the live site within a few seconds. Leave a field empty to keep the default text.</p>
+                    <form id="settings-form" class="clean-form">
+                        <div class="form-group">
+                            <label for="set-intro">Home page intro</label>
+                            <textarea id="set-intro" rows="3" maxlength="400" placeholder="I’m a student from Baglung, Nepal, exploring IT, AI and web development..."></textarea>
+                        </div>
+                        <div class="form-row-desktop">
+                            <div class="form-group">
+                                <label for="set-location">Based in (home page card)</label>
+                                <input type="text" id="set-location" maxlength="40" placeholder="Baglung">
+                            </div>
+                            <div class="form-group">
+                                <label for="set-instagram">Instagram link</label>
+                                <input type="url" id="set-instagram" placeholder="https://www.instagram.com/your_name/">
+                            </div>
+                        </div>
+                        <div class="row">
+                            <button type="submit" id="settings-btn" class="btn btn-primary">Save settings</button>
+                            <div id="settings-status" class="status-msg" role="status"></div>
+                        </div>
+                    </form>
+                </div>
+            </section>
 
-        <!-- Messages Section -->
-        <section class="glass-card">
-            <div class="section-header">
-                <h2>Contact messages</h2>
-            </div>
-            <div class="toolbar">
-                <input type="search" id="msg-search" placeholder="Search messages..." aria-label="Search messages">
-                <select id="msg-filter" aria-label="Filter messages">
-                    <option value="all">All</option>
-                    <option value="unread">Unread only</option>
-                </select>
-                <button type="button" id="msg-readall" class="btn btn-secondary btn-sm">Mark all read</button>
-                <button type="button" id="msg-export" class="btn btn-secondary btn-sm">Export CSV</button>
-            </div>
-            <div id="messages-container" class="messages-container"></div>
-        </section>
+            <!-- Account -->
+            <section class="view" id="view-account" hidden>
+                <div class="grid-2">
+                    <div class="card">
+                        <div class="card-head"><h3>Your account</h3></div>
+                        <dl class="kv">
+                            <div><dt>Signed in as</dt><dd id="acc-email">–</dd></div>
+                            <div><dt>Last sign-in</dt><dd id="acc-last">–</dd></div>
+                            <div><dt>Session</dt><dd>You are signed out automatically after 30 minutes of inactivity.</dd></div>
+                        </dl>
+                        <button type="button" id="logout-btn-2" class="btn btn-secondary">Sign out</button>
+                    </div>
+                    <div class="card">
+                        <div class="card-head"><h3>Change password</h3></div>
+                        <form id="pass-form" class="clean-form">
+                            <div class="form-group"><label for="cur-pass">Current password</label><input type="password" id="cur-pass" autocomplete="current-password" required></div>
+                            <div class="form-group"><label for="new-pass">New password (8+ characters)</label><input type="password" id="new-pass" autocomplete="new-password" minlength="8" required></div>
+                            <div class="form-group"><label for="new-pass2">Repeat new password</label><input type="password" id="new-pass2" autocomplete="new-password" minlength="8" required></div>
+                            <div class="row">
+                                <button type="submit" id="pass-btn" class="btn btn-primary">Update password</button>
+                                <div id="pass-status" class="status-msg" role="status"></div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </section>
 
-    </main>
+        </main>
+    </div>
+</div>
 
-    <!-- Scripts -->
-    <script src="firebase-config.js"></script>
-    <script src="admin.js"></script>
-    <script src="admin-fx.js"></script>
+<!-- Dialog + toasts -->
+<div id="dlg" class="dlg-overlay" hidden>
+    <div class="dlg" role="dialog" aria-modal="true" aria-labelledby="dlg-title">
+        <h3 id="dlg-title"></h3>
+        <p id="dlg-text"></p>
+        <input type="text" id="dlg-input" hidden>
+        <div class="dlg-actions">
+            <button type="button" id="dlg-cancel" class="btn btn-secondary">Cancel</button>
+            <button type="button" id="dlg-ok" class="btn btn-primary">OK</button>
+        </div>
+    </div>
+</div>
+<div id="toasts" class="toasts" aria-live="polite"></div>
+
+<script src="firebase-config.js"></script>
+<script src="admin.js"></script>
 </body>
 </html>
