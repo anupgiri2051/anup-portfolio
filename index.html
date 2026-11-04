@@ -1,213 +1,746 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ne" data-theme="light">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<script>if(location.protocol!=="file:")document.write('<base href="/">')</script>
-<title>Anup Giri</title>
-<meta name="description" content="Personal site of Anup Giri, a student from Baglung, Nepal exploring IT, AI and web development.">
-<link rel="canonical" href="https://anupgiri.com/">
-<meta property="og:type" content="website">
-<meta property="og:site_name" content="Anup Giri">
-<meta property="og:title" content="Anup Giri">
-<meta property="og:description" content="Student from Baglung, Nepal exploring IT, AI and web development.">
-<meta property="og:url" content="https://anupgiri.com/">
-<meta property="og:image" content="https://anupgiri.com/profile.jpg">
-<meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="Anup Giri">
-<meta name="twitter:description" content="Student from Baglung, Nepal exploring IT, AI and web development.">
-<meta name="twitter:image" content="https://anupgiri.com/profile.jpg">
-<link rel="manifest" href="manifest.webmanifest">
-<script type="application/ld+json">{"@context":"https://schema.org","@type":"Person","name":"Anup Giri","url":"https://anupgiri.com/","image":"https://anupgiri.com/profile.jpg","jobTitle":"Student","address":{"@type":"PostalAddress","addressLocality":"Baglung","addressCountry":"NP"},"knowsAbout":["Artificial Intelligence","Information Technology","Web Development"],"sameAs":["https://www.instagram.com/me_anupgiri/"]}</script>
-<meta name="theme-color" content="#e8f1f8">
-<link rel="icon" type="image/svg+xml" href="favicon.svg">
-<link rel="alternate icon" href="favicon.png">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Work+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="template.css">
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>यातायात व्यवस्था कार्यालय बागलुङ - राजस्व प्रणाली</title>
+    <!-- Bootstrap 5 CSS & Lucide Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@600;700&display=swap');
+
+        :root[data-theme="light"] {
+            --bg-main: #f8fafc;
+            --bg-card: #ffffff;
+            --border-color: #cbd5e1;
+            --text-primary: #0f172a;
+            --text-secondary: #475569;
+            --gov-blue: #0f3860;
+            --amount-main: #1e40af;
+            --amount-grand: #047857;
+            --input-bg: #ffffff;
+            --table-header-bg: #f1f5f9;
+            --table-hover: #f8fafc;
+        }
+
+        :root[data-theme="dark"] {
+            --bg-main: #0b0f17;
+            --bg-card: #121826;
+            --border-color: #334155;
+            --text-primary: #f8fafc;
+            --text-secondary: #94a3b8;
+            --gov-blue: #3b82f6;
+            --amount-main: #818cf8;
+            --amount-grand: #34d399;
+            --input-bg: #0f172a;
+            --table-header-bg: #1e293b;
+            --table-hover: rgba(255, 255, 255, 0.02);
+        }
+
+        body { background-color: var(--bg-main); font-family: 'Plus Jakarta Sans', sans-serif; color: var(--text-primary); min-height: 100vh; }
+        .mono-num { font-family: 'JetBrains Mono', monospace; }
+
+        /* Hide up-down arrows in number inputs */
+        input[type=number]::-webkit-inner-spin-button, 
+        input[type=number]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+        input[type=number] { -moz-appearance: textfield; }
+
+        .pro-card { background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 10px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
+        .pro-header { background: var(--bg-card); border-bottom: 2px solid var(--border-color); padding: 1rem 1.5rem; position: sticky; top: 0; z-index: 1000; }
+        
+        .highlight-head { border: 2px solid var(--amount-main) !important; background-color: rgba(30, 64, 175, 0.03); }
+        .highlight-tax { border: 2px solid #b45309 !important; background-color: rgba(180, 83, 9, 0.03); }
+
+        .table-pro { color: var(--text-primary); margin: 0; font-size: 0.8rem; }
+        .table-pro th { background-color: var(--table-header-bg); color: var(--text-secondary); font-weight: 700; border: 1px solid var(--border-color); padding: 0.5rem; text-align: center; vertical-align: middle; }
+        .table-pro td { border: 1px solid var(--border-color); padding: 0.5rem; text-align: center; vertical-align: middle; background: transparent; }
+        .table-pro tr:hover td { background-color: var(--table-hover); }
+
+        #loginPage { min-height: 100vh; display: flex; align-items: center; justify-content: center; background: linear-gradient(135deg, #0f3860 0%, #1e293b 100%); }
+        .login-card { background: #ffffff; border-radius: 12px; width: 100%; max-width: 380px; padding: 2.5rem 2rem; box-shadow: 0 10px 30px rgba(0,0,0,0.2); color: #0f172a; }
+        .theme-btn { background: var(--input-bg); border: 1px solid var(--border-color); color: var(--text-primary); padding: 0.4rem 0.75rem; border-radius: 8px; font-size: 0.85rem; font-weight: 600; cursor: pointer; }
+        #notificationContainer { position: fixed; top: 20px; right: 20px; z-index: 1080; display: flex; flex-direction: column; gap: 10px; }
+        .custom-toast { background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 8px; padding: 12px 16px; color: var(--text-primary); font-size: 0.875rem; box-shadow: 0 4px 12px rgba(0,0,0,0.1); display: flex; align-items: center; gap: 10px; }
+
+        @media print {
+            body * { visibility: hidden; }
+            #printableVoucher, #printableVoucher *, #printableGenericSheet, #printableGenericSheet * { visibility: visible; }
+            #printableVoucher, #printableGenericSheet { position: absolute; left: 0; top: 0; width: 100%; padding: 20px; background: white; color: black; }
+        }
+    </style>
 </head>
 <body>
-<noscript><p style="padding:2rem;text-align:center;font-family:sans-serif">Please turn on JavaScript to view this site.</p></noscript>
-<a class="skip" href="#main">Skip to content</a>
-<div class="orb o1" aria-hidden="true"></div><div class="orb o2" aria-hidden="true"></div><div class="orb o3" aria-hidden="true"></div>
-<div id="bar"></div>
 
-<header class="nav">
-  <a class="brand" href="/" data-path="/"><span class="mark">A</span><span>Anup Giri</span></a>
-  <button id="mobile-menu-btn" aria-label="Open menu">☰</button>
-  <nav id="nav-links">
-    <a href="/" data-path="/" class="active">Home</a>
-    <a href="/about" data-path="/about">About</a>
-    <a href="/gallery" data-path="/gallery">Gallery</a>
-    <a href="/contact" data-path="/contact" class="cta">Contact</a>
-  </nav>
-</header>
+    <div id="notificationContainer"></div>
 
-<main id="main">
-<section id="home" class="hero">
-  <div class="hero-copy">
-    <h1>Hello, I’m<br>Anup Giri</h1>
-    <p class="lead" data-site="intro">I’m a student from Baglung, Nepal, exploring <mark>IT</mark>, <mark>AI</mark> and <mark>web development</mark>. I build small projects and share what I learn along the way.</p>
-    <div class="btns">
-      <a class="btn primary" href="/contact" data-path="/contact">Say Hello!</a>
-      <a class="btn ghost" href="/gallery" data-path="/gallery">View gallery</a>
+    <!-- LOGIN SCREEN -->
+    <div id="loginPage">
+        <div class="login-card text-center">
+            <img src="https://upload.wikimedia.org/wikipedia/commons/2/23/Emblem_of_Nepal.svg" alt="Emblem" height="60" class="mb-3">
+            <h6 class="fw-bold text-dark mb-0">नेपाल सरकार</h6>
+            <h5 class="fw-bold mb-1" style="color: var(--gov-blue);">यातायात व्यवस्था कार्यालय</h5>
+            <p class="small text-muted mb-4">बागलुङ • राजस्व प्रणाली (आर्थिक वर्ष ८३/८४)</p>
+            
+            <form onsubmit="handleLogin(event)">
+                <div class="text-start mb-3">
+                    <label class="form-label small text-secondary fw-semibold">User ID</label>
+                    <input type="text" id="loginUser" class="form-control" placeholder="admin" required>
+                </div>
+                <div class="text-start mb-4">
+                    <label class="form-label small text-secondary fw-semibold">Password</label>
+                    <input type="password" id="loginPass" class="form-control" placeholder="••••••••" required>
+                </div>
+                <button type="submit" class="btn w-100 fw-bold text-white py-2" style="background-color: var(--gov-blue);">लग-इन (Sign In)</button>
+            </form>
+        </div>
     </div>
-    <div class="stats">
-      <div><b data-count="3">3</b><span>Focus areas</span></div>
-      <div><b>IT + AI</b><span>Interests</span></div>
-      <div><b data-site="location">Baglung</b><span>Based in</span></div>
+
+    <!-- MAIN APP INTERFACE -->
+    <div id="appContainer" class="d-none">
+        <header class="pro-header d-flex justify-content-between align-items-center">
+            <div class="d-flex align-items-center gap-3">
+                <img src="https://upload.wikimedia.org/wikipedia/commons/2/23/Emblem_of_Nepal.svg" height="42" alt="Emblem">
+                <div>
+                    <h5 class="m-0 fw-bold" style="color: var(--gov-blue);">प्रदेश सरकार • यातायात व्यवस्था कार्यालय, बागलुङ</h5>
+                    <small class="text-muted">आर्थिक वर्ष २०८३-८४ • दैनिक तथा मासिक राजस्व शिर्षकगत आम्दानी विवरण</small>
+                </div>
+            </div>
+            <div class="d-flex align-items-center gap-3">
+                <button class="theme-btn" onclick="toggleTheme()">
+                    <i data-lucide="sun" id="themeIcon" style="width: 16px;"></i>
+                    <span id="themeLabel">Dark Mode</span>
+                </button>
+                <button class="btn btn-sm btn-outline-danger d-flex align-items-center gap-1 fw-semibold" onclick="handleLogout()">
+                    <i data-lucide="log-out" style="width: 15px;"></i> लग-आउट
+                </button>
+            </div>
+        </header>
+
+        <div class="container-fluid px-4 py-4" style="max-width: 1600px;">
+            <!-- DASHBOARD SUMMARY METRICS -->
+            <div class="pro-card p-4 mb-4">
+                <div class="d-flex justify-content-between align-items-center mb-3 border-bottom pb-2">
+                    <div class="d-flex align-items-center gap-2">
+                        <i data-lucide="bar-chart-3" class="text-primary" style="width: 20px;"></i>
+                        <span class="fw-bold">राजस्व ड्यासबोर्ड सारांश (Revenue Summary - FY 83/84)</span>
+                    </div>
+                    <button class="btn btn-sm btn-outline-primary d-flex align-items-center gap-1 fw-semibold" onclick="loadAllData()">
+                        <i data-lucide="refresh-cw" style="width: 14px;"></i> Sync Database
+                    </button>
+                </div>
+
+                <div class="row g-3">
+                    <div class="col-md-3">
+                        <div class="metric-box p-3 border rounded">
+                            <div class="small text-secondary">33341 (सवारी साधन कर)</div>
+                            <div class="h5 fw-bold mono-num mt-1" style="color: var(--amount-main);" id="dash33341">Rs. 0</div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="metric-box p-3 border rounded">
+                            <div class="small text-secondary">14256 (अनुमतिपत्र)</div>
+                            <div class="h5 fw-bold mono-num mt-1" style="color: var(--amount-main);" id="dash14256">Rs. 0</div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="metric-box p-3 border rounded">
+                            <div class="small text-secondary">14225 (सवारी दर्ता)</div>
+                            <div class="h5 fw-bold mono-num mt-1" style="color: var(--amount-main);" id="dash14225">Rs. 0</div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="metric-box p-3 border rounded" style="border-color: #047857; background: rgba(4, 120, 87, 0.05);">
+                            <div class="small fw-bold" style="color: var(--amount-grand);">सबै महिनाको कुल जम्मा (Grand Total)</div>
+                            <div class="h5 fw-bold mono-num mt-1" style="color: var(--amount-grand);" id="dashGrandTotal">Rs. 0</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- NAVIGATION TABS -->
+            <ul class="nav nav-pills mb-4 border-bottom pb-3">
+                <li class="nav-item"><button class="nav-link active me-2" id="btn-report" onclick="switchTab('report')"><i data-lucide="clipboard-list" style="width: 16px;"></i> सकल राजस्व खाता (Full Ledger)</button></li>
+                <li class="nav-item"><button class="nav-link me-2" id="btn-monthly" onclick="switchTab('monthly')"><i data-lucide="pie-chart" style="width: 16px;"></i> मासिक प्रतिवेदन (Monthly Report)</button></li>
+                <li class="nav-item"><button class="nav-link me-2" id="btn-entry" onclick="switchTab('entry')"><i data-lucide="edit-3" style="width: 16px;"></i> Daily Entry & Recon</button></li>
+            </ul>
+
+            <!-- 1. FULL LEDGER VIEW -->
+            <div id="viewReport" class="pro-card mb-4 overflow-hidden">
+                <div class="p-3 border-bottom d-flex justify-content-between align-items-center">
+                    <span class="fw-bold text-secondary">सकल राजस्व खाता (All Months Records Combined)</span>
+                    <button class="btn btn-sm btn-outline-dark d-flex align-items-center gap-1" onclick="printTableSection('liveTableBody', 'सकल राजस्व खाता प्रतिवेदन - आ.व. ८३/८४')">
+                        <i data-lucide="printer" style="width: 14px;"></i> Print Full Ledger
+                    </button>
+                </div>
+                <div class="table-responsive">
+                    <table class="table table-pro align-middle">
+                        <thead>
+                            <tr>
+                                <th rowspan="2">महिना (Month)</th>
+                                <th rowspan="2">मिति (Date B.S.)</th>
+                                <th colspan="7">राजस्व शिर्षक नं.</th>
+                                <th rowspan="2">जम्मा</th>
+                                <th colspan="2">अ. आय कर</th>
+                                <th rowspan="2">यो महिनाको जम्मा</th>
+                            </tr>
+                            <tr>
+                                <th>33341</th>
+                                <th>14256</th>
+                                <th>३३३४१ पंजिकरण</th>
+                                <th>14229</th>
+                                <th>15111</th>
+                                <th>14225</th>
+                                <th>RMIS</th>
+                                <th>11111</th>
+                                <th>11454</th>
+                            </tr>
+                        </thead>
+                        <tbody id="liveTableBody"></tbody>
+                        <tfoot id="liveTableFoot"></tfoot>
+                    </table>
+                </div>
+            </div>
+
+            <!-- 2. MONTHLY WISE REPORT VIEW -->
+            <div id="viewMonthly" class="pro-card mb-4 overflow-hidden d-none">
+                <div class="p-3 border-bottom d-flex justify-content-between align-items-center">
+                    <div class="d-flex align-items-center gap-2">
+                        <span class="fw-bold text-secondary">मासिक राजस्व सारांश प्रतिवेदन</span>
+                        <select id="monthlySelectFilter" class="form-select form-select-sm fw-bold" onchange="renderMonthlyReportTable()" style="width: auto;">
+                            <option value="ALL">-- सबै महिनाहरू (All Months) --</option>
+                        </select>
+                    </div>
+                    <button class="btn btn-sm btn-outline-dark d-flex align-items-center gap-1" onclick="printTableSection('monthlyTableBody', 'मासिक राजस्व सारांश प्रतिवेदन - आ.व. ८३/८४')">
+                        <i data-lucide="printer" style="width: 14px;"></i> Print Monthly Report
+                    </button>
+                </div>
+                <div class="table-responsive">
+                    <table class="table table-pro align-middle">
+                        <thead>
+                            <tr>
+                                <th rowspan="2">महिना (Month)</th>
+                                <th colspan="7">राजस्व शिर्षक जम्मा</th>
+                                <th rowspan="2">मुख्य लेजर जम्मा</th>
+                                <th colspan="2">अग्रिम आयकर जम्मा</th>
+                                <th rowspan="2">मासिक कुल जम्मा</th>
+                            </tr>
+                            <tr>
+                                <th>33341</th>
+                                <th>14256</th>
+                                <th>३३३४१ पंजिकरण</th>
+                                <th>14229</th>
+                                <th>15111</th>
+                                <th>14225</th>
+                                <th>RMIS</th>
+                                <th>11111</th>
+                                <th>11454</th>
+                            </tr>
+                        </thead>
+                        <tbody id="monthlyTableBody"></tbody>
+                        <tfoot id="monthlyTableFoot"></tfoot>
+                    </table>
+                </div>
+            </div>
+
+            <!-- 3. DAILY ENTRY & RECON VIEW -->
+            <div id="viewEntry" class="d-none mb-4">
+                <div class="row g-3">
+                    <div class="col-md-7">
+                        <div class="pro-card p-4">
+                            <h6 class="fw-bold mb-3 border-bottom pb-2 d-flex align-items-center gap-2 text-primary">
+                                <i data-lucide="edit" style="width: 18px;"></i> दैनिक विवरण प्रविष्टि (Daily Entry)
+                            </h6>
+                            
+                            <div class="mb-3">
+                                <label class="form-label small text-secondary fw-semibold">मिति (Nepali Date B.S. e.g. 4/15/2083)</label>
+                                <input type="text" id="bsDate" class="form-control mono-num" placeholder="M/D/YYYY (e.g. 4/29/2083)">
+                            </div>
+
+                            <label class="form-label small text-secondary fw-semibold mb-2">मुख्य राजस्व शीर्षकहरु <span class="text-primary">(हाइलाइट गरिएका मुख्य शीर्षकहरू)</span></label>
+                            <div class="row g-2 mb-3">
+                                <div class="col-4">
+                                    <label class="small text-primary fw-bold mb-1">33341 (सवारी कर)*</label>
+                                    <input type="number" id="h33341" class="form-control mono-num fw-bold highlight-head" value="0" oninput="update()">
+                                </div>
+                                <div class="col-4">
+                                    <label class="small text-primary fw-bold mb-1">14256 (अनुमतिपत्र)*</label>
+                                    <input type="number" id="h14256" class="form-control mono-num fw-bold highlight-head" value="0" oninput="update()">
+                                </div>
+                                <div class="col-4">
+                                    <label class="small text-muted mb-1">३३३४१ पंजिकरण</label>
+                                    <input type="number" id="hPanji" class="form-control mono-num fw-bold" value="0" oninput="update()">
+                                </div>
+                                <div class="col-4">
+                                    <label class="small text-muted mb-1">14229</label>
+                                    <input type="number" id="h14229" class="form-control mono-num fw-bold" value="0" oninput="update()">
+                                </div>
+                                <div class="col-4">
+                                    <label class="small text-muted mb-1">15111</label>
+                                    <input type="number" id="h15111" class="form-control mono-num fw-bold" value="0" oninput="update()">
+                                </div>
+                                <div class="col-4">
+                                    <label class="small text-primary fw-bold mb-1">14225 (सवारी दर्ता)*</label>
+                                    <input type="number" id="h14225" class="form-control mono-num fw-bold highlight-head" value="0" oninput="update()">
+                                </div>
+                                <div class="col-4">
+                                    <label class="small text-muted mb-1">RMIS</label>
+                                    <input type="number" id="hRims" class="form-control mono-num fw-bold" value="0" oninput="update()">
+                                </div>
+                                <div class="col-4">
+                                    <label class="small text-warning fw-bold mb-1" style="color: #b45309 !important;">11111 (अ. आय कर)*</label>
+                                    <input type="number" id="hAayakar" class="form-control mono-num fw-bold highlight-tax" value="0" oninput="update()">
+                                </div>
+                                <div class="col-4">
+                                    <label class="small text-muted mb-1">11454 (आयकर)</label>
+                                    <input type="number" id="h11454" class="form-control mono-num fw-bold" value="0" oninput="update()">
+                                </div>
+                            </div>
+
+                            <div class="border-top pt-3 d-flex justify-content-between align-items-center">
+                                <span class="fw-bold">कुल राजस्व रकम (Grand Total):</span>
+                                <span class="h4 fw-bold m-0 mono-num" style="color: var(--amount-grand);">Rs. <span id="revClassificationTotalDisplay">0</span></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-5">
+                        <div class="pro-card p-4">
+                            <h6 class="fw-bold mb-3 border-bottom pb-2 d-flex align-items-center gap-2 text-primary">
+                                <i data-lucide="calculator" style="width: 18px;"></i> नगद तथा चेक भिडान (Cash Recon - 11111 बाहेक)
+                            </h6>
+                            <div class="mb-3">
+                                <label class="small text-secondary fw-semibold mb-1">चेक रकम (Cheque Amount)</label>
+                                <input type="number" id="chequeAmt" class="form-control mono-num fw-bold" value="0" oninput="update()">
+                            </div>
+                            <div id="cashItems" class="mb-3"></div>
+                            <div class="d-flex justify-content-between border-top pt-2 mb-3 small fw-bold">
+                                <span class="text-secondary">गन्ती भएको जम्मा (Recon):</span>
+                                <span class="mono-num fs-6">Rs. <span id="moneySumUI">0</span></span>
+                            </div>
+                            <div class="p-3 border rounded mb-3 bg-light">
+                                <div class="d-flex justify-content-between align-items-center small fw-bold">
+                                    <span class="text-secondary">फरक रकम (Variance):</span>
+                                    <span id="varianceDisplay" class="mono-num fs-6">Rs. 0</span>
+                                </div>
+                            </div>
+                            <div id="uiStatus" class="p-2.5 text-center rounded-3 fw-bold small mb-3 border text-success bg-white">✅ REVENUE BALANCED</div>
+                            
+                            <div class="d-grid gap-2">
+                                <button class="btn btn-primary fw-bold py-2.5 d-flex align-items-center justify-content-center gap-2" id="saveBtn" style="background-color: var(--gov-blue);" onclick="saveToGoogleSheet()">
+                                    <i data-lucide="save" style="width: 18px;"></i> Save
+                                </button>
+                                <button class="btn btn-outline-dark fw-bold py-2.5 d-flex align-items-center justify-content-center gap-2" onclick="printVoucher()">
+                                    <i data-lucide="printer" style="width: 18px;"></i> Print Bank Voucher (सबै शीर्षक सहित)
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
     </div>
-  </div>
-  <div class="photo-card">
-    <img src="profile.jpg" alt="Portrait of Anup Giri">
-    <i class="dash" aria-hidden="true"></i><i class="orbit" aria-hidden="true"></i><i class="orbit r2" aria-hidden="true"></i><i class="scan" aria-hidden="true"></i><i class="hud" aria-hidden="true"></i>
-    <span class="fx f1" aria-hidden="true">AI</span>
-    <span class="fx f2" aria-hidden="true">IT</span>
-    <span class="fx f3" aria-hidden="true">WEB</span>
-    <span class="status" aria-hidden="true">// hello, world</span>
-  </div>
-</section>
 
-<section id="code-section">
-  <div class="term" aria-label="Terminal">
-    <div class="term-bar"><i></i><i></i><i></i><span>anup@baglung: ~/portfolio</span></div>
-    <div class="term-body">
-      <p><span class="pr">$</span>whoami</p>
-      <p class="out">Anup Giri — student from Baglung, Nepal</p>
-      <p><span class="pr">$</span>cat interests.txt</p>
-      <p class="out">IT · AI · Web development</p>
-      <p><span class="pr">$</span>git commit -m "keep learning"</p>
-      <p class="out ok">[main] one small project at a time ✓</p>
-      <p><span class="pr">$</span><i class="cur"></i></p>
+    <!-- PRINTABLE BANK VOUCHER -->
+    <div id="printableVoucher" class="d-none">
+        <div style="border: 2px solid #000; padding: 25px; font-family: Arial, sans-serif; background: white; color: black;">
+            <div style="text-align: center; margin-bottom: 20px;">
+                <h3 style="margin: 0; font-weight: bold;">यातायात व्यवस्था कार्यालय, बागलुङ</h3>
+                <h5 style="margin: 5px 0 0 0;">राजस्व बैंक भौचर (Bank Deposit Voucher - FY 83/84)</h5>
+            </div>
+            <hr style="border-top: 1px solid #000; margin: 15px 0;">
+            <p style="font-size: 15px; margin-bottom: 15px;"><strong>मिति वि.सं. (B.S. Date):</strong> <span id="vDate"></span></p>
+            
+            <table class="table table-bordered text-center align-middle" style="border: 1px solid #000; width: 100%;">
+                <thead>
+                    <tr style="background-color: #f8fafc;">
+                        <th style="border: 1px solid #000; text-align: left; padding: 8px;">राजस्व शीर्षक (Revenue Head)</th>
+                        <th style="border: 1px solid #000; text-align: right; padding: 8px; width: 35%;">रकम रु.</th>
+                    </tr>
+                </thead>
+                <tbody id="vBody"></tbody>
+            </table>
+            
+            <div style="margin-top: 70px; display: flex; justify-content: space-between; text-align: center;">
+                <div>-----------------------------------<br>फाँटवाला (Prepared By)</div>
+                <div>-----------------------------------<br>कार्यालय प्रमुख / लेखापाल</div>
+            </div>
+        </div>
     </div>
-  </div>
-</section>
 
-<section id="about-section">
-  <a class="back" href="/" data-path="/">&larr; Back to home</a>
-  <p class="eyebrow">About</p>
-  <h2>A little about me</h2>
-  <dl class="facts">
-    <div><dt><svg class="ic" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-7 8-7s8 3 8 7"/></svg>Name</dt><dd>Anup Giri</dd></div>
-    <div><dt><svg class="ic" viewBox="0 0 24 24"><path d="M12 22s7-6.2 7-12a7 7 0 10-14 0c0 5.8 7 12 7 12z"/><circle cx="12" cy="10" r="2.5"/></svg>Based in</dt><dd>Ramrekha-01, Baglung</dd></div>
-    <div><dt><svg class="ic" viewBox="0 0 24 24"><path d="M12 3l1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8z"/><path d="M19 16l.7 2 2 .7-2 .7-.7 2-.7-2-2-.7 2-.7z"/></svg>Interests</dt><dd>IT and AI</dd></div>
-  </dl>
-</section>
-
-<section id="focus-section">
-  <p class="eyebrow">Focus</p>
-  <h2>What I’m exploring</h2>
-  <div class="duo">
-    <figure class="robot"><img src="robot.jpg" alt="A humanoid robot in a futuristic lab"></figure>
-    <div class="code" aria-label="about.js">
-      <div class="file">about.js</div>
-      <p><u class="k">const</u> developer = {</p>
-      <p>&nbsp;&nbsp;name: <u class="s">"Anup Giri"</u>,</p>
-      <p>&nbsp;&nbsp;focus: [<u class="s">"AI"</u>, <u class="s">"IT"</u>, <u class="s">"Web Dev"</u>],</p>
-      <p>&nbsp;&nbsp;learning: <u class="k">true</u></p>
-      <p>};</p>
-      <p><u class="c">// building small projects along the way</u></p>
+    <div id="printableGenericSheet" class="d-none">
+        <h3 style="text-align: center; font-weight: bold;">यातायात व्यवस्था कार्यालय, बागलुङ</h3>
+        <h5 style="text-align: center;" id="genPrintTitle"></h5>
+        <table class="table table-bordered text-center w-100" style="font-size: 11px;">
+            <tbody id="genPrintBody"></tbody>
+        </table>
     </div>
-  </div>
-  <div class="skills">
-    <article data-topic="ai" tabindex="0" role="button" aria-haspopup="dialog"><span class="ico"><svg class="ic" viewBox="0 0 24 24"><path d="M12 3l1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8z"/><path d="M19 16l.7 2 2 .7-2 .7-.7 2-.7-2-2-.7 2-.7z"/></svg></span><h3>Artificial Intelligence</h3><p>Exploring how AI works and trying small experiments.</p><span class="more-link">Learn more <i aria-hidden="true">→</i></span></article>
-    <article data-topic="it" tabindex="0" role="button" aria-haspopup="dialog"><span class="ico"><svg class="ic" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="7" rx="2"/><rect x="3" y="13" width="18" height="7" rx="2"/><path d="M7 7.5h.01M7 16.5h.01"/></svg></span><h3>Information Technology</h3><p>Learning how systems, networks and tools fit together.</p><span class="more-link">Learn more <i aria-hidden="true">→</i></span></article>
-    <article data-topic="web" tabindex="0" role="button" aria-haspopup="dialog"><span class="ico"><svg class="ic" viewBox="0 0 24 24"><path d="M8 8l-5 4 5 4M16 8l5 4-5 4M14 5l-4 14"/></svg></span><h3>Web Development</h3><p>Building clean, fast websites like this one.</p><span class="more-link">Learn more <i aria-hidden="true">→</i></span></article>
-  </div>
-  <template id="topic-ai">
-    <p class="t-intro">AI is the area I’m most curious about right now. I like understanding how a computer can learn patterns from data instead of being told every single rule.</p>
-    <h4>What I’m learning</h4>
-    <ul>
-      <li>How machine learning models are trained, tested and improved</li>
-      <li>Using AI tools and chatbots well, and knowing their limits</li>
-      <li>Python basics for data and small experiments</li>
-      <li>Computer vision: how computers “see” images</li>
-    </ul>
-    <h4>Topics I’m exploring</h4>
-    <div class="chips"><span>Machine learning</span><span>Python</span><span>Chatbots</span><span>Computer vision</span><span>Prompting</span><span>Data basics</span></div>
-    <p class="t-goal"><b>My goal:</b> build a few small AI experiments and explain them in plain language on this site.</p>
-  </template>
-  <template id="topic-it">
-    <p class="t-intro">Information Technology is the foundation behind everything I build: the computers, networks and tools that make software work in the real world.</p>
-    <h4>What I’m learning</h4>
-    <ul>
-      <li>How networks and the internet move data (IP, DNS and HTTP)</li>
-      <li>Operating systems and working with the command line</li>
-      <li>Databases and how data is stored safely</li>
-      <li>Security basics and keeping accounts and websites safe</li>
-    </ul>
-    <h4>Topics I’m exploring</h4>
-    <div class="chips"><span>Networking</span><span>Command line</span><span>Databases</span><span>Security basics</span><span>Troubleshooting</span></div>
-    <p class="t-goal"><b>My goal:</b> understand the whole path from a click in the browser to the server and back.</p>
-  </template>
-  <template id="topic-web">
-    <p class="t-intro">Web development is how I turn ideas into something people can open and use. This website is one of my own projects.</p>
-    <h4>What I’m learning</h4>
-    <ul>
-      <li>HTML, CSS and JavaScript for clean, responsive pages</li>
-      <li>Using Firebase for a database, login and an admin panel</li>
-      <li>Putting a site online (this one runs on Vercel)</li>
-      <li>Design basics: layout, color, speed and accessibility</li>
-    </ul>
-    <h4>Tools I use</h4>
-    <div class="chips"><span>HTML</span><span>CSS</span><span>JavaScript</span><span>Firebase</span><span>Vercel</span><span>Responsive design</span></div>
-    <p class="t-goal"><b>My goal:</b> keep improving this site and build more small projects.</p>
-  </template>
-</section>
 
-<section id="gallery-section">
-  <a class="back" href="/" data-path="/">&larr; Back to home</a>
-  <p class="eyebrow">Gallery</p>
-  <h2>Photo gallery</h2>
-  <div class="gallery-bar">
-    <p id="gallery-count" class="gallery-count" aria-live="polite"></p>
-    <input type="search" id="gallery-search" placeholder="Search photos..." aria-label="Search photos">
-    <div class="layout-toggle" role="group" aria-label="Gallery layout">
-      <button type="button" data-layout="mosaic" aria-pressed="true">Mosaic</button>
-      <button type="button" data-layout="masonry" aria-pressed="false">Masonry</button>
-    </div>
-  </div>
-  <div id="gallery-container" class="gallery-grid" data-layout="mosaic"></div>
-</section>
+<script>
+    const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzlAsmRUf2pMczhFUaM-0ZeHH-Omx2G4_H_FDX6GZxeYMMbG8Wk8DaWfY4_UMc2r7M/exec";
+    const AUTH_USER = "admin";
+    const AUTH_PASS = "R522051";
 
-<section id="contact-section">
-  <p class="eyebrow">Contact</p>
-  <h2>Get in touch</h2>
-  <div class="duo">
-    <div>
-      <p class="muted">I share bits of what I’m building and learning over on Instagram. You can also send me a message here.</p>
-      <a class="btn ghost insta" href="https://www.instagram.com/me_anupgiri/" data-site-instagram target="_blank" rel="noopener"><svg class="ic" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><path d="M17.5 6.5h.01"/></svg><span data-site="instagram-handle">@me_anupgiri</span></a>
-    </div>
-    <form id="contact-form" novalidate>
-      <label for="contact-email">Your email address</label>
-      <input type="email" id="contact-email" placeholder="example@domain.com" autocomplete="email" maxlength="200" required>
-      <label for="contact-message">Your message</label>
-      <textarea id="contact-message" rows="5" placeholder="Write your message here..." maxlength="2000" required></textarea>
-      <div class="hp" aria-hidden="true"><label for="contact-website">Leave this field empty</label><input type="text" id="contact-website" name="website" tabindex="-1" autocomplete="off"></div>
-      <button type="submit" id="contact-submit-btn" class="btn primary">Send message</button>
-      <p class="privacy">Your email is only used to reply to your message.</p>
-      <p id="contact-status" role="status"></p>
-    </form>
-  </div>
-</section>
-</main>
+    const ALL_FISCAL_MONTHS = [
+        "Shrawan83-84", "Bhadra83-84", "Ashoj83-84", "Kartik83-84",
+        "Mangsir83-84", "Poush83-84", "Magh83-84", "Falgun83-84",
+        "Chaitra83-84", "Baishakh83-84", "Jestha83-84", "Ashar83-84"
+    ];
 
-<footer><span>© 2026 Anup Giri. All rights reserved.</span><a href="https://www.instagram.com/me_anupgiri/" data-site-instagram target="_blank" rel="noopener">Instagram</a><a href="/contact" data-path="/contact">Contact</a></footer>
+    let cachedMonthlyData = {};
 
-<div id="lightbox-modal">
-  <button id="lightbox-close" aria-label="Close">×</button>
-  <button id="lightbox-prev" aria-label="Previous photo">‹</button>
-  <button id="lightbox-next" aria-label="Next photo">›</button>
-  <img id="lightbox-img" alt="">
-  <p id="lightbox-caption">Full View</p>
-  <p id="lightbox-count"></p>
-</div>
+    function toggleTheme() {
+        const next = document.documentElement.getAttribute('data-theme') === 'light' ? 'dark' : 'light';
+        document.documentElement.setAttribute('data-theme', next);
+        document.getElementById('themeLabel').innerText = next === 'dark' ? 'Light Mode' : 'Dark Mode';
+        document.getElementById('themeIcon').setAttribute('data-lucide', next === 'dark' ? 'moon' : 'sun');
+        lucide.createIcons();
+    }
 
-<script src="firebase-config.js"></script>
-<script src="script.js"></script>
-<script src="template.js"></script>
+    function showToast(msg, type = "info") {
+        const container = document.getElementById("notificationContainer");
+        const t = document.createElement("div");
+        t.className = "custom-toast";
+        t.innerHTML = `<i data-lucide="info" style="width: 18px;"></i><span>${msg}</span>`;
+        container.appendChild(t);
+        lucide.createIcons();
+        setTimeout(() => t.remove(), 3000);
+    }
+
+    function handleLogin(e) {
+        e.preventDefault();
+        if (document.getElementById("loginUser").value === AUTH_USER && document.getElementById("loginPass").value === AUTH_PASS) {
+            sessionStorage.setItem("auth", "true");
+            checkAuth();
+            showToast("Authenticated", "success");
+        } else {
+            showToast("Invalid Credentials", "danger");
+        }
+    }
+
+    function handleLogout() { sessionStorage.removeItem("auth"); checkAuth(); }
+
+    function checkAuth() {
+        if (sessionStorage.getItem("auth") === "true") {
+            document.getElementById("loginPage").classList.add("d-none");
+            document.getElementById("appContainer").classList.remove("d-none");
+            populateMonthDropdownFilter();
+            loadAllData();
+        } else {
+            document.getElementById("loginPage").classList.remove("d-none");
+            document.getElementById("appContainer").classList.add("d-none");
+        }
+    }
+
+    function switchTab(tab) {
+        ['report', 'monthly', 'entry'].forEach(t => {
+            document.getElementById(`btn-${t}`).className = `nav-link me-2 ${tab === t ? 'active' : ''}`;
+            document.getElementById(`view${t.charAt(0).toUpperCase() + t.slice(1)}`).classList.toggle('d-none', tab !== t);
+        });
+    }
+
+    function formatExactBsDate(dateVal) {
+        if (!dateVal) return '';
+        let str = String(dateVal).trim();
+        if (str.includes('T')) {
+            let parts = str.split('T')[0].split('-');
+            if (parts.length === 3) {
+                return `${parseInt(parts[1], 10)}/${parseInt(parts[2], 10)}/${parts[0]}`;
+            }
+        }
+        return str;
+    }
+
+    function populateMonthDropdownFilter() {
+        const select = document.getElementById('monthlySelectFilter');
+        select.innerHTML = `<option value="ALL">-- सबै महिनाहरू (All Months) --</option>` + 
+            ALL_FISCAL_MONTHS.map(m => `<option value="${m}">${m}</option>`).join('');
+    }
+
+    async function loadAllData() {
+        cachedMonthlyData = {};
+        let fullLedgerHtml = "";
+        let grandTotals = Array(11).fill(0);
+
+        for (const month of ALL_FISCAL_MONTHS) {
+            try {
+                const res = await fetch(`${APPS_SCRIPT_URL}?sheet=${month}`);
+                const data = await res.json();
+                let rows = data.data || [];
+
+                let monthSum = Array(11).fill(0);
+                let monthRowsCount = 0;
+
+                rows.slice(6).forEach(r => {
+                    let exactDate = formatExactBsDate(r[0]);
+                    let isSummary = exactDate && (exactDate.includes("जम्मा") || exactDate.includes("Total"));
+
+                    if (!isSummary && exactDate) {
+                        monthRowsCount++;
+                        for (let i = 1; i <= 11; i++) {
+                            let val = Number(r[i]) || 0;
+                            monthSum[i - 1] += val;
+                            grandTotals[i - 1] += val;
+                        }
+
+                        fullLedgerHtml += `<tr>
+                            <td class="fw-bold text-secondary bg-light">${month}</td>
+                            <td class="mono-num fw-bold">${exactDate}</td>
+                            <td class="mono-num">${(Number(r[1]) || 0).toLocaleString()}</td>
+                            <td class="mono-num">${(Number(r[2]) || 0).toLocaleString()}</td>
+                            <td class="mono-num">${(Number(r[3]) || 0).toLocaleString()}</td>
+                            <td class="mono-num">${(Number(r[4]) || 0).toLocaleString()}</td>
+                            <td class="mono-num">${(Number(r[5]) || 0).toLocaleString()}</td>
+                            <td class="mono-num">${(Number(r[6]) || 0).toLocaleString()}</td>
+                            <td class="mono-num">${(Number(r[7]) || 0).toLocaleString()}</td>
+                            <td class="mono-num fw-bold" style="color:var(--amount-main);">${(Number(r[8]) || 0).toLocaleString()}</td>
+                            <td class="mono-num">${(Number(r[9]) || 0).toLocaleString()}</td>
+                            <td class="mono-num">${(Number(r[10]) || 0).toLocaleString()}</td>
+                            <td class="mono-num fw-bold" style="color:var(--amount-grand);">${(Number(r[11]) || 0).toLocaleString()}</td>
+                        </tr>`;
+                    }
+                });
+
+                if (monthRowsCount > 0) {
+                    cachedMonthlyData[month] = monthSum;
+                }
+            } catch (e) {
+                // Skip missing month tabs safely
+            }
+        }
+
+        document.getElementById('liveTableBody').innerHTML = fullLedgerHtml || `<tr><td colspan="13" class="text-muted p-4">Google Sheet मा कुनै पनि रेकर्ड फेला परेन।</td></tr>`;
+        
+        const footerHtml = `<tr class="fw-bold bg-light" style="border-top: 2px solid var(--border-color);">
+            <td colspan="2">कुल वार्षिक जम्मा (Grand Total)</td>
+            <td class="mono-num">${grandTotals[0].toLocaleString()}</td>
+            <td class="mono-num">${grandTotals[1].toLocaleString()}</td>
+            <td class="mono-num">${grandTotals[2].toLocaleString()}</td>
+            <td class="mono-num">${grandTotals[3].toLocaleString()}</td>
+            <td class="mono-num">${grandTotals[4].toLocaleString()}</td>
+            <td class="mono-num">${grandTotals[5].toLocaleString()}</td>
+            <td class="mono-num">${grandTotals[6].toLocaleString()}</td>
+            <td class="mono-num" style="color:var(--amount-main);">${grandTotals[7].toLocaleString()}</td>
+            <td class="mono-num">${grandTotals[8].toLocaleString()}</td>
+            <td class="mono-num">${grandTotals[9].toLocaleString()}</td>
+            <td class="mono-num" style="color:var(--amount-grand);">${grandTotals[10].toLocaleString()}</td>
+        </tr>`;
+
+        document.getElementById('liveTableFoot').innerHTML = footerHtml;
+        renderMonthlyReportTable();
+
+        document.getElementById('dash33341').innerText = "Rs. " + grandTotals[0].toLocaleString();
+        document.getElementById('dash14256').innerText = "Rs. " + grandTotals[1].toLocaleString();
+        document.getElementById('dash14225').innerText = "Rs. " + grandTotals[5].toLocaleString();
+        document.getElementById('dashGrandTotal').innerText = "Rs. " + grandTotals[10].toLocaleString();
+
+        lucide.createIcons();
+    }
+
+    function renderMonthlyReportTable() {
+        const filterVal = document.getElementById('monthlySelectFilter').value;
+        let monthlyHtml = "";
+        let filterTotals = Array(11).fill(0);
+
+        Object.keys(cachedMonthlyData).forEach(month => {
+            if (filterVal === "ALL" || filterVal === month) {
+                let monthSum = cachedMonthlyData[month];
+                for (let i = 0; i < 11; i++) filterTotals[i] += monthSum[i];
+
+                monthlyHtml += `<tr>
+                    <td class="fw-bold mono-num text-start">${month}</td>
+                    <td class="mono-num">${monthSum[0].toLocaleString()}</td>
+                    <td class="mono-num">${monthSum[1].toLocaleString()}</td>
+                    <td class="mono-num">${monthSum[2].toLocaleString()}</td>
+                    <td class="mono-num">${monthSum[3].toLocaleString()}</td>
+                    <td class="mono-num">${monthSum[4].toLocaleString()}</td>
+                    <td class="mono-num">${monthSum[5].toLocaleString()}</td>
+                    <td class="mono-num">${monthSum[6].toLocaleString()}</td>
+                    <td class="mono-num fw-bold" style="color:var(--amount-main);">${monthSum[7].toLocaleString()}</td>
+                    <td class="mono-num">${monthSum[8].toLocaleString()}</td>
+                    <td class="mono-num">${monthSum[9].toLocaleString()}</td>
+                    <td class="mono-num fw-bold" style="color:var(--amount-grand);">${monthSum[10].toLocaleString()}</td>
+                </tr>`;
+            }
+        });
+
+        document.getElementById('monthlyTableBody').innerHTML = monthlyHtml || `<tr><td colspan="12" class="text-muted p-4">छानिएको महिनाको विवरण उपलब्ध छैन।</td></tr>`;
+        
+        document.getElementById('monthlyTableFoot').innerHTML = `<tr class="fw-bold bg-light" style="border-top: 2px solid var(--border-color);">
+            <td>जम्मा (Total)</td>
+            <td class="mono-num">${filterTotals[0].toLocaleString()}</td>
+            <td class="mono-num">${filterTotals[1].toLocaleString()}</td>
+            <td class="mono-num">${filterTotals[2].toLocaleString()}</td>
+            <td class="mono-num">${filterTotals[3].toLocaleString()}</td>
+            <td class="mono-num">${filterTotals[4].toLocaleString()}</td>
+            <td class="mono-num">${filterTotals[5].toLocaleString()}</td>
+            <td class="mono-num">${filterTotals[6].toLocaleString()}</td>
+            <td class="mono-num" style="color:var(--amount-main);">${filterTotals[7].toLocaleString()}</td>
+            <td class="mono-num">${filterTotals[8].toLocaleString()}</td>
+            <td class="mono-num">${filterTotals[9].toLocaleString()}</td>
+            <td class="mono-num" style="color:var(--amount-grand);">${filterTotals[10].toLocaleString()}</td>
+        </tr>`;
+    }
+
+    function initializeDenominations() {
+        const denoms = [1000, 500, 100, 50, 20, 10, 5, 2, 1];
+        document.getElementById('cashItems').innerHTML = denoms.map(d => `
+            <div class="row g-2 align-items-center mb-1">
+                <div class="col-3 small text-secondary fw-semibold">Rs. ${d}</div>
+                <div class="col-4"><input type="number" class="form-control form-control-sm c-in mono-num fw-bold" data-val="${d}" value="0" oninput="update()"></div>
+                <div class="col-5 small text-end text-muted mono-num fw-bold" id="calc_${d}">0</div>
+            </div>`).join('');
+    }
+
+    function update() {
+        const v1 = parseFloat(document.getElementById('h33341').value) || 0;
+        const v2 = parseFloat(document.getElementById('h14256').value) || 0;
+        const v3 = parseFloat(document.getElementById('hPanji').value) || 0;
+        const v4 = parseFloat(document.getElementById('h14229').value) || 0;
+        const v5 = parseFloat(document.getElementById('h15111').value) || 0;
+        const v6 = parseFloat(document.getElementById('h14225').value) || 0;
+        const v7 = parseFloat(document.getElementById('hRims').value) || 0;
+        const v8 = parseFloat(document.getElementById('hAayakar').value) || 0; // Title 11111 amount
+        const v9 = parseFloat(document.getElementById('h11454').value) || 0;
+        const chq = parseFloat(document.getElementById('chequeAmt').value) || 0;
+
+        // Grand Total for database / general reference (includes all heads)
+        const grandTotal = v1 + v2 + v3 + v4 + v5 + v6 + v7 + v8 + v9;
+        document.getElementById('revClassificationTotalDisplay').innerText = grandTotal.toLocaleString();
+
+        let cashOnly = 0;
+        document.querySelectorAll('.c-in').forEach(i => {
+            const count = parseFloat(i.value) || 0;
+            const val = parseFloat(i.getAttribute('data-val')) * count;
+            cashOnly += val;
+            document.getElementById(`calc_${i.getAttribute('data-val')}`).innerText = val.toLocaleString();
+        });
+
+        const totalMoney = cashOnly + chq;
+        document.getElementById('moneySumUI').innerText = totalMoney.toLocaleString();
+
+        // EXCLUDE title 11111 (v8) from Cash Recon target target total
+        const reconTargetTotal = grandTotal - v8;
+        const diff = totalMoney - reconTargetTotal;
+
+        const varianceBox = document.getElementById('varianceDisplay');
+        const statusBox = document.getElementById('uiStatus');
+
+        if (diff > 0) {
+            varianceBox.innerHTML = `<span class="text-danger">+ Rs. ${diff.toLocaleString()} (बढी)</span>`;
+            statusBox.className = "p-2.5 text-center rounded-3 fw-bold small mb-3 border text-danger bg-white";
+            statusBox.innerHTML = "❌ CASH EXCEEDS REVENUE (11111 बाहेक)";
+        } else if (diff < 0) {
+            varianceBox.innerHTML = `<span class="text-warning">- Rs. ${Math.abs(diff).toLocaleString()} (घटी)</span>`;
+            statusBox.className = "p-2.5 text-center rounded-3 fw-bold small mb-3 border text-warning bg-white";
+            statusBox.innerHTML = "⚠️ CASH LESS THAN REVENUE (11111 बाहेक)";
+        } else {
+            varianceBox.innerHTML = `Rs. 0`;
+            statusBox.className = "p-2.5 text-center rounded-3 fw-bold small mb-3 border text-success bg-white";
+            statusBox.innerHTML = "✅ REVENUE BALANCED (11111 बाहेक)";
+        }
+
+        document.getElementById('saveBtn').disabled = diff !== 0;
+    }
+
+    function printVoucher() {
+        const dateBS = document.getElementById('bsDate').value.trim();
+        if (!dateBS) {
+            showToast("Specify B.S. Date first", "danger");
+            return;
+        }
+
+        const heads = [
+            { name: "33341 (सवारी साधन कर)", val: parseFloat(document.getElementById('h33341').value) || 0 },
+            { name: "14256 (सवारी चालक अनुमतिपत्र)", val: parseFloat(document.getElementById('h14256').value) || 0 },
+            { name: "३३३४१ पंजिकरण", val: parseFloat(document.getElementById('hPanji').value) || 0 },
+            { name: "14229", val: parseFloat(document.getElementById('h14229').value) || 0 },
+            { name: "15111", val: parseFloat(document.getElementById('h15111').value) || 0 },
+            { name: "14225 (सवारी दर्ता)", val: parseFloat(document.getElementById('h14225').value) || 0 },
+            { name: "RMIS", val: parseFloat(document.getElementById('hRims').value) || 0 },
+            { name: "11111 (अ. आय कर)", val: parseFloat(document.getElementById('hAayakar').value) || 0 },
+            { name: "11454 (अ. आय कर)", val: parseFloat(document.getElementById('h11454').value) || 0 }
+        ];
+
+        let vBodyHtml = "";
+        let total = 0;
+        heads.forEach(h => {
+            if (h.val > 0) {
+                total += h.val;
+                vBodyHtml += `<tr><td style="border: 1px solid #000; text-align: left; padding: 6px;">${h.name}</td><td style="border: 1px solid #000; text-align: right; padding: 6px;">Rs. ${h.val.toLocaleString()}</td></tr>`;
+            }
+        });
+
+        vBodyHtml += `<tr style="font-weight: bold; background-color: #f1f5f9;"><td style="border: 1px solid #000; text-align: right; padding: 8px;">कुल जम्मा (Grand Total):</td><td style="border: 1px solid #000; text-align: right; padding: 8px;">Rs. ${total.toLocaleString()}</td></tr>`;
+
+        document.getElementById('vDate').innerText = dateBS;
+        document.getElementById('vBody').innerHTML = vBodyHtml;
+
+        document.getElementById('printableVoucher').classList.remove('d-none');
+        window.print();
+        document.getElementById('printableVoucher').classList.add('d-none');
+    }
+
+    async function saveToGoogleSheet() {
+        const dateBS = document.getElementById('bsDate').value.trim();
+        if (!dateBS) {
+            showToast("Specify B.S. Date (e.g. 4/15/2083)", "danger");
+            return;
+        }
+
+        const saveBtn = document.getElementById('saveBtn');
+        saveBtn.disabled = true;
+        saveBtn.innerHTML = `<i data-lucide="loader-2" class="spin" style="width:18px;"></i> Saving...`;
+        lucide.createIcons();
+
+        const payload = {
+            dateBS: dateBS,
+            v33341: parseFloat(document.getElementById('h33341').value) || 0,
+            v14256: parseFloat(document.getElementById('h14256').value) || 0,
+            vPanji: parseFloat(document.getElementById('hPanji').value) || 0,
+            v14229: parseFloat(document.getElementById('h14229').value) || 0,
+            v15111: parseFloat(document.getElementById('h15111').value) || 0,
+            v14225: parseFloat(document.getElementById('h14225').value) || 0,
+            vRims: parseFloat(document.getElementById('hRims').value) || 0,
+            vAayakar: parseFloat(document.getElementById('hAayakar').value) || 0,
+            v11454: parseFloat(document.getElementById('h11454').value) || 0
+        };
+
+        try {
+            await fetch(APPS_SCRIPT_URL, { 
+                method: "POST", 
+                mode: "no-cors", 
+                headers: { "Content-Type": "text/plain" }, 
+                body: JSON.stringify(payload) 
+            });
+
+            showToast("Data saved successfully!", "success");
+            setTimeout(() => {
+                loadAllData();
+            }, 1500);
+        } catch (e) {
+            showToast("Failed to save to database", "danger");
+        } finally {
+            saveBtn.disabled = false;
+            saveBtn.innerHTML = `<i data-lucide="save" style="width: 18px;"></i> Save`;
+            lucide.createIcons();
+        }
+    }
+
+    function printTableSection(bodyId, title) {
+        document.getElementById('genPrintTitle').innerText = title;
+        document.getElementById('genPrintBody').innerHTML = document.getElementById(bodyId).innerHTML;
+        document.getElementById('printableGenericSheet').classList.remove('d-none');
+        window.print();
+        document.getElementById('printableGenericSheet').classList.add('d-none');
+    }
+
+    window.addEventListener('DOMContentLoaded', () => {
+        initializeDenominations();
+        checkAuth();
+        lucide.createIcons();
+    });
+</script>
 </body>
 </html>
