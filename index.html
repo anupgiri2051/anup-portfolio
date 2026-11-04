@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script>if(location.protocol!=="file:")document.write('<base href="/">')</script>
+<title>Anup Giri</title>
+<meta name="description" content="Personal site of Anup Giri, a student from Baglung, Nepal exploring IT, AI and web development.">
+<link rel="canonical" href="https://anupgiri.com/">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Anup Giri">
+<meta property="og:title" content="Anup Giri">
+<meta property="og:description" content="Student from Baglung, Nepal exploring IT, AI and web development.">
+<meta property="og:url" content="https://anupgiri.com/">
+<meta property="og:image" content="https://anupgiri.com/profile.jpg">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Anup Giri">
+<meta name="twitter:description" content="Student from Baglung, Nepal exploring IT, AI and web development.">
+<meta name="twitter:image" content="https://anupgiri.com/profile.jpg">
+<link rel="manifest" href="manifest.webmanifest">
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"Person","name":"Anup Giri","url":"https://anupgiri.com/","image":"https://anupgiri.com/profile.jpg","jobTitle":"Student","address":{"@type":"PostalAddress","addressLocality":"Baglung","addressCountry":"NP"},"knowsAbout":["Artificial Intelligence","Information Technology","Web Development"],"sameAs":["https://www.instagram.com/me_anupgiri/"]}</script>
+<meta name="theme-color" content="#e8f1f8">
+<link rel="icon" type="image/svg+xml" href="favicon.svg">
+<link rel="alternate icon" href="favicon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Work+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="template.css">
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+</head>
+<body>
+<noscript><p style="padding:2rem;text-align:center;font-family:sans-serif">Please turn on JavaScript to view this site.</p></noscript>
+<a class="skip" href="#main">Skip to content</a>
+<div class="orb o1" aria-hidden="true"></div><div class="orb o2" aria-hidden="true"></div><div class="orb o3" aria-hidden="true"></div>
+<div id="bar"></div>
+
+<header class="nav">
+  <a class="brand" href="/" data-path="/"><span class="mark">A</span><span>Anup Giri</span></a>
+  <button id="mobile-menu-btn" aria-label="Open menu">☰</button>
+  <nav id="nav-links">
+    <a href="/" data-path="/" class="active">Home</a>
+    <a href="/about" data-path="/about">About</a>
+    <a href="/gallery" data-path="/gallery">Gallery</a>
+    <a href="/contact" data-path="/contact" class="cta">Contact</a>
+  </nav>
+</header>
+
+<main id="main">
+<section id="home" class="hero">
+  <div class="hero-copy">
+    <h1>Hello, I’m<br>Anup Giri</h1>
+    <p class="lead" data-site="intro">I’m a student from Baglung, Nepal, exploring <mark>IT</mark>, <mark>AI</mark> and <mark>web development</mark>. I build small projects and share what I learn along the way.</p>
+    <div class="btns">
+      <a class="btn primary" href="/contact" data-path="/contact">Say Hello!</a>
+      <a class="btn ghost" href="/gallery" data-path="/gallery">View gallery</a>
+    </div>
+    <div class="stats">
+      <div><b data-count="3">3</b><span>Focus areas</span></div>
+      <div><b>IT + AI</b><span>Interests</span></div>
+      <div><b data-site="location">Baglung</b><span>Based in</span></div>
+    </div>
+  </div>
+  <div class="photo-card">
+    <img src="profile.jpg" alt="Portrait of Anup Giri">
+    <i class="dash" aria-hidden="true"></i><i class="orbit" aria-hidden="true"></i><i class="orbit r2" aria-hidden="true"></i><i class="scan" aria-hidden="true"></i><i class="hud" aria-hidden="true"></i>
+    <span class="fx f1" aria-hidden="true">AI</span>
+    <span class="fx f2" aria-hidden="true">IT</span>
+    <span class="fx f3" aria-hidden="true">WEB</span>
+    <span class="status" aria-hidden="true">// hello, world</span>
+  </div>
+</section>
+
+<section id="code-section">
+  <div class="term" aria-label="Terminal">
+    <div class="term-bar"><i></i><i></i><i></i><span>anup@baglung: ~/portfolio</span></div>
+    <div class="term-body">
+      <p><span class="pr">$</span>whoami</p>
+      <p class="out">Anup Giri — student from Baglung, Nepal</p>
+      <p><span class="pr">$</span>cat interests.txt</p>
+      <p class="out">IT · AI · Web development</p>
+      <p><span class="pr">$</span>git commit -m "keep learning"</p>
+      <p class="out ok">[main] one small project at a time ✓</p>
+      <p><span class="pr">$</span><i class="cur"></i></p>
+    </div>
+  </div>
+</section>
+
+<section id="about-section">
+  <a class="back" href="/" data-path="/">&larr; Back to home</a>
+  <p class="eyebrow">About</p>
+  <h2>A little about me</h2>
+  <dl class="facts">
+    <div><dt><svg class="ic" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-7 8-7s8 3 8 7"/></svg>Name</dt><dd>Anup Giri</dd></div>
+    <div><dt><svg class="ic" viewBox="0 0 24 24"><path d="M12 22s7-6.2 7-12a7 7 0 10-14 0c0 5.8 7 12 7 12z"/><circle cx="12" cy="10" r="2.5"/></svg>Based in</dt><dd>Ramrekha-01, Baglung</dd></div>
+    <div><dt><svg class="ic" viewBox="0 0 24 24"><path d="M12 3l1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8z"/><path d="M19 16l.7 2 2 .7-2 .7-.7 2-.7-2-2-.7 2-.7z"/></svg>Interests</dt><dd>IT and AI</dd></div>
+  </dl>
+</section>
+
+<section id="focus-section">
+  <p class="eyebrow">Focus</p>
+  <h2>What I’m exploring</h2>
+  <div class="duo">
+    <figure class="robot"><img src="robot.jpg" alt="A humanoid robot in a futuristic lab"></figure>
+    <div class="code" aria-label="about.js">
+      <div class="file">about.js</div>
+      <p><u class="k">const</u> developer = {</p>
+      <p>&nbsp;&nbsp;name: <u class="s">"Anup Giri"</u>,</p>
+      <p>&nbsp;&nbsp;focus: [<u class="s">"AI"</u>, <u class="s">"IT"</u>, <u class="s">"Web Dev"</u>],</p>
+      <p>&nbsp;&nbsp;learning: <u class="k">true</u></p>
+      <p>};</p>
+      <p><u class="c">// building small projects along the way</u></p>
+    </div>
+  </div>
+  <div class="skills">
+    <article data-topic="ai" tabindex="0" role="button" aria-haspopup="dialog"><span class="ico"><svg class="ic" viewBox="0 0 24 24"><path d="M12 3l1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8z"/><path d="M19 16l.7 2 2 .7-2 .7-.7 2-.7-2-2-.7 2-.7z"/></svg></span><h3>Artificial Intelligence</h3><p>Exploring how AI works and trying small experiments.</p><span class="more-link">Learn more <i aria-hidden="true">→</i></span></article>
+    <article data-topic="it" tabindex="0" role="button" aria-haspopup="dialog"><span class="ico"><svg class="ic" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="7" rx="2"/><rect x="3" y="13" width="18" height="7" rx="2"/><path d="M7 7.5h.01M7 16.5h.01"/></svg></span><h3>Information Technology</h3><p>Learning how systems, networks and tools fit together.</p><span class="more-link">Learn more <i aria-hidden="true">→</i></span></article>
+    <article data-topic="web" tabindex="0" role="button" aria-haspopup="dialog"><span class="ico"><svg class="ic" viewBox="0 0 24 24"><path d="M8 8l-5 4 5 4M16 8l5 4-5 4M14 5l-4 14"/></svg></span><h3>Web Development</h3><p>Building clean, fast websites like this one.</p><span class="more-link">Learn more <i aria-hidden="true">→</i></span></article>
+  </div>
+  <template id="topic-ai">
+    <p class="t-intro">AI is the area I’m most curious about right now. I like understanding how a computer can learn patterns from data instead of being told every single rule.</p>
+    <h4>What I’m learning</h4>
+    <ul>
+      <li>How machine learning models are trained, tested and improved</li>
+      <li>Using AI tools and chatbots well, and knowing their limits</li>
+      <li>Python basics for data and small experiments</li>
+      <li>Computer vision: how computers “see” images</li>
+    </ul>
+    <h4>Topics I’m exploring</h4>
+    <div class="chips"><span>Machine learning</span><span>Python</span><span>Chatbots</span><span>Computer vision</span><span>Prompting</span><span>Data basics</span></div>
+    <p class="t-goal"><b>My goal:</b> build a few small AI experiments and explain them in plain language on this site.</p>
+  </template>
+  <template id="topic-it">
+    <p class="t-intro">Information Technology is the foundation behind everything I build: the computers, networks and tools that make software work in the real world.</p>
+    <h4>What I’m learning</h4>
+    <ul>
+      <li>How networks and the internet move data (IP, DNS and HTTP)</li>
+      <li>Operating systems and working with the command line</li>
+      <li>Databases and how data is stored safely</li>
+      <li>Security basics and keeping accounts and websites safe</li>
+    </ul>
+    <h4>Topics I’m exploring</h4>
+    <div class="chips"><span>Networking</span><span>Command line</span><span>Databases</span><span>Security basics</span><span>Troubleshooting</span></div>
+    <p class="t-goal"><b>My goal:</b> understand the whole path from a click in the browser to the server and back.</p>
+  </template>
+  <template id="topic-web">
+    <p class="t-intro">Web development is how I turn ideas into something people can open and use. This website is one of my own projects.</p>
+    <h4>What I’m learning</h4>
+    <ul>
+      <li>HTML, CSS and JavaScript for clean, responsive pages</li>
+      <li>Using Firebase for a database, login and an admin panel</li>
+      <li>Putting a site online (this one runs on Vercel)</li>
+      <li>Design basics: layout, color, speed and accessibility</li>
+    </ul>
+    <h4>Tools I use</h4>
+    <div class="chips"><span>HTML</span><span>CSS</span><span>JavaScript</span><span>Firebase</span><span>Vercel</span><span>Responsive design</span></div>
+    <p class="t-goal"><b>My goal:</b> keep improving this site and build more small projects.</p>
+  </template>
+</section>
+
+<section id="gallery-section">
+  <a class="back" href="/" data-path="/">&larr; Back to home</a>
+  <p class="eyebrow">Gallery</p>
+  <h2>Photo gallery</h2>
+  <div class="gallery-bar">
+    <p id="gallery-count" class="gallery-count" aria-live="polite"></p>
+    <input type="search" id="gallery-search" placeholder="Search photos..." aria-label="Search photos">
+    <div class="layout-toggle" role="group" aria-label="Gallery layout">
+      <button type="button" data-layout="mosaic" aria-pressed="true">Mosaic</button>
+      <button type="button" data-layout="masonry" aria-pressed="false">Masonry</button>
+    </div>
+  </div>
+  <div id="gallery-container" class="gallery-grid" data-layout="mosaic"></div>
+</section>
+
+<section id="contact-section">
+  <p class="eyebrow">Contact</p>
+  <h2>Get in touch</h2>
+  <div class="duo">
+    <div>
+      <p class="muted">I share bits of what I’m building and learning over on Instagram. You can also send me a message here.</p>
+      <a class="btn ghost insta" href="https://www.instagram.com/me_anupgiri/" data-site-instagram target="_blank" rel="noopener"><svg class="ic" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><path d="M17.5 6.5h.01"/></svg><span data-site="instagram-handle">@me_anupgiri</span></a>
+    </div>
+    <form id="contact-form" novalidate>
+      <label for="contact-email">Your email address</label>
+      <input type="email" id="contact-email" placeholder="example@domain.com" autocomplete="email" maxlength="200" required>
+      <label for="contact-message">Your message</label>
+      <textarea id="contact-message" rows="5" placeholder="Write your message here..." maxlength="2000" required></textarea>
+      <div class="hp" aria-hidden="true"><label for="contact-website">Leave this field empty</label><input type="text" id="contact-website" name="website" tabindex="-1" autocomplete="off"></div>
+      <button type="submit" id="contact-submit-btn" class="btn primary">Send message</button>
+      <p class="privacy">Your email is only used to reply to your message.</p>
+      <p id="contact-status" role="status"></p>
+    </form>
+  </div>
+</section>
+</main>
+
+<footer><span>© 2026 Anup Giri. All rights reserved.</span><a href="https://www.instagram.com/me_anupgiri/" data-site-instagram target="_blank" rel="noopener">Instagram</a><a href="/contact" data-path="/contact">Contact</a></footer>
+
+<div id="lightbox-modal">
+  <button id="lightbox-close" aria-label="Close">×</button>
+  <button id="lightbox-prev" aria-label="Previous photo">‹</button>
+  <button id="lightbox-next" aria-label="Next photo">›</button>
+  <img id="lightbox-img" alt="">
+  <p id="lightbox-caption">Full View</p>
+  <p id="lightbox-count"></p>
+</div>
+
+<script src="firebase-config.js"></script>
+<script src="script.js"></script>
+<script src="template.js"></script>
+</body>
+</html>
