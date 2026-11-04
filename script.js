@@ -8,6 +8,7 @@ document.addEventListener("DOMContentLoaded", () => {
     syncSiteSettings();
     countVisit();
     setupGalleryTools();
+    initPopup();
 });
 
 // Fade-in-on-scroll micro-interaction for bento cards
@@ -523,4 +524,206 @@ function constellation() {
         }
         requestAnimationFrame(draw);
     })(0);
+}
+
+
+/* ---------- Home page popup (photos and videos managed from the admin panel) ---------- */
+function parsePopupVideo(raw) {
+    let u;
+    try { u = new URL(String(raw).trim()); } catch (e) { return null; }
+    if (u.protocol !== "https:") return null;
+    const host = u.hostname.replace(/^www\.|^m\./, "");
+    let id = null;
+    if (host === "youtu.be") id = u.pathname.slice(1).split("/")[0];
+    else if (host === "youtube.com" || host === "youtube-nocookie.com") {
+        if (u.pathname === "/watch") id = u.searchParams.get("v");
+        else { const m = u.pathname.match(/^\/(?:embed|shorts|live)\/([\w-]{6,})/); if (m) id = m[1]; }
+    }
+    if (id && /^[\w-]{6,}$/.test(id)) return { kind: "iframe", src: "https://www.youtube-nocookie.com/embed/" + id + "?rel=0" };
+    if (host === "vimeo.com") { const m = u.pathname.match(/^\/(\d+)/); if (m) return { kind: "iframe", src: "https://player.vimeo.com/video/" + m[1] }; }
+    if (/\.(mp4|webm|ogg)$/i.test(u.pathname)) return { kind: "file", src: u.href };
+    return null;
+}
+
+function popupAlreadySeen(freq, stamp) {
+    try {
+        if (localStorage.getItem("popupOff") === stamp) return true; // visitor chose "don't show again"
+        if (freq === "always") return false;
+        if (freq === "session") return sessionStorage.getItem("popupSeenSession") === stamp;
+        const raw = JSON.parse(localStorage.getItem("popupSeen") || "null");
+        if (!raw || raw.stamp !== stamp) return false;
+        return freq === "daily" ? Date.now() - raw.t < 86400000 : true; // "once"
+    } catch (e) { return false; }
+}
+
+function initPopup() {
+    const preview = /[?&]popup-preview=1/.test(window.location.search);
+    const fresh = (q) => q.get({ source: "server" }).catch(() => q.get());
+
+    Promise.all([
+        fresh(db.collection("settings").doc("popup")),
+        fresh(db.collection("popupSlides").orderBy("order", "asc"))
+    ]).then(([cfgDoc, slidesSnap]) => {
+        const cfg = cfgDoc.exists ? (cfgDoc.data() || {}) : {};
+        const slides = [];
+        slidesSnap.forEach(d => slides.push(d.data()));
+        if (!preview && !cfg.enabled) return;
+        if (!slides.length && !cfg.title && !cfg.text) return;
+
+        const t = cfg.updatedAt;
+        const stamp = String(t && t.toMillis ? t.toMillis() : (t || 0));
+        const freq = cfg.frequency || "session";
+        if (!preview && popupAlreadySeen(freq, stamp)) return;
+
+        setTimeout(() => {
+            const lb = document.getElementById("lightbox-modal");
+            if (!preview && lb && lb.style.display === "flex") return; // don't cover an opened photo
+            if (document.getElementById("pop-overlay")) return;
+            if (!preview) {
+                try {
+                    sessionStorage.setItem("popupSeenSession", stamp);
+                    localStorage.setItem("popupSeen", JSON.stringify({ stamp, t: Date.now() }));
+                } catch (e) {}
+            }
+            showPopup(cfg, slides, stamp, preview);
+        }, 1200);
+    }).catch(err => console.warn("Popup not loaded:", err));
+}
+
+function showPopup(cfg, slides, stamp, preview) {
+    const opener = document.activeElement;
+    const ov = document.createElement("div");
+    ov.id = "pop-overlay";
+    ov.className = "pop-overlay";
+
+    const card = document.createElement("div");
+    card.className = "pop-card" + (slides.length ? "" : " no-media");
+    card.setAttribute("role", "dialog");
+    card.setAttribute("aria-modal", "true");
+    card.setAttribute("aria-label", cfg.title || "Announcement");
+
+    const closeBtn = document.createElement("button");
+    closeBtn.className = "pop-close";
+    closeBtn.type = "button";
+    closeBtn.setAttribute("aria-label", "Close");
+    closeBtn.textContent = "×";
+    card.appendChild(closeBtn);
+
+    if (preview) {
+        const tag = document.createElement("span");
+        tag.className = "pop-preview-tag";
+        tag.textContent = "Preview";
+        card.appendChild(tag);
+    }
+
+    let index = 0;
+    let stage = null, dots = [];
+    const renderSlide = (i) => {
+        index = (i + slides.length) % slides.length;
+        const sl = slides[index];
+        stage.replaceChildren();
+        if (sl.type === "photo") {
+            const img = document.createElement("img");
+            img.src = sl.url;
+            img.alt = cfg.title || "";
+            stage.appendChild(img);
+        } else {
+            const v = parsePopupVideo(sl.url);
+            if (v && v.kind === "iframe") {
+                const f = document.createElement("iframe");
+                f.src = v.src;
+                f.title = "Video";
+                f.allow = "accelerometer; encrypted-media; picture-in-picture; fullscreen";
+                f.allowFullscreen = true;
+                f.referrerPolicy = "strict-origin-when-cross-origin";
+                stage.appendChild(f);
+            } else if (v && v.kind === "file") {
+                const vid = document.createElement("video");
+                vid.src = v.src;
+                vid.controls = true;
+                vid.playsInline = true;
+                vid.preload = "metadata";
+                stage.appendChild(vid);
+            }
+        }
+        dots.forEach((d, k) => d.setAttribute("aria-current", k === index ? "true" : "false"));
+    };
+
+    if (slides.length) {
+        const media = document.createElement("div");
+        media.className = "pop-media";
+        stage = document.createElement("div");
+        stage.className = "pop-stage";
+        media.appendChild(stage);
+        if (slides.length > 1) {
+            const prev = document.createElement("button");
+            prev.className = "pop-nav pop-prev"; prev.type = "button"; prev.setAttribute("aria-label", "Previous"); prev.textContent = "‹";
+            prev.addEventListener("click", () => renderSlide(index - 1));
+            const next = document.createElement("button");
+            next.className = "pop-nav pop-next"; next.type = "button"; next.setAttribute("aria-label", "Next"); next.textContent = "›";
+            next.addEventListener("click", () => renderSlide(index + 1));
+            const dotBox = document.createElement("div");
+            dotBox.className = "pop-dots";
+            slides.forEach((_, k) => {
+                const d = document.createElement("button");
+                d.type = "button"; d.setAttribute("aria-label", "Go to item " + (k + 1));
+                d.addEventListener("click", () => renderSlide(k));
+                dots.push(d); dotBox.appendChild(d);
+            });
+            media.append(prev, next, dotBox);
+        }
+        card.appendChild(media);
+        renderSlide(0);
+    }
+
+    const body = document.createElement("div");
+    body.className = "pop-body";
+    if (cfg.title) { const h = document.createElement("h3"); h.textContent = cfg.title; body.appendChild(h); }
+    if (cfg.text) { const p = document.createElement("p"); p.textContent = cfg.text; body.appendChild(p); }
+    const actions = document.createElement("div");
+    actions.className = "pop-actions";
+    if (cfg.buttonUrl && cfg.buttonText && /^https:\/\//i.test(cfg.buttonUrl)) {
+        const a = document.createElement("a");
+        a.className = "pop-cta";
+        a.href = cfg.buttonUrl;
+        a.target = "_blank";
+        a.rel = "noopener";
+        a.textContent = cfg.buttonText;
+        actions.appendChild(a);
+    }
+    if (!preview) {
+        const skip = document.createElement("button");
+        skip.className = "pop-skip"; skip.type = "button"; skip.textContent = "Don’t show again";
+        skip.addEventListener("click", () => { try { localStorage.setItem("popupOff", stamp); } catch (e) {} close(); });
+        actions.appendChild(skip);
+    }
+    if (actions.children.length) body.appendChild(actions);
+    if (body.children.length) card.appendChild(body);
+
+    ov.appendChild(card);
+    document.body.appendChild(ov);
+    document.body.classList.add("pop-open");
+    closeBtn.focus();
+
+    function close() {
+        document.removeEventListener("keydown", onKey);
+        ov.remove(); // also stops any playing video
+        document.body.classList.remove("pop-open");
+        if (opener && opener.focus) opener.focus();
+    }
+    function onKey(e) {
+        if (e.key === "Escape") close();
+        else if (e.key === "ArrowLeft" && slides.length > 1) renderSlide(index - 1);
+        else if (e.key === "ArrowRight" && slides.length > 1) renderSlide(index + 1);
+        else if (e.key === "Tab") {
+            const f = [...card.querySelectorAll("button:not([disabled]),a[href]")];
+            if (!f.length) return;
+            const i = f.indexOf(document.activeElement);
+            e.preventDefault();
+            f[(i + (e.shiftKey ? -1 : 1) + f.length) % f.length].focus();
+        }
+    }
+    closeBtn.addEventListener("click", close);
+    ov.addEventListener("click", (e) => { if (e.target === ov) close(); });
+    document.addEventListener("keydown", onKey);
 }

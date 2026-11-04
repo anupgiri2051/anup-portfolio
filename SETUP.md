@@ -46,3 +46,15 @@ Open `https://anupgiri.com/admin` and log in with the email and password from st
 - Account: change your password (you must type the current one), see your last sign-in, sign out.
 - For safety you are signed out automatically after 30 minutes without activity.
 - `admin-fx.js` is no longer used and does not need to be uploaded.
+
+## Home page popup (new)
+In the admin go to **Popup**:
+1. Add photos (uploaded and compressed automatically) and/or video links (YouTube, Vimeo, or a direct https link ending in .mp4).
+2. Write an optional title, message and button, choose how often visitors see it, switch **Show popup** on and press **Save popup**.
+3. Press **Preview on site** to see exactly what visitors will see, even while the popup is switched off.
+
+Good to know:
+- Videos are added by link, not uploaded. Firestore documents are limited to about 1 MB, and Firebase Storage needs a paid plan on new projects, so a link keeps this free.
+- Use the order buttons (arrows) to change the order of the slides.
+- When you save the popup again, visitors who closed it before will see the updated version.
+- **You must publish the updated `firestore.rules` again** (it now includes a `popupSlides` section). Without it, adding photos and videos to the popup will fail.

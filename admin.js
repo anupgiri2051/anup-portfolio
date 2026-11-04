@@ -5,7 +5,7 @@ const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": 
 const $ = id => document.getElementById(id);
 
 const IDLE_MS = 30 * 60 * 1000;
-const VIEWS = { overview: "Overview", photos: "Photos", messages: "Messages", settings: "Site settings", account: "Account" };
+const VIEWS = { overview: "Overview", photos: "Photos", popup: "Popup", messages: "Messages", settings: "Site settings", account: "Account" };
 const IDLE_EVENTS = ["mousemove", "keydown", "click", "touchstart", "scroll"];
 
 let unsubs = [];
@@ -13,6 +13,8 @@ let started = false;
 let allMessages = [];
 let settingsLoaded = false;
 let idleTimer = null;
+let popupLoaded = false;
+let slides = [];
 
 document.addEventListener("DOMContentLoaded", () => {
     initAuth();
@@ -23,6 +25,7 @@ document.addEventListener("DOMContentLoaded", () => {
     setupSettingsForm();
     setupMessageTools();
     setupPasswordForm();
+    setupPopupTools();
 });
 
 /* ---------- small UI helpers ---------- */
@@ -210,6 +213,8 @@ function showDashboard(user) {
     loadAdminGallery();
     loadMessages();
     loadSettings();
+    loadPopup();
+    loadSlides();
 }
 
 function showLoginModal() {
@@ -220,7 +225,9 @@ function showLoginModal() {
     unsubs = [];
     started = false;
     settingsLoaded = false;
+    popupLoaded = false;
     allMessages = [];
+    slides = [];
 }
 
 // Automatic sign-out after 30 minutes without activity
@@ -692,6 +699,209 @@ function setupPasswordForm() {
         } catch (err) {
             console.error("Password change error:", err.code);
             say(passwordError(err.code));
+        } finally {
+            btn.disabled = false;
+        }
+    });
+}
+
+/* ---------- home page popup (photos + videos shown to visitors) ---------- */
+// Turns a YouTube / Vimeo / direct video link into something the site can play (or null if not supported)
+function parseVideo(raw) {
+    let u;
+    try { u = new URL(String(raw).trim()); } catch (e) { return null; }
+    if (u.protocol !== "https:") return null;
+    const host = u.hostname.replace(/^www\.|^m\./, "");
+    let id = null;
+    if (host === "youtu.be") id = u.pathname.slice(1).split("/")[0];
+    else if (host === "youtube.com" || host === "youtube-nocookie.com") {
+        if (u.pathname === "/watch") id = u.searchParams.get("v");
+        else { const m = u.pathname.match(/^\/(?:embed|shorts|live)\/([\w-]{6,})/); if (m) id = m[1]; }
+    }
+    if (id && /^[\w-]{6,}$/.test(id)) return { kind: "youtube", id, thumb: `https://img.youtube.com/vi/${id}/hqdefault.jpg` };
+    if (host === "vimeo.com") { const m = u.pathname.match(/^\/(\d+)/); if (m) return { kind: "vimeo", id: m[1] }; }
+    if (/\.(mp4|webm|ogg)$/i.test(u.pathname)) return { kind: "file" };
+    return null;
+}
+
+function loadPopup() {
+    listen(db.collection("settings").doc("popup"), doc => {
+        if (popupLoaded) return; // don't overwrite what is being typed
+        popupLoaded = true;
+        const p = doc.exists ? doc.data() : {};
+        $("pop-enabled").checked = !!p.enabled;
+        $("pop-title").value = p.title || "";
+        $("pop-text").value = p.text || "";
+        $("pop-btn-text").value = p.buttonText || "";
+        $("pop-btn-url").value = p.buttonUrl || "";
+        $("pop-freq").value = p.frequency || "session";
+    });
+}
+
+function loadSlides() {
+    const grid = $("slides-grid");
+    listen(db.collection("popupSlides").orderBy("order", "asc"), snapshot => {
+        slides = [];
+        snapshot.forEach(doc => slides.push({ id: doc.id, ...doc.data() }));
+        setStat("slide-count", slides.length);
+        setStat("nav-popup", slides.length || "");
+        if (!slides.length) {
+            grid.innerHTML = `<p class="empty" style="grid-column:1/-1">No photos or videos yet. Add some above.</p>`;
+            return;
+        }
+        grid.innerHTML = "";
+        slides.forEach((sl, i) => {
+            const card = document.createElement("div");
+            card.className = "admin-card";
+
+            const media = document.createElement("div");
+            media.className = "slide-thumb";
+            if (sl.type === "photo") {
+                const img = document.createElement("img");
+                img.src = sl.url; img.alt = ""; img.loading = "lazy";
+                media.appendChild(img);
+            } else {
+                const v = parseVideo(sl.url);
+                if (v && v.thumb) { const img = document.createElement("img"); img.src = v.thumb; img.alt = ""; media.appendChild(img); }
+                const badge = document.createElement("span");
+                badge.className = "play-badge";
+                badge.textContent = "▶ Video";
+                media.appendChild(badge);
+            }
+
+            const info = document.createElement("div");
+            info.className = "admin-card-info";
+            const title = document.createElement("h4");
+            title.textContent = `${i + 1}. ${sl.type === "photo" ? "Photo" : "Video"}`;
+            const actions = document.createElement("div");
+            actions.className = "card-actions";
+
+            const left = document.createElement("button");
+            left.className = "btn-mini"; left.textContent = "←"; left.title = "Move earlier"; left.disabled = i === 0;
+            left.addEventListener("click", () => moveSlide(i, -1));
+            const right = document.createElement("button");
+            right.className = "btn-mini"; right.textContent = "→"; right.title = "Move later"; right.disabled = i === slides.length - 1;
+            right.addEventListener("click", () => moveSlide(i, 1));
+            const del = document.createElement("button");
+            del.className = "btn-delete"; del.textContent = "Delete";
+            del.addEventListener("click", async () => {
+                if (await ask({ title: "Remove from popup?", text: "This photo or video will be removed from the popup.", ok: "Remove", danger: true })) {
+                    await db.collection("popupSlides").doc(sl.id).delete();
+                    toast("Removed from popup");
+                }
+            });
+
+            actions.append(left, right, del);
+            info.append(title, actions);
+            card.append(media, info);
+            grid.appendChild(card);
+        });
+    });
+}
+
+async function moveSlide(i, dir) {
+    const a = slides[i], b = slides[i + dir];
+    if (!a || !b) return;
+    const batch = db.batch();
+    batch.update(db.collection("popupSlides").doc(a.id), { order: b.order });
+    batch.update(db.collection("popupSlides").doc(b.id), { order: a.order });
+    await batch.commit();
+}
+
+// Photos can be large; keep each one well under Firestore's 1 MB document limit
+async function compressForPopup(file) {
+    let url = await compressImage(file, 1000, 0.8);
+    if (url.length > 850000) url = await compressImage(file, 800, 0.7);
+    return url;
+}
+
+function setupPopupTools() {
+    const status = $("popup-status");
+    const slideStatus = $("slide-status");
+    const say = (el, text, ok) => { el.style.color = ok ? "var(--ok)" : "var(--danger)"; el.textContent = text; };
+
+    $("popup-form").addEventListener("submit", async e => {
+        e.preventDefault();
+        const buttonUrl = $("pop-btn-url").value.trim();
+        const buttonText = $("pop-btn-text").value.trim();
+        if (buttonUrl && !/^https:\/\//i.test(buttonUrl)) { say(status, "The button link must start with https://"); return; }
+        if (buttonUrl && !buttonText) { say(status, "Add button text, or clear the button link."); return; }
+        const btn = $("popup-save");
+        btn.disabled = true;
+        try {
+            await db.collection("settings").doc("popup").set({
+                enabled: $("pop-enabled").checked,
+                title: $("pop-title").value.trim(),
+                text: $("pop-text").value.trim(),
+                buttonText,
+                buttonUrl,
+                frequency: $("pop-freq").value,
+                updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+            }, { merge: true });
+            say(status, $("pop-enabled").checked ? "Saved. The popup is ON." : "Saved. The popup is OFF.", true);
+            toast("Popup saved");
+        } catch (err) {
+            console.error(err);
+            say(status, "Could not save. Check your Firestore rules.");
+            toast("Could not save popup", "error");
+        } finally {
+            btn.disabled = false;
+        }
+    });
+
+    $("popup-preview").addEventListener("click", () => window.open("/?popup-preview=1", "_blank", "noopener"));
+
+    $("slide-photo-btn").addEventListener("click", async () => {
+        const files = Array.from($("slide-photo").files);
+        if (!files.length) { say(slideStatus, "Choose one or more photos first."); return; }
+        const btn = $("slide-photo-btn");
+        btn.disabled = true;
+        try {
+            let n = 0;
+            for (const file of files) {
+                const url = await compressForPopup(file);
+                await db.collection("popupSlides").add({
+                    type: "photo",
+                    url,
+                    order: Date.now() + n,
+                    createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                });
+                n++;
+                btn.textContent = `Uploading ${n}/${files.length}...`;
+            }
+            say(slideStatus, `${n} photo(s) added to the popup.`, true);
+            toast(`${n} photo(s) added`);
+            $("slide-photo").value = "";
+        } catch (err) {
+            console.error(err);
+            say(slideStatus, "Upload failed. Check your connection and Firestore rules.");
+            toast("Upload failed", "error");
+        } finally {
+            btn.disabled = false;
+            btn.textContent = "Upload photos";
+        }
+    });
+
+    $("slide-video-btn").addEventListener("click", async () => {
+        const url = $("slide-video").value.trim();
+        if (!url) { say(slideStatus, "Paste a video link first."); return; }
+        if (!parseVideo(url)) { say(slideStatus, "That link is not supported. Use a YouTube or Vimeo link, or a direct https link ending in .mp4."); return; }
+        const btn = $("slide-video-btn");
+        btn.disabled = true;
+        try {
+            await db.collection("popupSlides").add({
+                type: "video",
+                url,
+                order: Date.now(),
+                createdAt: firebase.firestore.FieldValue.serverTimestamp()
+            });
+            $("slide-video").value = "";
+            say(slideStatus, "Video added to the popup.", true);
+            toast("Video added");
+        } catch (err) {
+            console.error(err);
+            say(slideStatus, "Could not add the video. Check your Firestore rules.");
+            toast("Could not add video", "error");
         } finally {
             btn.disabled = false;
         }

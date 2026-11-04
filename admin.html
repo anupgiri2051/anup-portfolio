@@ -69,6 +69,7 @@
             <a href="#overview" data-view="overview" class="active"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="9" rx="1.5"/><rect x="14" y="3" width="7" height="5" rx="1.5"/><rect x="14" y="12" width="7" height="9" rx="1.5"/><rect x="3" y="16" width="7" height="5" rx="1.5"/></svg>Overview</a>
             <a href="#photos" data-view="photos"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="9" cy="10" r="1.6"/><path d="M21 16l-5-5-8 9"/></svg>Photos<b class="count" id="nav-photos"></b></a>
             <a href="#messages" data-view="messages"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 7l9 6 9-6"/></svg>Messages<b class="count badge" id="nav-unread" hidden></b></a>
+            <a href="#popup" data-view="popup"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2.5"/><path d="M3 9h18M8 6.5h.01M11 6.5h.01"/><path d="M10 13.5l4 2.5-4 2.5z"/></svg>Popup<b class="count" id="nav-popup"></b></a>
             <a href="#settings" data-view="settings"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 00.3 1.8l.1.1a2 2 0 11-2.8 2.8l-.1-.1a1.7 1.7 0 00-1.8-.3 1.7 1.7 0 00-1 1.5V21a2 2 0 11-4 0v-.1a1.7 1.7 0 00-1.1-1.5 1.7 1.7 0 00-1.8.3l-.1.1a2 2 0 11-2.8-2.8l.1-.1a1.7 1.7 0 00.3-1.8 1.7 1.7 0 00-1.5-1H3a2 2 0 110-4h.1a1.7 1.7 0 001.5-1.1 1.7 1.7 0 00-.3-1.8l-.1-.1a2 2 0 112.8-2.8l.1.1a1.7 1.7 0 001.8.3H9a1.7 1.7 0 001-1.5V3a2 2 0 114 0v.1a1.7 1.7 0 001 1.5 1.7 1.7 0 001.8-.3l.1-.1a2 2 0 112.8 2.8l-.1.1a1.7 1.7 0 00-.3 1.8V9a1.7 1.7 0 001.5 1H21a2 2 0 110 4h-.1a1.7 1.7 0 00-1.5 1z"/></svg>Site settings</a>
             <a href="#account" data-view="account"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-7 8-7s8 3 8 7"/></svg>Account</a>
         </nav>
@@ -169,6 +170,70 @@
                         <button type="button" id="msg-export" class="btn btn-secondary btn-sm">Export CSV</button>
                     </div>
                     <div id="messages-container" class="messages-container"></div>
+                </div>
+            </section>
+
+            <!-- Popup -->
+            <section class="view" id="view-popup" hidden>
+                <div class="card narrow">
+                    <div class="card-head">
+                        <h3>Home page popup</h3>
+                        <label class="switch"><input type="checkbox" id="pop-enabled"><span aria-hidden="true"></span>Show popup</label>
+                    </div>
+                    <p class="hint">Visitors see this pop-up when they open your website. Add the photos and videos below, then switch it on and save.</p>
+                    <form id="popup-form" class="clean-form">
+                        <div class="form-group">
+                            <label for="pop-title">Title</label>
+                            <input type="text" id="pop-title" maxlength="80" placeholder="Welcome to my website">
+                        </div>
+                        <div class="form-group">
+                            <label for="pop-text">Message</label>
+                            <textarea id="pop-text" rows="3" maxlength="300" placeholder="A short message for your visitors..."></textarea>
+                        </div>
+                        <div class="form-row-desktop">
+                            <div class="form-group">
+                                <label for="pop-btn-text">Button text (optional)</label>
+                                <input type="text" id="pop-btn-text" maxlength="30" placeholder="Learn more">
+                            </div>
+                            <div class="form-group">
+                                <label for="pop-btn-url">Button link (optional)</label>
+                                <input type="url" id="pop-btn-url" placeholder="https://...">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="pop-freq">How often should visitors see it?</label>
+                            <select id="pop-freq">
+                                <option value="session">Once per visit</option>
+                                <option value="daily">Once a day</option>
+                                <option value="once">Only once per visitor</option>
+                                <option value="always">Every time the site opens</option>
+                            </select>
+                        </div>
+                        <div class="row">
+                            <button type="submit" id="popup-save" class="btn btn-primary">Save popup</button>
+                            <button type="button" id="popup-preview" class="btn btn-secondary">Preview on site ↗</button>
+                            <div id="popup-status" class="status-msg" role="status"></div>
+                        </div>
+                    </form>
+                </div>
+
+                <div class="card">
+                    <div class="card-head"><h3>Photos and videos in the popup</h3><span class="pill" id="slide-count">0</span></div>
+                    <div class="grid-2 add-slides">
+                        <div class="form-group">
+                            <label for="slide-photo">Add photos</label>
+                            <input type="file" id="slide-photo" accept="image/*" multiple>
+                            <button type="button" id="slide-photo-btn" class="btn btn-secondary btn-sm">Upload photos</button>
+                        </div>
+                        <div class="form-group">
+                            <label for="slide-video">Add a video link</label>
+                            <input type="url" id="slide-video" placeholder="https://www.youtube.com/watch?v=...">
+                            <button type="button" id="slide-video-btn" class="btn btn-secondary btn-sm">Add video</button>
+                            <small class="hint">YouTube, Vimeo, or a direct .mp4 link.</small>
+                        </div>
+                    </div>
+                    <div id="slide-status" class="status-msg" role="status"></div>
+                    <div id="slides-grid" class="gallery-grid"></div>
                 </div>
             </section>
 

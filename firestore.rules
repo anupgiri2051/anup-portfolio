@@ -32,6 +32,12 @@ service cloud.firestore {
       allow write: if isAdmin();
     }
 
+    // Home page popup photos and videos: public read, admin write
+    match /popupSlides/{id} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
     // Visit counter: visitors can only add +1 to "count"; only the admin can read it
     match /stats/{id} {
       allow read: if isAdmin();
