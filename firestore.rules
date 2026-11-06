@@ -32,6 +32,24 @@ service cloud.firestore {
       allow write: if isAdmin();
     }
 
+    // Portfolio projects shown on the website: public read, admin write
+    match /projects/{id} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    // Visits per day (admin chart): visitors can only add +1 to "count"
+    match /statsDaily/{id} {
+      allow read: if isAdmin();
+      allow create: if request.resource.data.keys().hasOnly(['count', 'day'])
+                    && request.resource.data.count == 1
+                    && request.resource.data.day is string
+                    && request.resource.data.day.size() == 10;
+      allow update: if isAdmin()
+                    || (request.resource.data.diff(resource.data).affectedKeys().hasOnly(['count'])
+                        && request.resource.data.count == resource.data.count + 1);
+    }
+
     // Home page popup photos and videos: public read, admin write
     match /popupSlides/{id} {
       allow read: if true;

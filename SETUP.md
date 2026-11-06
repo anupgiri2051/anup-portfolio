@@ -58,3 +58,21 @@ Good to know:
 - Use the order buttons (arrows) to change the order of the slides.
 - When you save the popup again, visitors who closed it before will see the updated version.
 - **You must publish the updated `firestore.rules` again** (it now includes a `popupSlides` section). Without it, adding photos and videos to the popup will fail.
+
+## More options (new)
+**You must publish the updated `firestore.rules` again.** It now has `projects` and `statsDaily` sections. Without them, projects cannot be saved and the daily visits chart stays empty.
+
+In the admin portal:
+- **Projects**: add projects with a name, description, tags, link and cover image. A "Projects" menu item, a Projects page and a "Latest projects" row on the home page appear automatically once you add one. You can edit, reorder and delete projects.
+- **Site settings** (now three cards):
+  - Website text and links: home intro, status badge (for example "Open to internships"), "Based in", CV link (adds a "Download CV" button), and social links (Instagram, GitHub, LinkedIn, Facebook, YouTube, public email).
+  - Announcement bar: a thin colored bar at the top of every page that visitors can close.
+  - Maintenance mode: shows visitors a "be right back" screen while you work. You can still use the admin. Use **Preview on site** first, and remember to switch it off.
+- **Photos**: give each photo an optional category. The gallery then shows filter buttons (All, Travel, ...). Use the **Category** button on a photo to change it later.
+- **Overview**: a chart of site visits for the last 14 days.
+- **Account**: **Download backup (JSON)** saves your settings, messages, projects and photo list.
+
+Good to know:
+- Maintenance mode works with JavaScript, so it is a visitor screen, not a real server shutdown. Search engines may still read the page.
+- Daily visits are counted per browser session (one visit per person per session) and use UTC dates.
+- `sitemap.xml` now lists the /projects page.

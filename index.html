@@ -41,6 +41,7 @@
   <nav id="nav-links">
     <a href="/" data-path="/" class="active">Home</a>
     <a href="/about" data-path="/about">About</a>
+    <a href="/projects" data-path="/projects" id="nav-projects" hidden>Projects</a>
     <a href="/gallery" data-path="/gallery">Gallery</a>
     <a href="/contact" data-path="/contact" class="cta">Contact</a>
   </nav>
@@ -49,11 +50,13 @@
 <main id="main">
 <section id="home" class="hero">
   <div class="hero-copy">
+    <p class="status-badge" data-site="status" hidden></p>
     <h1>Hello, I’m<br>Anup Giri</h1>
     <p class="lead" data-site="intro">I’m a student from Baglung, Nepal, exploring <mark>IT</mark>, <mark>AI</mark> and <mark>web development</mark>. I build small projects and share what I learn along the way.</p>
     <div class="btns">
       <a class="btn primary" href="/contact" data-path="/contact">Say Hello!</a>
       <a class="btn ghost" href="/gallery" data-path="/gallery">View gallery</a>
+      <a class="btn ghost" data-site-cv target="_blank" rel="noopener" hidden>Download CV</a>
     </div>
     <div class="stats">
       <div><b data-count="3">3</b><span>Focus areas</span></div>
@@ -84,6 +87,14 @@
       <p><span class="pr">$</span><i class="cur"></i></p>
     </div>
   </div>
+</section>
+
+<section id="home-projects" hidden>
+  <div class="hp-head">
+    <div><p class="eyebrow">Projects</p><h2>Latest projects</h2></div>
+    <a class="text-link" href="/projects" data-path="/projects">See all projects →</a>
+  </div>
+  <div id="home-projects-grid" class="project-grid"></div>
 </section>
 
 <section id="about-section">
@@ -158,6 +169,13 @@
   </template>
 </section>
 
+<section id="projects-section">
+  <a class="back" href="/" data-path="/">← Back to home</a>
+  <p class="eyebrow">Projects</p>
+  <h2>Things I’ve built</h2>
+  <div id="projects-container" class="project-grid"></div>
+</section>
+
 <section id="gallery-section">
   <a class="back" href="/" data-path="/">&larr; Back to home</a>
   <p class="eyebrow">Gallery</p>
@@ -170,6 +188,7 @@
       <button type="button" data-layout="masonry" aria-pressed="false">Masonry</button>
     </div>
   </div>
+  <div id="gallery-cats" class="cats" hidden role="group" aria-label="Photo categories"></div>
   <div id="gallery-container" class="gallery-grid" data-layout="mosaic"></div>
 </section>
 
@@ -180,6 +199,7 @@
     <div>
       <p class="muted">I share bits of what I’m building and learning over on Instagram. You can also send me a message here.</p>
       <a class="btn ghost insta" href="https://www.instagram.com/me_anupgiri/" data-site-instagram target="_blank" rel="noopener"><svg class="ic" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><path d="M17.5 6.5h.01"/></svg><span data-site="instagram-handle">@me_anupgiri</span></a>
+      <div class="socials" data-socials="no-instagram"></div>
     </div>
     <form id="contact-form" novalidate>
       <label for="contact-email">Your email address</label>
@@ -195,7 +215,7 @@
 </section>
 </main>
 
-<footer><span>© 2026 Anup Giri. All rights reserved.</span><a href="https://www.instagram.com/me_anupgiri/" data-site-instagram target="_blank" rel="noopener">Instagram</a><a href="/contact" data-path="/contact">Contact</a></footer>
+<footer><span>© 2026 Anup Giri. All rights reserved.</span><span class="socials small" data-socials></span><a href="/contact" data-path="/contact">Contact</a></footer>
 
 <div id="lightbox-modal">
   <button id="lightbox-close" aria-label="Close">×</button>

@@ -5,7 +5,7 @@ const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": 
 const $ = id => document.getElementById(id);
 
 const IDLE_MS = 30 * 60 * 1000;
-const VIEWS = { overview: "Overview", photos: "Photos", popup: "Popup", messages: "Messages", settings: "Site settings", account: "Account" };
+const VIEWS = { overview: "Overview", photos: "Photos", projects: "Projects", popup: "Popup", messages: "Messages", settings: "Site settings", account: "Account" };
 const IDLE_EVENTS = ["mousemove", "keydown", "click", "touchstart", "scroll"];
 
 let unsubs = [];
@@ -15,6 +15,10 @@ let settingsLoaded = false;
 let idleTimer = null;
 let popupLoaded = false;
 let slides = [];
+let annLoaded = false;
+let maintLoaded = false;
+let projects = [];
+let editingProject = null;
 
 document.addEventListener("DOMContentLoaded", () => {
     initAuth();
@@ -26,6 +30,9 @@ document.addEventListener("DOMContentLoaded", () => {
     setupMessageTools();
     setupPasswordForm();
     setupPopupTools();
+    setupProjectForm();
+    setupAnnouncementTools();
+    setupBackup();
 });
 
 /* ---------- small UI helpers ---------- */
@@ -215,6 +222,8 @@ function showDashboard(user) {
     loadSettings();
     loadPopup();
     loadSlides();
+    loadProjects();
+    loadVisits();
 }
 
 function showLoginModal() {
@@ -226,8 +235,11 @@ function showLoginModal() {
     started = false;
     settingsLoaded = false;
     popupLoaded = false;
+    annLoaded = false;
+    maintLoaded = false;
     allMessages = [];
     slides = [];
+    projects = [];
 }
 
 // Automatic sign-out after 30 minutes without activity
@@ -273,9 +285,28 @@ function messageDate(m) {
     return d ? d.toLocaleString() : "Recently";
 }
 
-function renderChart() {
-    const box = $("chart7");
+function drawBars(box, labels, counts) {
     if (!box) return;
+    const max = Math.max(1, ...counts);
+    box.innerHTML = "";
+    counts.forEach((c, i) => {
+        const col = document.createElement("div");
+        col.className = "bar";
+        const n = document.createElement("b");
+        n.textContent = c;
+        const track = document.createElement("div");
+        track.className = "track";
+        const fill = document.createElement("i");
+        fill.style.height = (c / max * 100) + "%";
+        track.appendChild(fill);
+        const label = document.createElement("span");
+        label.textContent = labels[i];
+        col.append(n, track, label);
+        box.appendChild(col);
+    });
+}
+
+function renderChart() {
     const days = [...Array(7)].map((_, i) => {
         const d = new Date();
         d.setHours(0, 0, 0, 0);
@@ -289,24 +320,27 @@ function renderChart() {
         const i = days.findIndex(d => t >= d && t < new Date(d.getTime() + 86400000));
         if (i > -1) counts[i]++;
     });
-    const max = Math.max(1, ...counts);
-    box.innerHTML = "";
-    days.forEach((d, i) => {
-        const col = document.createElement("div");
-        col.className = "bar";
-        const n = document.createElement("b");
-        n.textContent = counts[i];
-        const track = document.createElement("div");
-        track.className = "track";
-        const fill = document.createElement("i");
-        fill.style.height = (counts[i] / max * 100) + "%";
-        track.appendChild(fill);
-        const label = document.createElement("span");
-        label.textContent = d.toLocaleDateString(undefined, { weekday: "short" });
-        col.append(n, track, label);
-        box.appendChild(col);
-    });
+    drawBars($("chart7"), days.map(d => d.toLocaleDateString(undefined, { weekday: "short" })), counts);
     setStat("chart-total", counts.reduce((a, b) => a + b, 0));
+}
+
+// Visits per day for the last 14 days (the website adds one visit per browser session)
+function loadVisits() {
+    const box = $("chart14");
+    listen(db.collection("statsDaily").orderBy("day", "desc").limit(14), snap => {
+        const byDay = {};
+        snap.forEach(d => { const x = d.data(); byDay[x.day] = x.count || 0; });
+        const days = [...Array(14)].map((_, i) => {
+            const d = new Date();
+            d.setUTCDate(d.getUTCDate() - (13 - i));
+            return d;
+        });
+        const counts = days.map(d => byDay[d.toISOString().slice(0, 10)] || 0);
+        drawBars(box, days.map(d => String(d.getUTCDate())), counts);
+        setStat("visits-total", counts.reduce((a, b) => a + b, 0));
+    }, () => {
+        box.innerHTML = `<p class="empty" style="width:100%">Daily visits will show here once the latest Firestore rules are published.</p>`;
+    });
 }
 
 function renderRecent() {
@@ -330,15 +364,37 @@ function renderRecent() {
     });
 }
 
-/* ---------- site settings ---------- */
+/* ---------- site settings, announcement bar, maintenance mode ---------- */
+const SITE_FIELDS = {
+    intro: "set-intro", location: "set-location", status: "set-status", cvUrl: "set-cv",
+    instagram: "set-instagram", github: "set-github", linkedin: "set-linkedin",
+    facebook: "set-facebook", youtube: "set-youtube", publicEmail: "set-email"
+};
+const URL_LABELS = { cvUrl: "CV", instagram: "Instagram", github: "GitHub", linkedin: "LinkedIn", facebook: "Facebook", youtube: "YouTube" };
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
+
 function loadSettings() {
     listen(db.collection("settings").doc("site"), doc => {
         if (settingsLoaded) return; // don't overwrite what is being typed
         settingsLoaded = true;
         const s = doc.exists ? doc.data() : {};
-        $("set-intro").value = s.intro || "";
-        $("set-location").value = s.location || "";
-        $("set-instagram").value = s.instagram || "";
+        Object.entries(SITE_FIELDS).forEach(([key, id]) => { $(id).value = s[key] || ""; });
+    });
+    listen(db.collection("settings").doc("announce"), doc => {
+        if (annLoaded) return;
+        annLoaded = true;
+        const a = doc.exists ? doc.data() : {};
+        $("ann-enabled").checked = !!a.enabled;
+        $("ann-text").value = a.text || "";
+        $("ann-link-text").value = a.linkText || "";
+        $("ann-link-url").value = a.linkUrl || "";
+    });
+    listen(db.collection("settings").doc("maintenance"), doc => {
+        if (maintLoaded) return;
+        maintLoaded = true;
+        const m = doc.exists ? doc.data() : {};
+        $("maint-enabled").checked = !!m.enabled;
+        $("maint-message").value = m.message || "";
     });
 }
 
@@ -346,19 +402,25 @@ function setupSettingsForm() {
     const status = $("settings-status");
     $("settings-form").addEventListener("submit", async e => {
         e.preventDefault();
-        const instagram = $("set-instagram").value.trim();
-        if (instagram && !/^https:\/\//i.test(instagram)) {
+        const payload = {};
+        Object.entries(SITE_FIELDS).forEach(([key, id]) => { payload[key] = $(id).value.trim(); });
+        for (const key of Object.keys(URL_LABELS)) {
+            if (payload[key] && !/^https:\/\//i.test(payload[key])) {
+                status.style.color = "var(--danger)";
+                status.textContent = `The ${URL_LABELS[key]} link must start with https://`;
+                return;
+            }
+        }
+        if (payload.publicEmail && !EMAIL_RE.test(payload.publicEmail)) {
             status.style.color = "var(--danger)";
-            status.textContent = "The Instagram link must start with https://";
+            status.textContent = "Enter a valid public email address.";
             return;
         }
         const btn = $("settings-btn");
         btn.disabled = true;
         try {
             await db.collection("settings").doc("site").set({
-                intro: $("set-intro").value.trim(),
-                location: $("set-location").value.trim(),
-                instagram,
+                ...payload,
                 updatedAt: firebase.firestore.FieldValue.serverTimestamp()
             }, { merge: true });
             status.style.color = "var(--ok)";
@@ -373,6 +435,60 @@ function setupSettingsForm() {
             btn.disabled = false;
         }
     });
+}
+
+function setupAnnouncementTools() {
+    const say = (el, text, ok) => { el.style.color = ok ? "var(--ok)" : "var(--danger)"; el.textContent = text; };
+
+    $("ann-form").addEventListener("submit", async e => {
+        e.preventDefault();
+        const status = $("ann-status");
+        const enabled = $("ann-enabled").checked;
+        const text = $("ann-text").value.trim();
+        const linkText = $("ann-link-text").value.trim();
+        const linkUrl = $("ann-link-url").value.trim();
+        if (enabled && !text) { say(status, "Write the announcement message first."); return; }
+        if (linkUrl && !/^https:\/\//i.test(linkUrl)) { say(status, "The link address must start with https://"); return; }
+        if (linkUrl && !linkText) { say(status, "Add link text, or clear the link address."); return; }
+        const btn = $("ann-save");
+        btn.disabled = true;
+        try {
+            await db.collection("settings").doc("announce").set({
+                enabled, text, linkText, linkUrl,
+                updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+            }, { merge: true });
+            say(status, enabled ? "Saved. The announcement bar is ON." : "Saved. The announcement bar is OFF.", true);
+            toast("Announcement saved");
+        } catch (err) {
+            console.error(err);
+            say(status, "Could not save. Check your Firestore rules.");
+        } finally {
+            btn.disabled = false;
+        }
+    });
+
+    $("maint-form").addEventListener("submit", async e => {
+        e.preventDefault();
+        const status = $("maint-status");
+        const btn = $("maint-save");
+        btn.disabled = true;
+        try {
+            await db.collection("settings").doc("maintenance").set({
+                enabled: $("maint-enabled").checked,
+                message: $("maint-message").value.trim(),
+                updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+            }, { merge: true });
+            say(status, $("maint-enabled").checked ? "Saved. Visitors now see the maintenance screen." : "Saved. Maintenance mode is OFF.", true);
+            toast($("maint-enabled").checked ? "Maintenance mode ON" : "Maintenance mode OFF");
+        } catch (err) {
+            console.error(err);
+            say(status, "Could not save. Check your Firestore rules.");
+        } finally {
+            btn.disabled = false;
+        }
+    });
+
+    $("maint-preview").addEventListener("click", () => window.open("/?maintenance-preview=1", "_blank", "noopener"));
 }
 
 /* ---------- photos ---------- */
@@ -465,6 +581,7 @@ function setupUploadForm() {
                 await db.collection("photos").add({
                     title: name,
                     url,
+                    category: $("photo-cat").value.trim().slice(0, 30),
                     createdAt: firebase.firestore.FieldValue.serverTimestamp()
                 });
                 done++;
@@ -495,6 +612,9 @@ function loadAdminGallery() {
     listen(db.collection("photos").orderBy("createdAt", "desc"), snapshot => {
         setStat("stat-photos", snapshot.size);
         setStat("nav-photos", snapshot.size || "");
+        const cats = new Set();
+        snapshot.forEach(d => { const c = d.data().category; if (c) cats.add(c); });
+        $("cat-list").innerHTML = [...cats].map(c => `<option value="${esc(c)}"></option>`).join("");
         if (snapshot.empty) {
             grid.innerHTML = `<p class="empty" style="grid-column:1/-1">No photos uploaded yet.</p>`;
             return;
@@ -538,7 +658,18 @@ function loadAdminGallery() {
                 }
             });
 
-            actions.append(rename, del);
+            const cat = document.createElement("button");
+            cat.className = "btn-mini";
+            cat.textContent = data.category ? "Category: " + data.category : "Category";
+            cat.addEventListener("click", async () => {
+                const next = await ask({ title: "Photo category", text: "Used for the filter buttons on your gallery page. Leave empty for none.", ok: "Save", input: { value: data.category || "", max: 30 } });
+                if (next !== null && next !== (data.category || "")) {
+                    await db.collection("photos").doc(doc.id).update({ category: next });
+                    toast("Category saved");
+                }
+            });
+
+            actions.append(rename, cat, del);
             info.append(title, actions);
             card.append(img, info);
             grid.appendChild(card);
@@ -902,6 +1033,211 @@ function setupPopupTools() {
             console.error(err);
             say(slideStatus, "Could not add the video. Check your Firestore rules.");
             toast("Could not add video", "error");
+        } finally {
+            btn.disabled = false;
+        }
+    });
+}
+
+
+/* ---------- projects (shown on the website) ---------- */
+async function compressForProject(file) {
+    let url = await compressImage(file, 900, 0.8);
+    if (url.length > 850000) url = await compressImage(file, 700, 0.7);
+    return url;
+}
+
+function loadProjects() {
+    const grid = $("projects-grid");
+    listen(db.collection("projects").orderBy("order", "asc"), snapshot => {
+        projects = [];
+        snapshot.forEach(doc => projects.push({ id: doc.id, ...doc.data() }));
+        setStat("proj-count", projects.length);
+        setStat("nav-projects", projects.length || "");
+        if (!projects.length) {
+            grid.innerHTML = `<p class="empty" style="grid-column:1/-1">No projects yet. Add your first one above.</p>`;
+            return;
+        }
+        grid.innerHTML = "";
+        projects.forEach((p, i) => {
+            const card = document.createElement("div");
+            card.className = "admin-card";
+
+            const media = document.createElement("div");
+            media.className = "slide-thumb";
+            if (p.imageUrl) {
+                const img = document.createElement("img");
+                img.src = p.imageUrl; img.alt = ""; img.loading = "lazy";
+                media.appendChild(img);
+            } else {
+                const ph = document.createElement("span");
+                ph.className = "play-badge";
+                ph.textContent = "No image";
+                media.appendChild(ph);
+            }
+
+            const info = document.createElement("div");
+            info.className = "admin-card-info";
+            const title = document.createElement("h4");
+            title.textContent = p.title || "Untitled";
+            const tags = document.createElement("small");
+            tags.className = "hint";
+            tags.textContent = (p.tags || []).join(" · ");
+            const actions = document.createElement("div");
+            actions.className = "card-actions";
+
+            const left = document.createElement("button");
+            left.className = "btn-mini"; left.textContent = "←"; left.title = "Move earlier"; left.disabled = i === 0;
+            left.addEventListener("click", () => moveProject(i, -1));
+            const right = document.createElement("button");
+            right.className = "btn-mini"; right.textContent = "→"; right.title = "Move later"; right.disabled = i === projects.length - 1;
+            right.addEventListener("click", () => moveProject(i, 1));
+            const edit = document.createElement("button");
+            edit.className = "btn-mini"; edit.textContent = "Edit";
+            edit.addEventListener("click", () => startEditProject(p));
+            const del = document.createElement("button");
+            del.className = "btn-delete"; del.textContent = "Delete";
+            del.addEventListener("click", async () => {
+                if (await ask({ title: "Delete this project?", text: "It will be removed from your website. This cannot be undone.", ok: "Delete", danger: true })) {
+                    await db.collection("projects").doc(p.id).delete();
+                    if (editingProject === p.id) resetProjectForm();
+                    toast("Project deleted");
+                }
+            });
+
+            actions.append(left, right, edit, del);
+            info.append(title, tags, actions);
+            card.append(media, info);
+            grid.appendChild(card);
+        });
+    });
+}
+
+async function moveProject(i, dir) {
+    const a = projects[i], b = projects[i + dir];
+    if (!a || !b) return;
+    const batch = db.batch();
+    batch.update(db.collection("projects").doc(a.id), { order: b.order });
+    batch.update(db.collection("projects").doc(b.id), { order: a.order });
+    await batch.commit();
+}
+
+function resetProjectForm() {
+    editingProject = null;
+    $("project-form").reset();
+    $("proj-form-title").textContent = "Add a project";
+    $("proj-save").textContent = "Add project";
+    $("proj-cancel").hidden = true;
+    $("proj-rm-wrap").hidden = true;
+}
+
+function startEditProject(p) {
+    editingProject = p.id;
+    $("proj-title").value = p.title || "";
+    $("proj-desc").value = p.description || "";
+    $("proj-tags").value = (p.tags || []).join(", ");
+    $("proj-url").value = p.url || "";
+    $("proj-image").value = "";
+    $("proj-rm-img").checked = false;
+    $("proj-rm-wrap").hidden = !p.imageUrl;
+    $("proj-form-title").textContent = "Edit project";
+    $("proj-save").textContent = "Save changes";
+    $("proj-cancel").hidden = false;
+    $("proj-status").textContent = "";
+    $("project-form").scrollIntoView({ behavior: "smooth", block: "start" });
+}
+
+function setupProjectForm() {
+    const status = $("proj-status");
+    const say = (text, ok) => { status.style.color = ok ? "var(--ok)" : "var(--danger)"; status.textContent = text; };
+
+    $("proj-cancel").addEventListener("click", () => { resetProjectForm(); say(""); });
+
+    $("project-form").addEventListener("submit", async e => {
+        e.preventDefault();
+        const title = $("proj-title").value.trim();
+        const url = $("proj-url").value.trim();
+        if (!title) { say("Give the project a name."); return; }
+        if (url && !/^https:\/\//i.test(url)) { say("The project link must start with https://"); return; }
+        const tags = $("proj-tags").value.split(",").map(t => t.trim().slice(0, 24)).filter(Boolean).slice(0, 6);
+        const btn = $("proj-save");
+        btn.disabled = true;
+        try {
+            const data = { title, description: $("proj-desc").value.trim(), tags, url };
+            const file = $("proj-image").files[0];
+            if (file) data.imageUrl = await compressForProject(file);
+            else if (editingProject && $("proj-rm-img").checked) data.imageUrl = "";
+            if (editingProject) {
+                await db.collection("projects").doc(editingProject).update(data);
+                say("Project updated.", true);
+                toast("Project updated");
+            } else {
+                await db.collection("projects").add({ ...data, order: Date.now(), createdAt: firebase.firestore.FieldValue.serverTimestamp() });
+                say("Project added. It is now on your website.", true);
+                toast("Project added");
+            }
+            const msg = status.textContent;
+            resetProjectForm();
+            say(msg, true);
+        } catch (err) {
+            console.error(err);
+            say("Could not save the project. Check your Firestore rules.");
+            toast("Could not save project", "error");
+        } finally {
+            btn.disabled = false;
+        }
+    });
+}
+
+/* ---------- backup (account page) ---------- */
+function plain(v) {
+    if (v && typeof v.toDate === "function") return v.toDate().toISOString();
+    if (Array.isArray(v)) return v.map(plain);
+    if (v && typeof v === "object") { const o = {}; Object.keys(v).forEach(k => { o[k] = plain(v[k]); }); return o; }
+    return v;
+}
+
+function setupBackup() {
+    $("backup-btn").addEventListener("click", async () => {
+        const btn = $("backup-btn");
+        btn.disabled = true;
+        try {
+            const list = async name => {
+                const snap = await db.collection(name).get();
+                const out = [];
+                snap.forEach(d => out.push({ id: d.id, ...plain(d.data()) }));
+                return out;
+            };
+            const [photos, projectsAll, messages, slidesAll, daily] = await Promise.all([
+                list("photos"), list("projects"), list("messages"), list("popupSlides"), list("statsDaily")
+            ]);
+            const settings = {};
+            for (const id of ["site", "popup", "announce", "maintenance"]) {
+                const doc = await db.collection("settings").doc(id).get();
+                if (doc.exists) settings[id] = plain(doc.data());
+            }
+            const backup = {
+                exportedAt: new Date().toISOString(),
+                note: "Photo images are not included, only titles and categories.",
+                settings,
+                projects: projectsAll,
+                messages,
+                popupSlides: slidesAll.map(x => x.type === "photo" ? { ...x, url: "(image not included)" } : x),
+                photos: photos.map(({ url, ...rest }) => rest),
+                dailyVisits: daily
+            };
+            const blob = new Blob([JSON.stringify(backup, null, 2)], { type: "application/json" });
+            const a = document.createElement("a");
+            a.href = URL.createObjectURL(blob);
+            a.download = "backup-" + new Date().toISOString().slice(0, 10) + ".json";
+            document.body.appendChild(a);
+            a.click();
+            a.remove();
+            setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+            toast("Backup downloaded");
+        } catch (err) {
+            console.error(err);
+            toast("Could not create the backup", "error");
         } finally {
             btn.disabled = false;
         }

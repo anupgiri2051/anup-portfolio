@@ -9,6 +9,9 @@ document.addEventListener("DOMContentLoaded", () => {
     countVisit();
     setupGalleryTools();
     initPopup();
+    loadProjects();
+    syncAnnouncement();
+    syncMaintenance();
 });
 
 // Fade-in-on-scroll micro-interaction for bento cards
@@ -69,14 +72,14 @@ function navigateTo(path) {
 
 // Gallery and About are their own views: hidden on the home page, shown after clicking them
 function setView(name) {
-    const was = ["gallery", "about"].find(v => document.body.classList.contains("view-" + v)) || "home";
-    document.body.classList.toggle("view-gallery", name === "gallery");
-    document.body.classList.toggle("view-about", name === "about");
+    const views = ["gallery", "about", "projects"];
+    const was = views.find(v => document.body.classList.contains("view-" + v)) || "home";
+    views.forEach(v => document.body.classList.toggle("view-" + v, name === v));
     if (name !== was) window.scrollTo(0, 0);
 }
 
 function handleCurrentRoute(path, initial) {
-    setView(/^\/gallery(\/|$)/.test(path) ? "gallery" : /^\/about\/?$/.test(path) ? "about" : "home");
+    setView(/^\/gallery(\/|$)/.test(path) ? "gallery" : /^\/about\/?$/.test(path) ? "about" : /^\/projects\/?$/.test(path) ? "projects" : "home");
     // /gallery/<photo-id> opens that photo (shareable link, back button closes it)
     const photo = path.match(/^\/gallery\/([^\/]+)\/?$/);
     if (photo) {
@@ -87,7 +90,7 @@ function handleCurrentRoute(path, initial) {
     path = path.length > 1 ? path.replace(/\/+$/, "") : path;
 
     // Unknown address (typo, old link, /index.html): show the home page and tidy the URL
-    if (!["/", "", "/about", "/gallery", "/contact"].includes(path)) {
+    if (!["/", "", "/about", "/projects", "/gallery", "/contact"].includes(path)) {
         try { history.replaceState(null, null, "/"); } catch (e) {}
         path = "/";
     }
@@ -103,6 +106,7 @@ function handleCurrentRoute(path, initial) {
 
     const sectionMap = {
         "/about": "about-section",
+        "/projects": "projects-section",
         "/gallery": "gallery-section",
         "/contact": "contact-section"
     };
@@ -121,6 +125,7 @@ function handleCurrentRoute(path, initial) {
 // Photos opened by URL (/gallery/<id>)
 let photoCache = {};
 let photoOrder = [];
+let currentCat = "";
 let currentPhotoId = null;
 let pendingPhoto = null;
 
@@ -150,6 +155,7 @@ function loadGallery() {
         photoOrder = [];
         if (snapshot.empty) {
             updateGalleryCount(0, 0);
+            buildCategoryChips();
             if (pendingPhoto && !snapshot.metadata.fromCache) { pendingPhoto = null; try { history.replaceState(null, null, "/gallery"); } catch (e) {} }
             galleryContainer.innerHTML = `<p style="color: var(--text-muted); grid-column: 1 / -1; text-align: center;">No photos in gallery yet.</p>`;
             return;
@@ -171,6 +177,7 @@ function loadGallery() {
             item.setAttribute("role", "button");
             item.setAttribute("aria-label", "Open photo: " + (data.title || "Untitled"));
             item.dataset.title = (data.title || "").toLowerCase();
+            item.dataset.cat = (data.category || "").trim().toLowerCase();
             item.style.animationDelay = Math.min(galleryContainer.children.length, 12) * 0.06 + "s";
             item.innerHTML = `
                 <img src="${esc(data.url)}" alt="${esc(data.title)}" loading="lazy">
@@ -187,6 +194,7 @@ function loadGallery() {
             galleryContainer.appendChild(item);
         });
 
+        buildCategoryChips();
         applyGalleryFilter();
 
         if (pendingPhoto) {
@@ -221,7 +229,7 @@ function applyGalleryFilter() {
     const items = grid.querySelectorAll(".gallery-item");
     let shown = 0;
     items.forEach(it => {
-        const match = !q || it.dataset.title.includes(q);
+        const match = (!q || it.dataset.title.includes(q)) && (!currentCat || it.dataset.cat === currentCat);
         it.classList.toggle("is-hidden", !match);
         if (match) shown++;
     });
@@ -237,6 +245,32 @@ function applyGalleryFilter() {
         msg.remove();
     }
     updateGalleryCount(shown, items.length);
+}
+
+function buildCategoryChips() {
+    const box = document.getElementById("gallery-cats");
+    if (!box) return;
+    const names = new Map();
+    Object.values(photoCache).forEach(p => { const c = (p.category || "").trim(); if (c) names.set(c.toLowerCase(), c); });
+    if (!names.size) { box.hidden = true; box.innerHTML = ""; currentCat = ""; return; }
+    if (currentCat && !names.has(currentCat)) currentCat = "";
+    box.hidden = false;
+    box.innerHTML = "";
+    const make = (label, key) => {
+        const b = document.createElement("button");
+        b.type = "button";
+        b.textContent = label;
+        b.setAttribute("aria-pressed", String(currentCat === key));
+        b.addEventListener("click", () => {
+            currentCat = key;
+            box.querySelectorAll("button").forEach(x => x.setAttribute("aria-pressed", "false"));
+            b.setAttribute("aria-pressed", "true");
+            applyGalleryFilter();
+        });
+        box.appendChild(b);
+    };
+    make("All", "");
+    [...names].sort((a, b) => a[1].localeCompare(b[1])).forEach(([k, v]) => make(v, k));
 }
 
 function setupGalleryTools() {
@@ -257,18 +291,199 @@ function setupGalleryTools() {
     if (search) search.addEventListener("input", applyGalleryFilter);
 }
 
-// Site settings edited in the admin panel (intro text, location, Instagram link)
+// Social links (icons are drawn from the settings saved in the admin panel)
+const SOCIAL_ICONS = {
+    instagram: '<rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><path d="M17.5 6.5h.01"/>',
+    github: '<path d="M9 19c-4 1.5-4-2-6-2m12 4v-3.5a3 3 0 00-.8-2.3c2.8-.3 5.8-1.4 5.8-6.2A4.8 4.8 0 0019 5.8 4.5 4.5 0 0018.9 2S17.7 1.7 15 3.5a13.4 13.4 0 00-6 0C6.3 1.7 5.1 2 5.1 2A4.5 4.5 0 005 5.8 4.8 4.8 0 003.7 9.5c0 4.8 3 5.9 5.8 6.2A3 3 0 009 18v3"/>',
+    linkedin: '<path d="M16 8a6 6 0 016 6v7h-4v-7a2 2 0 00-4 0v7h-4v-7a6 6 0 016-6zM2 9h4v12H2zM4 6a2 2 0 100-4 2 2 0 000 4z"/>',
+    facebook: '<path d="M18 2h-3a5 5 0 00-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 011-1h3z"/>',
+    youtube: '<path d="M22.5 6.4a2.8 2.8 0 00-2-2C18.8 4 12 4 12 4s-6.8 0-8.5.4a2.8 2.8 0 00-2 2C1 8.1 1 12 1 12s0 3.9.5 5.6a2.8 2.8 0 002 2C5.2 20 12 20 12 20s6.8 0 8.5-.4a2.8 2.8 0 002-2c.5-1.7.5-5.6.5-5.6s0-3.9-.5-5.6z"/><path d="M9.7 15.5l5.8-3.5-5.8-3.5z"/>',
+    mail: '<rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 7l9 6 9-6"/>'
+};
+
+function renderSocials(s) {
+    const https = (u) => typeof u === "string" && /^https:\/\//i.test(u);
+    const items = [{ key: "instagram", label: "Instagram", href: https(s.instagram) ? s.instagram : "https://www.instagram.com/me_anupgiri/" }];
+    [["github", "GitHub"], ["linkedin", "LinkedIn"], ["facebook", "Facebook"], ["youtube", "YouTube"]].forEach(([key, label]) => {
+        if (https(s[key])) items.push({ key, label, href: s[key] });
+    });
+    if (typeof s.publicEmail === "string" && /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(s.publicEmail)) {
+        items.push({ key: "mail", label: "Email", href: "mailto:" + s.publicEmail });
+    }
+    document.querySelectorAll("[data-socials]").forEach(box => {
+        const skipInstagram = box.dataset.socials === "no-instagram";
+        box.replaceChildren();
+        items.forEach(it => {
+            if (skipInstagram && it.key === "instagram") return;
+            const a = document.createElement("a");
+            a.href = it.href;
+            a.setAttribute("aria-label", it.label);
+            a.title = it.label;
+            if (it.key !== "mail") { a.target = "_blank"; a.rel = "noopener"; }
+            a.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">' + SOCIAL_ICONS[it.key] + "</svg>";
+            box.appendChild(a);
+        });
+    });
+}
+
+// Site settings edited in the admin panel (intro text, status, location, CV, social links)
 function syncSiteSettings() {
+    renderSocials({});
     db.collection("settings").doc("site").onSnapshot(doc => {
-        if (!doc.exists) return;
-        const s = doc.data() || {};
+        const s = doc.exists ? (doc.data() || {}) : {};
         const each = (sel, fn) => document.querySelectorAll(sel).forEach(fn);
+        const https = (u) => typeof u === "string" && /^https:\/\//i.test(u);
         if (s.intro) each('[data-site="intro"]', el => { el.textContent = s.intro; });
         if (s.location) each('[data-site="location"]', el => { el.textContent = s.location; });
-        if (s.instagram && /^https:\/\//i.test(s.instagram)) {
+        each('[data-site="status"]', el => { el.textContent = s.status || ""; el.hidden = !s.status; });
+        each("[data-site-cv]", a => { a.hidden = !https(s.cvUrl); if (https(s.cvUrl)) a.href = s.cvUrl; });
+        if (https(s.instagram)) {
             each("[data-site-instagram]", a => { a.href = s.instagram; });
             const handle = "@" + s.instagram.replace(/[?#].*$/, "").replace(/\/+$/, "").split("/").pop();
             each('[data-site="instagram-handle"]', el => { el.textContent = handle; });
+        }
+        renderSocials(s);
+    }, () => {});
+}
+
+// Thin bar at the top of the page, managed from the admin panel
+function syncAnnouncement() {
+    db.collection("settings").doc("announce").onSnapshot(doc => {
+        const old = document.getElementById("announce");
+        if (old) old.remove();
+        if (!doc.exists) return;
+        const a = doc.data() || {};
+        if (!a.enabled || !a.text) return;
+        const t = a.updatedAt;
+        const stamp = String(t && t.toMillis ? t.toMillis() : (t || 0));
+        try { if (localStorage.getItem("announceOff") === stamp) return; } catch (e) {}
+
+        const bar = document.createElement("div");
+        bar.id = "announce";
+        bar.className = "announce";
+        bar.setAttribute("role", "region");
+        bar.setAttribute("aria-label", "Announcement");
+        const msg = document.createElement("span");
+        msg.textContent = a.text;
+        bar.appendChild(msg);
+        if (a.linkUrl && a.linkText && /^https:\/\//i.test(a.linkUrl)) {
+            const l = document.createElement("a");
+            l.href = a.linkUrl;
+            l.rel = "noopener";
+            l.textContent = a.linkText;
+            bar.appendChild(l);
+        }
+        const x = document.createElement("button");
+        x.type = "button";
+        x.setAttribute("aria-label", "Dismiss announcement");
+        x.textContent = "×";
+        x.addEventListener("click", () => { try { localStorage.setItem("announceOff", stamp); } catch (e) {} bar.remove(); });
+        bar.appendChild(x);
+        const skip = document.querySelector(".skip");
+        if (skip) skip.after(bar); else document.body.prepend(bar);
+    }, () => {});
+}
+
+// "Be right back" screen while maintenance mode is on (visitors only; the admin portal still works)
+function syncMaintenance() {
+    const preview = /[?&]maintenance-preview=1/.test(window.location.search);
+    db.collection("settings").doc("maintenance").onSnapshot(doc => {
+        const old = document.getElementById("maint");
+        if (old) old.remove();
+        document.body.classList.remove("maint-on");
+        const m = doc.exists ? (doc.data() || {}) : {};
+        if (!m.enabled && !preview) return;
+
+        const ov = document.createElement("div");
+        ov.id = "maint";
+        ov.className = "maint";
+        ov.setAttribute("role", "dialog");
+        ov.setAttribute("aria-modal", "true");
+        ov.setAttribute("aria-labelledby", "maint-title");
+        const card = document.createElement("div");
+        card.className = "maint-card";
+        card.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a4 4 0 00-5.4 5.4L3 18l3 3 6.3-6.3a4 4 0 005.4-5.4l-2.6 2.6-2.4-.6-.6-2.4z"/></svg>';
+        const h = document.createElement("h1");
+        h.id = "maint-title";
+        h.textContent = "We’ll be right back";
+        const p = document.createElement("p");
+        p.textContent = m.message || "I’m updating the website. Please check back soon.";
+        card.append(h, p);
+        if (preview && !m.enabled) {
+            const b = document.createElement("button");
+            b.type = "button";
+            b.className = "maint-close";
+            b.textContent = "Close preview";
+            b.addEventListener("click", () => { ov.remove(); document.body.classList.remove("maint-on"); });
+            card.appendChild(b);
+        }
+        ov.appendChild(card);
+        document.body.appendChild(ov);
+        document.body.classList.add("maint-on");
+    }, () => {});
+}
+
+// Portfolio projects (managed from the admin panel)
+function projectCard(p) {
+    const card = document.createElement("article");
+    card.className = "project-card";
+    const media = document.createElement("div");
+    media.className = "project-media";
+    if (p.imageUrl) {
+        const img = document.createElement("img");
+        img.src = p.imageUrl;
+        img.alt = p.title || "";
+        img.loading = "lazy";
+        media.appendChild(img);
+    } else {
+        media.classList.add("ph");
+        media.textContent = (p.title || "?").trim().charAt(0).toUpperCase();
+    }
+    const body = document.createElement("div");
+    body.className = "project-body";
+    const h = document.createElement("h3");
+    h.textContent = p.title || "Untitled";
+    body.appendChild(h);
+    if (p.description) { const d = document.createElement("p"); d.textContent = p.description; body.appendChild(d); }
+    if (p.tags && p.tags.length) {
+        const ul = document.createElement("ul");
+        ul.className = "tags";
+        p.tags.forEach(t => { const li = document.createElement("li"); li.textContent = t; ul.appendChild(li); });
+        body.appendChild(ul);
+    }
+    if (p.url && /^https:\/\//i.test(p.url)) {
+        const a = document.createElement("a");
+        a.className = "project-link";
+        a.href = p.url;
+        a.target = "_blank";
+        a.rel = "noopener";
+        a.textContent = "View project ↗";
+        body.appendChild(a);
+    }
+    card.append(media, body);
+    return card;
+}
+
+function loadProjects() {
+    const page = document.getElementById("projects-container");
+    const home = document.getElementById("home-projects-grid");
+    if (!page && !home) return;
+    db.collection("projects").orderBy("order", "asc").onSnapshot(snap => {
+        const list = [];
+        snap.forEach(d => list.push(d.data()));
+        const has = list.length > 0;
+        const nav = document.getElementById("nav-projects");
+        const section = document.getElementById("home-projects");
+        if (nav) nav.hidden = !has;
+        if (section) section.hidden = !has;
+        if (page) {
+            page.innerHTML = "";
+            if (has) list.forEach(p => page.appendChild(projectCard(p)));
+            else page.innerHTML = '<p class="gallery-empty" style="grid-column:1/-1">Projects are coming soon.</p>';
+        }
+        if (home) {
+            home.innerHTML = "";
+            list.slice(0, 3).forEach(p => home.appendChild(projectCard(p)));
         }
     }, () => {});
 }
@@ -282,6 +497,10 @@ function countVisit() {
     } catch (e) {}
     db.collection("stats").doc("visits")
         .set({ count: firebase.firestore.FieldValue.increment(1) }, { merge: true })
+        .catch(() => {});
+    const day = new Date().toISOString().slice(0, 10);
+    db.collection("statsDaily").doc(day)
+        .set({ count: firebase.firestore.FieldValue.increment(1), day: day }, { merge: true })
         .catch(() => {});
 }
 
@@ -469,7 +688,7 @@ function esc(s) {
 function trackScroll() {
     const bar = document.getElementById("bar");
     const links = document.querySelectorAll("#nav-links a");
-    const map = { "home": "/", "about-section": "/about", "gallery-section": "/gallery", "contact-section": "/contact" };
+    const map = { "home": "/", "about-section": "/about", "projects-section": "/projects", "gallery-section": "/gallery", "contact-section": "/contact" };
     const onScroll = () => {
         const d = document.documentElement;
         bar.style.width = (scrollY / (d.scrollHeight - innerHeight || 1)) * 100 + "%";

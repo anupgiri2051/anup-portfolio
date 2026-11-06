@@ -68,6 +68,7 @@
         <nav class="sb-nav" aria-label="Admin sections">
             <a href="#overview" data-view="overview" class="active"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="9" rx="1.5"/><rect x="14" y="3" width="7" height="5" rx="1.5"/><rect x="14" y="12" width="7" height="9" rx="1.5"/><rect x="3" y="16" width="7" height="5" rx="1.5"/></svg>Overview</a>
             <a href="#photos" data-view="photos"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="9" cy="10" r="1.6"/><path d="M21 16l-5-5-8 9"/></svg>Photos<b class="count" id="nav-photos"></b></a>
+            <a href="#projects" data-view="projects"><svg viewBox="0 0 24 24"><path d="M3 7a2 2 0 012-2h4l2 2h8a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2z"/></svg>Projects<b class="count" id="nav-projects"></b></a>
             <a href="#messages" data-view="messages"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 7l9 6 9-6"/></svg>Messages<b class="count badge" id="nav-unread" hidden></b></a>
             <a href="#popup" data-view="popup"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2.5"/><path d="M3 9h18M8 6.5h.01M11 6.5h.01"/><path d="M10 13.5l4 2.5-4 2.5z"/></svg>Popup<b class="count" id="nav-popup"></b></a>
             <a href="#settings" data-view="settings"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 00.3 1.8l.1.1a2 2 0 11-2.8 2.8l-.1-.1a1.7 1.7 0 00-1.8-.3 1.7 1.7 0 00-1 1.5V21a2 2 0 11-4 0v-.1a1.7 1.7 0 00-1.1-1.5 1.7 1.7 0 00-1.8.3l-.1.1a2 2 0 11-2.8-2.8l.1-.1a1.7 1.7 0 00.3-1.8 1.7 1.7 0 00-1.5-1H3a2 2 0 110-4h.1a1.7 1.7 0 001.5-1.1 1.7 1.7 0 00-.3-1.8l-.1-.1a2 2 0 112.8-2.8l.1.1a1.7 1.7 0 001.8.3H9a1.7 1.7 0 001-1.5V3a2 2 0 114 0v.1a1.7 1.7 0 001 1.5 1.7 1.7 0 001.8-.3l.1-.1a2 2 0 112.8 2.8l-.1.1a1.7 1.7 0 00-.3 1.8V9a1.7 1.7 0 001.5 1H21a2 2 0 110 4h-.1a1.7 1.7 0 00-1.5 1z"/></svg>Site settings</a>
@@ -103,6 +104,11 @@
                     <div class="stat"><span class="s-ico c4"><svg viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg></span><div><b id="stat-visits">0</b><span>Site visits</span></div></div>
                 </div>
 
+                <div class="card">
+                    <div class="card-head"><h3>Site visits · last 14 days</h3><span class="pill" id="visits-total">0</span></div>
+                    <div id="chart14" class="chart dense" aria-label="Website visits in the last 14 days"></div>
+                </div>
+
                 <div class="grid-2">
                     <div class="card">
                         <div class="card-head"><h3>Messages · last 7 days</h3><span class="pill" id="chart-total">0</span></div>
@@ -132,6 +138,11 @@
                         <div class="form-group">
                             <label for="photo-title">Photo title / base name</label>
                             <input type="text" id="photo-title" placeholder="Enter image title..." maxlength="80" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="photo-cat">Category (optional)</label>
+                            <input type="text" id="photo-cat" list="cat-list" maxlength="30" placeholder="e.g. Travel, Projects, Events">
+                            <datalist id="cat-list"></datalist>
                         </div>
                         <div class="form-group">
                             <label for="photo-file">Images</label>
@@ -173,6 +184,48 @@
                 </div>
             </section>
 
+            <!-- Projects -->
+            <section class="view" id="view-projects" hidden>
+                <div class="card narrow">
+                    <div class="card-head"><h3 id="proj-form-title">Add a project</h3></div>
+                    <p class="hint">Projects appear on a Projects page and in a “Latest projects” row on your home page. The Projects menu item shows up as soon as you add one.</p>
+                    <form id="project-form" class="clean-form" novalidate>
+                        <div class="form-group">
+                            <label for="proj-title">Project name</label>
+                            <input type="text" id="proj-title" maxlength="80" placeholder="My first website" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="proj-desc">Description</label>
+                            <textarea id="proj-desc" rows="3" maxlength="400" placeholder="What is it and what did you learn?"></textarea>
+                        </div>
+                        <div class="form-row-desktop">
+                            <div class="form-group">
+                                <label for="proj-tags">Tags (comma separated)</label>
+                                <input type="text" id="proj-tags" maxlength="120" placeholder="HTML, CSS, Firebase">
+                            </div>
+                            <div class="form-group">
+                                <label for="proj-url">Project link (optional)</label>
+                                <input type="url" id="proj-url" placeholder="https://...">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="proj-image">Cover image (optional)</label>
+                            <input type="file" id="proj-image" accept="image/*">
+                            <label class="check" id="proj-rm-wrap" hidden><input type="checkbox" id="proj-rm-img"> Remove the current image</label>
+                        </div>
+                        <div class="row">
+                            <button type="submit" id="proj-save" class="btn btn-primary">Add project</button>
+                            <button type="button" id="proj-cancel" class="btn btn-secondary" hidden>Cancel editing</button>
+                            <div id="proj-status" class="status-msg" role="status"></div>
+                        </div>
+                    </form>
+                </div>
+                <div class="card">
+                    <div class="card-head"><h3>Your projects</h3><span class="pill" id="proj-count">0</span></div>
+                    <div id="projects-grid" class="gallery-grid"></div>
+                </div>
+            </section>
+
             <!-- Popup -->
             <section class="view" id="view-popup" hidden>
                 <div class="card narrow">
@@ -181,7 +234,7 @@
                         <label class="switch"><input type="checkbox" id="pop-enabled"><span aria-hidden="true"></span>Show popup</label>
                     </div>
                     <p class="hint">Visitors see this pop-up when they open your website. Add the photos and videos below, then switch it on and save.</p>
-                    <form id="popup-form" class="clean-form">
+                    <form id="popup-form" class="clean-form" novalidate>
                         <div class="form-group">
                             <label for="pop-title">Title</label>
                             <input type="text" id="pop-title" maxlength="80" placeholder="Welcome to my website">
@@ -241,25 +294,79 @@
             <section class="view" id="view-settings" hidden>
                 <div class="card narrow">
                     <div class="card-head"><h3>Website text and links</h3></div>
-                    <p class="hint">Changes appear on the live site within a few seconds. Leave a field empty to keep the default text.</p>
-                    <form id="settings-form" class="clean-form">
+                    <p class="hint">Changes appear on the live site within a few seconds. Leave a field empty to hide it or keep the default.</p>
+                    <form id="settings-form" class="clean-form" novalidate>
                         <div class="form-group">
                             <label for="set-intro">Home page intro</label>
                             <textarea id="set-intro" rows="3" maxlength="400" placeholder="I’m a student from Baglung, Nepal, exploring IT, AI and web development..."></textarea>
                         </div>
                         <div class="form-row-desktop">
                             <div class="form-group">
+                                <label for="set-status">Status badge (home page)</label>
+                                <input type="text" id="set-status" maxlength="50" placeholder="Open to internships">
+                            </div>
+                            <div class="form-group">
                                 <label for="set-location">Based in (home page card)</label>
                                 <input type="text" id="set-location" maxlength="40" placeholder="Baglung">
                             </div>
-                            <div class="form-group">
-                                <label for="set-instagram">Instagram link</label>
-                                <input type="url" id="set-instagram" placeholder="https://www.instagram.com/your_name/">
-                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="set-cv">CV / resume link (adds a “Download CV” button)</label>
+                            <input type="url" id="set-cv" placeholder="https://drive.google.com/...">
+                        </div>
+                        <h4 class="sub-h">Social links</h4>
+                        <div class="form-row-desktop">
+                            <div class="form-group"><label for="set-instagram">Instagram</label><input type="url" id="set-instagram" placeholder="https://www.instagram.com/your_name/"></div>
+                            <div class="form-group"><label for="set-github">GitHub</label><input type="url" id="set-github" placeholder="https://github.com/your_name"></div>
+                            <div class="form-group"><label for="set-linkedin">LinkedIn</label><input type="url" id="set-linkedin" placeholder="https://www.linkedin.com/in/your_name"></div>
+                            <div class="form-group"><label for="set-facebook">Facebook</label><input type="url" id="set-facebook" placeholder="https://www.facebook.com/your_name"></div>
+                            <div class="form-group"><label for="set-youtube">YouTube</label><input type="url" id="set-youtube" placeholder="https://www.youtube.com/@your_name"></div>
+                            <div class="form-group"><label for="set-email">Public email (optional)</label><input type="email" id="set-email" placeholder="you@example.com"></div>
                         </div>
                         <div class="row">
                             <button type="submit" id="settings-btn" class="btn btn-primary">Save settings</button>
                             <div id="settings-status" class="status-msg" role="status"></div>
+                        </div>
+                    </form>
+                </div>
+
+                <div class="card narrow">
+                    <div class="card-head">
+                        <h3>Announcement bar</h3>
+                        <label class="switch"><input type="checkbox" id="ann-enabled"><span aria-hidden="true"></span>Show bar</label>
+                    </div>
+                    <p class="hint">A thin colored bar at the very top of every page. Visitors can close it.</p>
+                    <form id="ann-form" class="clean-form" novalidate>
+                        <div class="form-group">
+                            <label for="ann-text">Message</label>
+                            <input type="text" id="ann-text" maxlength="140" placeholder="New project added! Take a look.">
+                        </div>
+                        <div class="form-row-desktop">
+                            <div class="form-group"><label for="ann-link-text">Link text (optional)</label><input type="text" id="ann-link-text" maxlength="30" placeholder="See projects"></div>
+                            <div class="form-group"><label for="ann-link-url">Link address (optional)</label><input type="url" id="ann-link-url" placeholder="https://anupgiri.com/projects"></div>
+                        </div>
+                        <div class="row">
+                            <button type="submit" id="ann-save" class="btn btn-primary">Save announcement</button>
+                            <div id="ann-status" class="status-msg" role="status"></div>
+                        </div>
+                    </form>
+                </div>
+
+                <div class="card narrow">
+                    <div class="card-head">
+                        <h3>Maintenance mode</h3>
+                        <label class="switch"><input type="checkbox" id="maint-enabled"><span aria-hidden="true"></span>Maintenance on</label>
+                    </div>
+                    <p class="hint">While this is on, visitors see a “be right back” screen instead of your site. You can still use this admin portal. Remember to switch it off.</p>
+                    <form id="maint-form" class="clean-form">
+                        <div class="form-group">
+                            <label for="maint-message">Message for visitors</label>
+                            <textarea id="maint-message" rows="2" maxlength="200" placeholder="I’m updating the website. Please check back soon."></textarea>
+                        </div>
+                        <div class="row">
+                            <button type="submit" id="maint-save" class="btn btn-primary">Save</button>
+                            <button type="button" id="maint-preview" class="btn btn-secondary">Preview on site ↗</button>
+                            <div id="maint-status" class="status-msg" role="status"></div>
                         </div>
                     </form>
                 </div>
@@ -289,6 +396,11 @@
                             </div>
                         </form>
                     </div>
+                </div>
+                <div class="card narrow">
+                    <div class="card-head"><h3>Backup</h3></div>
+                    <p class="hint">Download a copy of your messages, projects, photo list and all settings as a JSON file. Photo images themselves are not included, only their titles and categories.</p>
+                    <button type="button" id="backup-btn" class="btn btn-secondary">Download backup (JSON)</button>
                 </div>
             </section>
 

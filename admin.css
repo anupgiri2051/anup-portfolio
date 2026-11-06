@@ -214,3 +214,15 @@ input[type=file]::file-selector-button{margin-right:.8rem;padding:.4rem .9rem;bo
 .slide-thumb img{width:100%;height:100%;object-fit:cover;display:block}
 .play-badge{position:absolute;left:.6rem;bottom:.6rem;padding:.25rem .65rem;border-radius:99px;background:rgba(11,23,48,.85);color:#fff;font-size:.75rem;font-weight:700}
 .btn-mini:disabled{opacity:.4;cursor:default}
+
+/* ---------- more admin options ---------- */
+.sub-h{margin:.4rem 0 -.2rem;font:600 .78rem 'Inter',sans-serif;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+.check{display:flex;align-items:center;gap:.5rem;margin-top:.4rem;font-size:.86rem;font-weight:500;color:var(--muted)}
+.check input{width:auto}
+.chart.dense{gap:.3rem;height:170px}
+.chart.dense .bar b{font-size:.68rem}
+.chart.dense .bar span{font-size:.68rem}
+.chart.dense .track{max-width:30px}
+.hint{font-size:.84rem}
+#view-settings .card.narrow{max-width:820px}
+.admin-card-info small.hint{margin:0;min-height:1.1rem}
