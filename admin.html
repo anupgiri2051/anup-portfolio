@@ -15,16 +15,16 @@
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 
-    <link rel="icon" type="image/svg+xml" href="favicon.svg">
-    <link rel="alternate icon" href="favicon.png">
-    <link rel="stylesheet" href="admin.css">
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+    <link rel="alternate icon" href="/favicon.png">
+    <link rel="stylesheet" href="/admin.css">
 </head>
 <body>
 
 <!-- ================= Login ================= -->
 <div id="login-modal" class="login-screen" style="display: flex;">
     <div class="login-brand">
-        <div class="lb-top"><img src="logo.png" alt=""><span>Anup Giri</span></div>
+        <div class="lb-top"><img src="/logo.png" alt=""><span>Anup Giri</span></div>
         <div>
             <h1>Admin portal</h1>
             <p>Manage your photos, read your messages and update your website from one place.</p>
@@ -64,15 +64,15 @@
 <!-- ================= App ================= -->
 <div id="admin-dashboard" class="app" style="display: none;">
     <aside class="sidebar" id="sidebar">
-        <div class="sb-brand"><img src="logo.png" alt=""><span>Anup Giri</span><em>Admin</em></div>
+        <div class="sb-brand"><img src="/logo.png" alt=""><span>Anup Giri</span><em>Admin</em></div>
         <nav class="sb-nav" aria-label="Admin sections">
-            <a href="#overview" data-view="overview" class="active"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="9" rx="1.5"/><rect x="14" y="3" width="7" height="5" rx="1.5"/><rect x="14" y="12" width="7" height="9" rx="1.5"/><rect x="3" y="16" width="7" height="5" rx="1.5"/></svg>Overview</a>
-            <a href="#photos" data-view="photos"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="9" cy="10" r="1.6"/><path d="M21 16l-5-5-8 9"/></svg>Photos<b class="count" id="nav-photos"></b></a>
-            <a href="#projects" data-view="projects"><svg viewBox="0 0 24 24"><path d="M3 7a2 2 0 012-2h4l2 2h8a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2z"/></svg>Projects<b class="count" id="nav-projects"></b></a>
-            <a href="#messages" data-view="messages"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 7l9 6 9-6"/></svg>Messages<b class="count badge" id="nav-unread" hidden></b></a>
-            <a href="#popup" data-view="popup"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2.5"/><path d="M3 9h18M8 6.5h.01M11 6.5h.01"/><path d="M10 13.5l4 2.5-4 2.5z"/></svg>Popup<b class="count" id="nav-popup"></b></a>
-            <a href="#settings" data-view="settings"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 00.3 1.8l.1.1a2 2 0 11-2.8 2.8l-.1-.1a1.7 1.7 0 00-1.8-.3 1.7 1.7 0 00-1 1.5V21a2 2 0 11-4 0v-.1a1.7 1.7 0 00-1.1-1.5 1.7 1.7 0 00-1.8.3l-.1.1a2 2 0 11-2.8-2.8l.1-.1a1.7 1.7 0 00.3-1.8 1.7 1.7 0 00-1.5-1H3a2 2 0 110-4h.1a1.7 1.7 0 001.5-1.1 1.7 1.7 0 00-.3-1.8l-.1-.1a2 2 0 112.8-2.8l.1.1a1.7 1.7 0 001.8.3H9a1.7 1.7 0 001-1.5V3a2 2 0 114 0v.1a1.7 1.7 0 001 1.5 1.7 1.7 0 001.8-.3l.1-.1a2 2 0 112.8 2.8l-.1.1a1.7 1.7 0 00-.3 1.8V9a1.7 1.7 0 001.5 1H21a2 2 0 110 4h-.1a1.7 1.7 0 00-1.5 1z"/></svg>Site settings</a>
-            <a href="#account" data-view="account"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-7 8-7s8 3 8 7"/></svg>Account</a>
+            <a href="/admin/overview" data-view="overview" class="active"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="9" rx="1.5"/><rect x="14" y="3" width="7" height="5" rx="1.5"/><rect x="14" y="12" width="7" height="9" rx="1.5"/><rect x="3" y="16" width="7" height="5" rx="1.5"/></svg>Overview</a>
+            <a href="/admin/photos" data-view="photos"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="9" cy="10" r="1.6"/><path d="M21 16l-5-5-8 9"/></svg>Photos<b class="count" id="nav-photos"></b></a>
+            <a href="/admin/projects" data-view="projects"><svg viewBox="0 0 24 24"><path d="M3 7a2 2 0 012-2h4l2 2h8a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2z"/></svg>Projects<b class="count" id="nav-projects"></b></a>
+            <a href="/admin/messages" data-view="messages"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 7l9 6 9-6"/></svg>Messages<b class="count badge" id="nav-unread" hidden></b></a>
+            <a href="/admin/popup" data-view="popup"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2.5"/><path d="M3 9h18M8 6.5h.01M11 6.5h.01"/><path d="M10 13.5l4 2.5-4 2.5z"/></svg>Popup<b class="count" id="nav-popup"></b></a>
+            <a href="/admin/settings" data-view="settings"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 00.3 1.8l.1.1a2 2 0 11-2.8 2.8l-.1-.1a1.7 1.7 0 00-1.8-.3 1.7 1.7 0 00-1 1.5V21a2 2 0 11-4 0v-.1a1.7 1.7 0 00-1.1-1.5 1.7 1.7 0 00-1.8.3l-.1.1a2 2 0 11-2.8-2.8l.1-.1a1.7 1.7 0 00.3-1.8 1.7 1.7 0 00-1.5-1H3a2 2 0 110-4h.1a1.7 1.7 0 001.5-1.1 1.7 1.7 0 00-.3-1.8l-.1-.1a2 2 0 112.8-2.8l.1.1a1.7 1.7 0 001.8.3H9a1.7 1.7 0 001-1.5V3a2 2 0 114 0v.1a1.7 1.7 0 001 1.5 1.7 1.7 0 001.8-.3l.1-.1a2 2 0 112.8 2.8l-.1.1a1.7 1.7 0 00-.3 1.8V9a1.7 1.7 0 001.5 1H21a2 2 0 110 4h-.1a1.7 1.7 0 00-1.5 1z"/></svg>Site settings</a>
+            <a href="/admin/account" data-view="account"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-7 8-7s8 3 8 7"/></svg>Account</a>
         </nav>
         <div class="sb-foot">
             <a class="sb-link" href="/" target="_blank" rel="noopener">View website ↗</a>
@@ -115,7 +115,7 @@
                         <div id="chart7" class="chart" aria-label="Messages received in the last 7 days"></div>
                     </div>
                     <div class="card">
-                        <div class="card-head"><h3>Recent messages</h3><a href="#messages" data-view="messages" class="text-link">View all</a></div>
+                        <div class="card-head"><h3>Recent messages</h3><a href="/admin/messages" data-view="messages" class="text-link">View all</a></div>
                         <div id="recent-messages" class="recent"></div>
                     </div>
                 </div>
@@ -123,8 +123,8 @@
                 <div class="card quick">
                     <h3>Quick actions</h3>
                     <div class="quick-row">
-                        <a href="#photos" data-view="photos" class="btn btn-primary">Upload photos</a>
-                        <a href="#settings" data-view="settings" class="btn btn-secondary">Edit site text</a>
+                        <a href="/admin/photos" data-view="photos" class="btn btn-primary">Upload photos</a>
+                        <a href="/admin/settings" data-view="settings" class="btn btn-secondary">Edit site text</a>
                         <a href="/" target="_blank" rel="noopener" class="btn btn-secondary">Open website ↗</a>
                     </div>
                 </div>
@@ -422,7 +422,7 @@
 </div>
 <div id="toasts" class="toasts" aria-live="polite"></div>
 
-<script src="firebase-config.js"></script>
-<script src="admin.js"></script>
+<script src="/firebase-config.js"></script>
+<script src="/admin.js"></script>
 </body>
 </html>

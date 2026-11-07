@@ -76,3 +76,15 @@ Good to know:
 - Maintenance mode works with JavaScript, so it is a visitor screen, not a real server shutdown. Search engines may still read the page.
 - Daily visits are counted per browser session (one visit per person per session) and use UTC dates.
 - `sitemap.xml` now lists the /projects page.
+
+## Admin addresses (new)
+Each admin section has its own address, for example:
+- `https://anupgiri.com/admin/overview`
+- `https://anupgiri.com/admin/photos`
+- `https://anupgiri.com/admin/projects`
+- `https://anupgiri.com/admin/popup`
+- `https://anupgiri.com/admin/messages`
+- `https://anupgiri.com/admin/settings`
+- `https://anupgiri.com/admin/account`
+
+`/admin` opens the overview, and old links like `/admin#settings` are converted automatically. If you open one of these addresses while signed out, you see the login first and then land on that section. `vercel.json` must be deployed for these addresses to work after a page refresh.

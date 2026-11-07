@@ -87,8 +87,15 @@ function ask({ title, text = "", ok = "OK", danger = false, input = null }) {
 
 /* ---------- navigation ---------- */
 function currentView() {
-    const h = (location.hash || "").slice(1);
-    return VIEWS[h] ? h : "overview";
+    // old links such as /admin#messages are still understood
+    const hash = (location.hash || "").slice(1);
+    if (VIEWS[hash]) return hash;
+    const m = location.pathname.match(/^\/admin\/([a-z]+)\/?$/);
+    return m && VIEWS[m[1]] ? m[1] : "overview";
+}
+
+function viewPath(view) {
+    return "/admin/" + view;
 }
 
 function showView(view) {
@@ -99,18 +106,31 @@ function showView(view) {
     window.scrollTo(0, 0);
 }
 
+function setPath(target, replace) {
+    try { history[replace ? "replaceState" : "pushState"](null, "", target); } catch (e) {}
+}
+
 function go(view) {
-    if (location.hash === "#" + view) showView(view);
-    else location.hash = view;
+    const target = viewPath(view);
+    if (location.pathname !== target || location.hash) setPath(target, false);
+    showView(view);
 }
 
 function initNav() {
     document.querySelectorAll("[data-view]").forEach(a =>
-        a.addEventListener("click", e => { e.preventDefault(); go(a.dataset.view); }));
-    window.addEventListener("hashchange", () => showView(currentView()));
+        a.addEventListener("click", e => {
+            if (e.metaKey || e.ctrlKey || e.shiftKey || e.button !== 0) return; // let "open in new tab" work
+            e.preventDefault();
+            go(a.dataset.view);
+        }));
+    window.addEventListener("popstate", () => showView(currentView()));
     $("menu-btn").addEventListener("click", () => document.body.classList.toggle("sb-open"));
     $("sb-scrim").addEventListener("click", () => document.body.classList.remove("sb-open"));
-    showView(currentView());
+
+    // tidy the address bar: /admin -> /admin/overview, /admin#messages -> /admin/messages, unknown -> overview
+    const view = currentView();
+    if (location.pathname !== viewPath(view) || location.hash) setPath(viewPath(view), true);
+    showView(view);
 }
 
 /* ---------- authentication ---------- */
@@ -350,7 +370,7 @@ function renderRecent() {
     box.innerHTML = "";
     allMessages.slice(0, 5).forEach(m => {
         const a = document.createElement("a");
-        a.href = "#messages";
+        a.href = "/admin/messages";
         a.addEventListener("click", e => { e.preventDefault(); go("messages"); });
         const who = document.createElement("strong");
         if (!m.read) { const dot = document.createElement("span"); dot.className = "dot"; who.appendChild(dot); }
