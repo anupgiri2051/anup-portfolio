@@ -22,7 +22,7 @@
   // count-up numbers
   document.querySelectorAll("[data-count]").forEach(el => {
     const end = +el.dataset.count; let n = 0;
-    const id = setInterval(() => { el.textContent = ++n; if (n >= end) clearInterval(id); }, 450);
+    const id = setInterval(() => { if (!el.hasAttribute("data-count")) { clearInterval(id); return; } el.textContent = ++n; if (n >= end) clearInterval(id); }, 450);
     el.textContent = 0;
   });
 
@@ -53,16 +53,20 @@
   const dirs = [[1,0],[1,1],[0,1],[-1,1],[-1,0],[-1,-1],[0,-1],[1,-1]];
   const rnd = n => Math.random() * n | 0;
   let w, h, base, paths = [], pulses = [], glyphs = [];
+  let ACC = "14,165,233", ACC2 = "59,130,246";
   const GL = ["</>", "{ }", "01", "( )", "[ ]", "=>", "//", "&&", "#", ";"];
 
   const build = () => {
+    const cs = getComputedStyle(document.documentElement);
+    ACC = cs.getPropertyValue("--acc-rgb").trim() || ACC;
+    ACC2 = cs.getPropertyValue("--acc2-rgb").trim() || ACC2;
     w = innerWidth; h = innerHeight;
     c.width = w * dpr; c.height = h * dpr; x.setTransform(dpr, 0, 0, dpr, 0, 0);
     base = document.createElement("canvas"); base.width = w * dpr; base.height = h * dpr;
     const b = base.getContext("2d"); b.setTransform(dpr, 0, 0, dpr, 0, 0);
     b.lineJoin = b.lineCap = "round";
     // dotted grid
-    b.fillStyle = "rgba(14,165,233,.16)";
+    b.fillStyle = `rgba(${ACC},.16)`;
     for (let gx = G / 2; gx < w; gx += G) for (let gy = G / 2; gy < h; gy += G) { b.beginPath(); b.arc(gx, gy, 1.1, 0, 7); b.fill(); }
     // circuit traces (kept sparse and faint)
     paths = []; pulses = [];
@@ -77,16 +81,17 @@
         d = (d + [-1, 1, 0, 0, 0][rnd(5)] + 8) % 8;
       }
       paths.push({ pts, cum, total: cum[cum.length - 1] });
-      b.strokeStyle = "rgba(14,165,233,.17)"; b.lineWidth = 1.3;
+      b.strokeStyle = `rgba(${ACC},.17)`; b.lineWidth = 1.3;
       b.beginPath(); pts.forEach(([a, e], j) => j ? b.lineTo(a, e) : b.moveTo(a, e)); b.stroke();
       const [sx, sy] = pts[0], [ex, ey] = pts[pts.length - 1];
-      [[sx, sy], [ex, ey]].forEach(([a, e]) => { b.fillStyle = "rgba(14,165,233,.28)"; b.beginPath(); b.arc(a, e, 3.4, 0, 7); b.fill(); });
-      b.strokeStyle = "rgba(59,130,246,.3)"; b.beginPath(); b.arc(ex, ey, 6.5, 0, 7); b.stroke();
+      [[sx, sy], [ex, ey]].forEach(([a, e]) => { b.fillStyle = `rgba(${ACC},.28)`; b.beginPath(); b.arc(a, e, 3.4, 0, 7); b.fill(); });
+      b.strokeStyle = `rgba(${ACC2},.3)`; b.beginPath(); b.arc(ex, ey, 6.5, 0, 7); b.stroke();
     }
     x.clearRect(0, 0, w, h); x.drawImage(base, 0, 0, w, h);
   };
   build();
   addEventListener("resize", build);
+  addEventListener("themechange", build);
   if (calm) return;
 
   const at = (p, d) => {
@@ -102,10 +107,10 @@
     glyphs.forEach(g => {
       g.y -= g.v; if (g.y < -30) { g.y = h + 30; g.x = Math.random() * w; }
       x.font = `600 ${g.s}px ui-monospace,Menlo,Consolas,monospace`;
-      x.fillStyle = "rgba(14,165,233,.14)"; x.fillText(g.t, g.x, g.y);
+      x.fillStyle = `rgba(${ACC},.14)`; x.fillText(g.t, g.x, g.y);
     });
     if (paths.length && pulses.length < 6 && Math.random() < .03)
-      pulses.push({ p: paths[rnd(paths.length)], d: 0, s: 1.4 + Math.random() * 1.6, c: Math.random() < .3 ? "59,130,246" : "14,165,233" });
+      pulses.push({ p: paths[rnd(paths.length)], d: 0, s: 1.4 + Math.random() * 1.6, c: Math.random() < .3 ? ACC2 : ACC });
     pulses = pulses.filter(q => (q.d += q.s) < q.p.total + 40);
     pulses.forEach(q => {
       for (let k = 0; k < 8; k++) {
@@ -120,24 +125,37 @@
   })();
 })();
 
-// Terminal: types each command, then shows its output
+// Terminal: types each command, then shows its output (restarts when the text is edited in the admin)
 (() => {
-  const term = document.querySelector(".term");
-  if (!term || matchMedia("(prefers-reduced-motion: reduce)").matches || !("IntersectionObserver" in window)) return;
-  const lines = [...term.querySelectorAll(".term-body p")];
-  const cmds = lines.map(p => (p.querySelector(".pr") && !p.querySelector(".cur")) ? p.lastChild : null);
-  const texts = cmds.map(n => n ? n.textContent : "");
-  lines.forEach((p, i) => { p.style.visibility = "hidden"; if (cmds[i]) cmds[i].textContent = ""; });
+  const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
+  let token = 0, observer = null;
   const wait = ms => new Promise(r => setTimeout(r, ms));
-  new IntersectionObserver(async (es, io) => {
-    if (!es[0].isIntersecting) return;
-    io.disconnect();
-    for (let i = 0; i < lines.length; i++) {
-      lines[i].style.visibility = "visible";
-      if (cmds[i]) { for (const ch of texts[i]) { cmds[i].textContent += ch; await wait(42); } await wait(260); }
-      else await wait(380);
-    }
-  }, { threshold: .5 }).observe(term);
+  window.startTerminal = () => {
+    const term = document.querySelector(".term");
+    if (!term || reduce || !("IntersectionObserver" in window)) return;
+    const run = ++token;
+    if (observer) observer.disconnect();
+    const tb = term.querySelector(".term-body");
+    if (tb && tb.dataset.def === undefined) tb.dataset.def = tb.innerHTML; // remember the original text before it is blanked for typing
+    const lines = [...term.querySelectorAll(".term-body p")];
+    const cmds = lines.map(p => (p.querySelector(".pr") && !p.querySelector(".cur")) ? p.lastChild : null);
+    const texts = cmds.map(n => n ? n.textContent : "");
+    lines.forEach((p, i) => { p.style.visibility = "hidden"; if (cmds[i]) cmds[i].textContent = ""; });
+    observer = new IntersectionObserver(async (es, io) => {
+      if (!es[0].isIntersecting) return;
+      io.disconnect();
+      for (let i = 0; i < lines.length; i++) {
+        if (run !== token) return;
+        lines[i].style.visibility = "visible";
+        if (cmds[i]) {
+          for (const ch of texts[i]) { if (run !== token) return; cmds[i].textContent += ch; await wait(42); }
+          await wait(260);
+        } else await wait(380);
+      }
+    }, { threshold: .5 });
+    observer.observe(term);
+  };
+  window.startTerminal();
 })();
 
 // Back-to-top button
@@ -162,13 +180,66 @@
   const closeBtn = overlay.querySelector(".topic-close");
   let opener = null;
 
+  // Reads the default text of a topic from its <template>, then applies anything edited in the admin
+  const topicData = key => {
+    const tpl = document.getElementById("topic-" + key);
+    const def = { intro: "", items: [], tags: [], goal: "", h1: "What I’m learning", h2: "Topics I’m exploring" };
+    if (tpl) {
+      const f = tpl.content;
+      const q = s => f.querySelector(s);
+      if (q(".t-intro")) def.intro = q(".t-intro").textContent;
+      def.items = [...f.querySelectorAll("li")].map(li => li.textContent);
+      def.tags = [...f.querySelectorAll(".chips span")].map(s => s.textContent);
+      const g = q(".t-goal");
+      if (g) def.goal = g.textContent.replace(/^\s*My goal:\s*/i, "");
+      const hs = f.querySelectorAll("h4");
+      if (hs[0]) def.h1 = hs[0].textContent;
+      if (hs[1]) def.h2 = hs[1].textContent;
+    }
+    const o = (window.siteTopics && window.siteTopics[key]) || {};
+    return {
+      intro: o.intro || def.intro,
+      items: o.items && o.items.length ? o.items : def.items,
+      tags: o.tags && o.tags.length ? o.tags : def.tags,
+      goal: o.goal || def.goal,
+      h1: def.h1, h2: def.h2
+    };
+  };
+
+  const buildBody = key => {
+    const d = topicData(key);
+    const frag = document.createDocumentFragment();
+    const add = (tag, text, cls) => { const e = document.createElement(tag); if (cls) e.className = cls; e.textContent = text; frag.appendChild(e); return e; };
+    if (d.intro) add("p", d.intro, "t-intro");
+    if (d.items.length) {
+      add("h4", d.h1);
+      const ul = document.createElement("ul");
+      d.items.forEach(t => { const li = document.createElement("li"); li.textContent = t; ul.appendChild(li); });
+      frag.appendChild(ul);
+    }
+    if (d.tags.length) {
+      add("h4", d.h2);
+      const box = document.createElement("div");
+      box.className = "chips";
+      d.tags.forEach(t => { const s = document.createElement("span"); s.textContent = t; box.appendChild(s); });
+      frag.appendChild(box);
+    }
+    if (d.goal) {
+      const p = document.createElement("p");
+      p.className = "t-goal";
+      const b = document.createElement("b");
+      b.textContent = "My goal:";
+      p.append(b, " " + d.goal);
+      frag.appendChild(p);
+    }
+    return frag;
+  };
+
   const open = el => {
-    const tpl = document.getElementById("topic-" + el.dataset.topic);
-    if (!tpl) return;
     opener = el;
     overlay.querySelector(".ico").innerHTML = el.querySelector(".ico").innerHTML;
     overlay.querySelector("h3").textContent = el.querySelector("h3").textContent;
-    overlay.querySelector(".topic-body").replaceChildren(tpl.content.cloneNode(true));
+    overlay.querySelector(".topic-body").replaceChildren(buildBody(el.dataset.topic));
     overlay.hidden = false;
     document.body.classList.add("topic-open");
     card.scrollTop = 0;

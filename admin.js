@@ -5,7 +5,7 @@ const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": 
 const $ = id => document.getElementById(id);
 
 const IDLE_MS = 30 * 60 * 1000;
-const VIEWS = { overview: "Overview", photos: "Photos", projects: "Projects", popup: "Popup", messages: "Messages", settings: "Site settings", account: "Account" };
+const VIEWS = { overview: "Overview", content: "Content", photos: "Photos", projects: "Projects", popup: "Popup", messages: "Messages", settings: "Site settings", account: "Account" };
 const IDLE_EVENTS = ["mousemove", "keydown", "click", "touchstart", "scroll"];
 
 let unsubs = [];
@@ -19,6 +19,8 @@ let annLoaded = false;
 let maintLoaded = false;
 let projects = [];
 let editingProject = null;
+let contentLoaded = false;
+let selectedTheme = "sky";
 
 document.addEventListener("DOMContentLoaded", () => {
     initAuth();
@@ -33,6 +35,7 @@ document.addEventListener("DOMContentLoaded", () => {
     setupProjectForm();
     setupAnnouncementTools();
     setupBackup();
+    buildContentForms();
 });
 
 /* ---------- small UI helpers ---------- */
@@ -244,6 +247,7 @@ function showDashboard(user) {
     loadSlides();
     loadProjects();
     loadVisits();
+    loadContent();
 }
 
 function showLoginModal() {
@@ -257,6 +261,7 @@ function showLoginModal() {
     popupLoaded = false;
     annLoaded = false;
     maintLoaded = false;
+    contentLoaded = false;
     allMessages = [];
     slides = [];
     projects = [];
@@ -1262,4 +1267,309 @@ function setupBackup() {
             btn.disabled = false;
         }
     });
+}
+
+
+/* ---------- full content editor (text, images and theme shown on the website) ---------- */
+const CONTENT_CARDS = [
+    { id: "home", title: "Home page", hint: "The big heading, the two buttons and the three small cards under the intro (the intro text itself is in Site settings).", fields: [
+        { key: "heroGreeting", label: "Greeting line", ph: "Hello, I’m", max: 30 },
+        { key: "heroName", label: "Your name (large)", ph: "Anup Giri", max: 40 },
+        { key: "btnPrimary", label: "Main button text", ph: "Say Hello!", max: 24 },
+        { key: "btnSecondary", label: "Second button text", ph: "View gallery", max: 24 },
+        { key: "stats", type: "group", count: 3, item: "Small card", subs: [
+            { k: "value", label: "Big text", max: 20, ph: ["3", "IT + AI", "Baglung"] },
+            { k: "label", label: "Small text", max: 24, ph: ["Focus areas", "Interests", "Based in"] }
+        ] }
+    ] },
+    { id: "about", title: "About page", hint: "A short bio above the three info cards.", fields: [
+        { key: "aboutBio", type: "textarea", label: "About me paragraph", ph: "Write a few sentences about yourself...", max: 600, rows: 4 },
+        { key: "facts", type: "group", count: 3, item: "Info card", subs: [
+            { k: "label", label: "Label", max: 24, ph: ["Name", "Based in", "Interests"] },
+            { k: "value", label: "Value", max: 60, ph: ["Anup Giri", "Ramrekha-01, Baglung", "IT and AI"] }
+        ] }
+    ] },
+    { id: "skills", title: "Skill cards", hint: "The three cards on the About page and the details that open when a visitor clicks one.", fields: [
+        { key: "skills", type: "group", count: 3, item: "Skill", subs: [
+            { k: "title", label: "Title", max: 40, ph: ["Artificial Intelligence", "Information Technology", "Web Development"] },
+            { k: "summary", label: "Short description (on the card)", max: 120, ph: ["Exploring how AI works and trying small experiments.", "Learning how systems, networks and tools fit together.", "Building clean, fast websites like this one."] },
+            { k: "intro", label: "Intro (in the pop-up)", type: "textarea", max: 300, rows: 3 },
+            { k: "items", label: "What you are learning (one per line, up to 6)", type: "list", max: 6, rows: 4 },
+            { k: "tags", label: "Topic tags (separated by commas, up to 8)", type: "tags", max: 8 },
+            { k: "goal", label: "Your goal", max: 200 }
+        ] }
+    ] },
+    { id: "terminal", title: "Home page terminal", hint: "The little typing window on the home page. Each line is a command and the answer it prints. Leave all empty for the default.", fields: [
+        { key: "terminal", type: "group", count: 4, item: "Line", subs: [
+            { k: "cmd", label: "Command", max: 60, ph: ["whoami", "cat interests.txt", "git commit -m \"keep learning\"", ""] },
+            { k: "out", label: "Printed answer", max: 80, ph: ["Anup Giri — student from Baglung, Nepal", "IT · AI · Web development", "[main] one small project at a time ✓", ""] }
+        ] }
+    ] },
+    { id: "texts", title: "Contact text and footer", hint: "", fields: [
+        { key: "contactText", type: "textarea", label: "Text above the contact form", ph: "I share bits of what I’m building and learning...", max: 300, rows: 3 },
+        { key: "footerText", label: "Footer text", ph: "© 2026 Anup Giri. All rights reserved.", max: 100 }
+    ] },
+    { id: "seo", title: "Browser title and search description", hint: "Shown in the browser tab and when your site is shared. Search engines may take a while to notice changes.", fields: [
+        { key: "pageTitle", label: "Browser tab title", ph: "Anup Giri", max: 60 },
+        { key: "metaDescription", type: "textarea", label: "Short description of the site", ph: "Student from Baglung, Nepal exploring IT, AI and web development.", max: 160, rows: 2 }
+    ] },
+    { id: "theme", title: "Appearance", hint: "Pick the main color of your website.", custom: "theme", fields: [{ key: "theme" }] }
+];
+
+const IMAGE_BLOCKS = [
+    { key: "profile", title: "Profile photo", hint: "Shown in the round frame on the home page.", def: "/profile.jpg" },
+    { key: "feature", title: "Feature image", hint: "Shown next to the code box on the About page.", def: "/robot.jpg" }
+];
+
+function toLines(v) { return Array.isArray(v) ? v.join("\n") : ""; }
+function toTags(v) { return Array.isArray(v) ? v.join(", ") : ""; }
+function fromLines(t, max) { return String(t).split(/\r?\n/).map(x => x.trim().slice(0, 120)).filter(Boolean).slice(0, max); }
+function fromTags(t, max) { return String(t).split(",").map(x => x.trim().slice(0, 24)).filter(Boolean).slice(0, max); }
+
+function fieldInput(id, f, placeholder) {
+    const wrap = document.createElement("div");
+    wrap.className = "form-group";
+    const label = document.createElement("label");
+    label.htmlFor = id;
+    label.textContent = f.label;
+    let input;
+    if (f.type === "textarea" || f.type === "list") {
+        input = document.createElement("textarea");
+        input.rows = f.rows || 3;
+        if (f.type !== "list") input.maxLength = f.max || 400;
+    } else {
+        input = document.createElement("input");
+        input.type = "text";
+        input.maxLength = f.max || 80;
+    }
+    input.id = id;
+    if (placeholder) input.placeholder = placeholder;
+    wrap.append(label, input);
+    return wrap;
+}
+
+function buildContentForms() {
+    const root = $("content-forms");
+    if (!root) return;
+
+    // ---- image uploads ----
+    const imgCard = document.createElement("div");
+    imgCard.className = "card narrow";
+    imgCard.innerHTML = '<div class="card-head"><h3>Photos</h3></div><p class="hint">Upload your own pictures. They are resized automatically. “Use default” brings back the original.</p>';
+    const imgGrid = document.createElement("div");
+    imgGrid.className = "img-blocks";
+    IMAGE_BLOCKS.forEach(b => {
+        const box = document.createElement("div");
+        box.className = "img-block";
+        box.innerHTML = `<h4>${esc(b.title)}</h4><p class="hint">${esc(b.hint)}</p>
+            <img id="img-${b.key}-prev" alt="" src="${b.def}">
+            <input type="file" id="img-${b.key}-file" accept="image/*">
+            <div class="row"><button type="button" class="btn btn-primary btn-sm" id="img-${b.key}-up">Upload</button>
+            <button type="button" class="btn btn-secondary btn-sm" id="img-${b.key}-reset">Use default</button></div>
+            <div class="status-msg" id="img-${b.key}-status" role="status"></div>`;
+        imgGrid.appendChild(box);
+    });
+    imgCard.appendChild(imgGrid);
+    root.appendChild(imgCard);
+
+    // ---- text cards ----
+    CONTENT_CARDS.forEach(card => {
+        const form = document.createElement("form");
+        form.className = "card narrow content-card clean-form";
+        form.id = "cform-" + card.id;
+        form.noValidate = true;
+        const head = document.createElement("div");
+        head.className = "card-head";
+        head.innerHTML = `<h3>${esc(card.title)}</h3>`;
+        const reset = document.createElement("button");
+        reset.type = "button";
+        reset.className = "btn-mini";
+        reset.id = "creset-" + card.id;
+        reset.textContent = "Reset to default";
+        head.appendChild(reset);
+        form.appendChild(head);
+        if (card.hint) { const p = document.createElement("p"); p.className = "hint"; p.textContent = card.hint; form.appendChild(p); }
+
+        if (card.custom === "theme") {
+            const sw = document.createElement("div");
+            sw.className = "swatches";
+            sw.id = "theme-swatches";
+            Object.entries(window.THEMES || {}).forEach(([key, t]) => {
+                const b = document.createElement("button");
+                b.type = "button";
+                b.className = "swatch";
+                b.dataset.theme = key;
+                b.setAttribute("aria-pressed", String(key === selectedTheme));
+                b.innerHTML = `<i style="background:linear-gradient(135deg,${t.vars["--acc"]},${t.vars["--acc2"]})"></i><span>${esc(t.name)}</span>`;
+                b.addEventListener("click", () => {
+                    selectedTheme = key;
+                    sw.querySelectorAll(".swatch").forEach(x => x.setAttribute("aria-pressed", String(x === b)));
+                });
+                sw.appendChild(b);
+            });
+            form.appendChild(sw);
+        } else {
+            card.fields.forEach(f => {
+                if (f.type === "group") {
+                    const g = document.createElement("div");
+                    g.className = "groups";
+                    for (let i = 0; i < f.count; i++) {
+                        const box = document.createElement("fieldset");
+                        box.className = "group";
+                        const lg = document.createElement("legend");
+                        lg.textContent = `${f.item} ${i + 1}`;
+                        box.appendChild(lg);
+                        f.subs.forEach(sub => {
+                            const ph = Array.isArray(sub.ph) ? sub.ph[i] : sub.ph;
+                            box.appendChild(fieldInput(`c-${f.key}-${i}-${sub.k}`, sub, ph));
+                        });
+                        g.appendChild(box);
+                    }
+                    form.appendChild(g);
+                } else {
+                    form.appendChild(fieldInput("c-" + f.key, f, f.ph));
+                }
+            });
+        }
+
+        const row = document.createElement("div");
+        row.className = "row";
+        row.innerHTML = `<button type="submit" class="btn btn-primary" id="csave-${card.id}">Save</button><div class="status-msg" id="cstatus-${card.id}" role="status"></div>`;
+        form.appendChild(row);
+        root.appendChild(form);
+
+        form.addEventListener("submit", e => { e.preventDefault(); saveContentCard(card); });
+        reset.addEventListener("click", () => resetContentCard(card));
+    });
+
+    // image buttons
+    IMAGE_BLOCKS.forEach(b => {
+        const status = $(`img-${b.key}-status`);
+        const say = (t, ok) => { status.style.color = ok ? "var(--ok)" : "var(--danger)"; status.textContent = t; };
+        $(`img-${b.key}-up`).addEventListener("click", async () => {
+            const file = $(`img-${b.key}-file`).files[0];
+            if (!file) { say("Choose a picture first."); return; }
+            const btn = $(`img-${b.key}-up`);
+            btn.disabled = true;
+            try {
+                let url = await compressImage(file, 900, 0.82);
+                if (url.length > 850000) url = await compressImage(file, 700, 0.7);
+                await db.collection("settings").doc("images").set({ [b.key]: url, updatedAt: firebase.firestore.FieldValue.serverTimestamp() }, { merge: true });
+                $(`img-${b.key}-file`).value = "";
+                say("Photo updated on your website.", true);
+                toast(b.title + " updated");
+            } catch (err) {
+                console.error(err);
+                say("Could not upload. Check your connection and Firestore rules.");
+            } finally {
+                btn.disabled = false;
+            }
+        });
+        $(`img-${b.key}-reset`).addEventListener("click", async () => {
+            try {
+                await db.collection("settings").doc("images").set({ [b.key]: firebase.firestore.FieldValue.delete() }, { merge: true });
+                say("Default picture restored.", true);
+                toast("Default restored");
+            } catch (err) { console.error(err); say("Could not reset."); }
+        });
+    });
+}
+
+function readCardValues(card) {
+    const out = {};
+    card.fields.forEach(f => {
+        if (card.custom === "theme") { out.theme = selectedTheme; return; }
+        if (f.type === "group") {
+            const arr = [];
+            for (let i = 0; i < f.count; i++) {
+                const o = {};
+                f.subs.forEach(sub => {
+                    const raw = $(`c-${f.key}-${i}-${sub.k}`).value;
+                    o[sub.k] = sub.type === "list" ? fromLines(raw, sub.max) : sub.type === "tags" ? fromTags(raw, sub.max) : raw.trim();
+                });
+                arr.push(o);
+            }
+            out[f.key] = arr;
+        } else {
+            out[f.key] = $("c-" + f.key).value.trim();
+        }
+    });
+    return out;
+}
+
+function fillCardValues(card, data) {
+    if (card.custom === "theme") {
+        selectedTheme = window.THEMES && window.THEMES[data.theme] ? data.theme : "sky";
+        document.querySelectorAll("#theme-swatches .swatch").forEach(x => x.setAttribute("aria-pressed", String(x.dataset.theme === selectedTheme)));
+        return;
+    }
+    card.fields.forEach(f => {
+        if (f.type === "group") {
+            const arr = Array.isArray(data[f.key]) ? data[f.key] : [];
+            for (let i = 0; i < f.count; i++) {
+                const o = arr[i] || {};
+                f.subs.forEach(sub => {
+                    const el = $(`c-${f.key}-${i}-${sub.k}`);
+                    el.value = sub.type === "list" ? toLines(o[sub.k]) : sub.type === "tags" ? toTags(o[sub.k]) : (o[sub.k] || "");
+                });
+            }
+        } else {
+            $("c-" + f.key).value = data[f.key] || "";
+        }
+    });
+}
+
+function loadContent() {
+    listen(db.collection("settings").doc("content"), doc => {
+        if (contentLoaded) return; // don't overwrite what is being typed
+        contentLoaded = true;
+        const data = doc.exists ? doc.data() : {};
+        CONTENT_CARDS.forEach(card => fillCardValues(card, data));
+    });
+    listen(db.collection("settings").doc("images"), doc => {
+        const im = doc.exists ? doc.data() : {};
+        IMAGE_BLOCKS.forEach(b => {
+            const img = $(`img-${b.key}-prev`);
+            if (img) img.src = typeof im[b.key] === "string" && im[b.key].startsWith("data:image/") ? im[b.key] : b.def;
+        });
+    });
+}
+
+async function saveContentCard(card) {
+    const status = $("cstatus-" + card.id);
+    const btn = $("csave-" + card.id);
+    btn.disabled = true;
+    try {
+        await db.collection("settings").doc("content").set({
+            ...readCardValues(card),
+            updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+        }, { merge: true });
+        status.style.color = "var(--ok)";
+        status.textContent = "Saved. Your website is updated.";
+        toast(card.title + " saved");
+    } catch (err) {
+        console.error(err);
+        status.style.color = "var(--danger)";
+        status.textContent = "Could not save. Check your Firestore rules.";
+        toast("Could not save", "error");
+    } finally {
+        btn.disabled = false;
+    }
+}
+
+async function resetContentCard(card) {
+    if (!(await ask({ title: "Reset “" + card.title + "”?", text: "Your edits in this box are removed and the website shows the default text again.", ok: "Reset", danger: true }))) return;
+    const patch = { updatedAt: firebase.firestore.FieldValue.serverTimestamp() };
+    card.fields.forEach(f => { patch[f.key] = firebase.firestore.FieldValue.delete(); });
+    try {
+        await db.collection("settings").doc("content").set(patch, { merge: true });
+        fillCardValues(card, {});
+        const status = $("cstatus-" + card.id);
+        status.style.color = "var(--ok)";
+        status.textContent = "Reset to the default.";
+        toast("Reset to default");
+    } catch (err) {
+        console.error(err);
+        toast("Could not reset", "error");
+    }
 }

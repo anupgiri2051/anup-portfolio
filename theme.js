@@ -1,0 +1,26 @@
+// theme.js — color themes for the website. Loaded in <head> so a saved theme is applied before the page paints.
+(function () {
+    var THEMES = {
+        sky:     { name: "Sky blue",  vars: { "--acc": "#0ea5e9", "--acc-d": "#0284c7", "--acc-dd": "#0369a1", "--acc2": "#3b82f6", "--acc-rgb": "14,165,233", "--acc2-rgb": "59,130,246", "--acc-tint": "#e6f4fd", "--acc-tint2": "#f2f9fe", "--acc-l": "#38bdf8", "--acc-ll": "#7dd3fc", "--bg-page": "#e8f1f8", "--orb-a": "#a5d8f5", "--orb-b": "#bfe6fb", "--orb-c": "#cfe9ff" } },
+        violet:  { name: "Violet",    vars: { "--acc": "#8b5cf6", "--acc-d": "#7c3aed", "--acc-dd": "#5b21b6", "--acc2": "#ec4899", "--acc-rgb": "139,92,246", "--acc2-rgb": "236,72,153", "--acc-tint": "#f0eafe", "--acc-tint2": "#f8f5ff", "--acc-l": "#a78bfa", "--acc-ll": "#c4b5fd", "--bg-page": "#efeaf8", "--orb-a": "#cdb9f5", "--orb-b": "#e0d1fa", "--orb-c": "#f3d1ea" } },
+        emerald: { name: "Emerald",   vars: { "--acc": "#059669", "--acc-d": "#047857", "--acc-dd": "#065f46", "--acc2": "#0d9488", "--acc-rgb": "5,150,105", "--acc2-rgb": "13,148,136", "--acc-tint": "#dff6ec", "--acc-tint2": "#f0fbf6", "--acc-l": "#34d399", "--acc-ll": "#6ee7b7", "--bg-page": "#e6f4ee", "--orb-a": "#a7e3c9", "--orb-b": "#c4efdc", "--orb-c": "#cdeee6" } },
+        rose:    { name: "Rose",      vars: { "--acc": "#e11d48", "--acc-d": "#be123c", "--acc-dd": "#9f1239", "--acc2": "#f97316", "--acc-rgb": "225,29,72", "--acc2-rgb": "249,115,22", "--acc-tint": "#fde6ec", "--acc-tint2": "#fff4f6", "--acc-l": "#fb7185", "--acc-ll": "#fda4af", "--bg-page": "#f8eaee", "--orb-a": "#f5b9c6", "--orb-b": "#fad0d9", "--orb-c": "#fde0d0" } },
+        amber:   { name: "Amber",     vars: { "--acc": "#d97706", "--acc-d": "#b45309", "--acc-dd": "#92400e", "--acc2": "#ea580c", "--acc-rgb": "217,119,6", "--acc2-rgb": "234,88,12", "--acc-tint": "#fcefd8", "--acc-tint2": "#fffaf0", "--acc-l": "#fbbf24", "--acc-ll": "#fcd34d", "--bg-page": "#f8f0e2", "--orb-a": "#f5d29a", "--orb-b": "#f9e0b8", "--orb-c": "#fbd5c0" } }
+    };
+
+    function apply(name) {
+        var key = THEMES[name] ? name : "sky";
+        var root = document.documentElement;
+        var vars = THEMES[key].vars;
+        Object.keys(vars).forEach(function (k) { root.style.setProperty(k, vars[k]); });
+        root.setAttribute("data-theme", key);
+        try { window.dispatchEvent(new Event("themechange")); } catch (e) {}
+    }
+
+    window.THEMES = THEMES;
+    window.applyTheme = apply;
+    try {
+        var saved = localStorage.getItem("siteTheme");
+        if (saved && THEMES[saved]) apply(saved);
+    } catch (e) {}
+})();

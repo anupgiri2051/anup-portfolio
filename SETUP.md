@@ -88,3 +88,21 @@ Each admin section has its own address, for example:
 - `https://anupgiri.com/admin/account`
 
 `/admin` opens the overview, and old links like `/admin#settings` are converted automatically. If you open one of these addresses while signed out, you see the login first and then land on that section. `vercel.json` must be deployed for these addresses to work after a page refresh.
+
+## Content editor and themes (new)
+Upload the new file `theme.js` together with the others (the website and the admin both load it).
+
+In the admin go to **Content** (`/admin/content`). Every box has its own Save button and a "Reset to default" button. Leave a field empty to keep the original text.
+- **Photos**: upload your own profile photo (home page) and feature image (About page). "Use default" brings back the original pictures.
+- **Home page**: greeting, your name, the two button texts, and the three small cards.
+- **About page**: a short bio and the three info cards.
+- **Skill cards**: title, short text, and the pop-up details (intro, learning list, tags, goal) for each of the three cards.
+- **Home page terminal**: up to four command lines and what each prints.
+- **Contact text and footer**.
+- **Browser title and search description**.
+- **Appearance**: five color themes (Sky blue, Violet, Emerald, Rose, Amber). The whole website, including the animated background, changes color.
+
+Good to know:
+- Uploaded pictures are stored in Firestore (resized automatically).
+- The browser title and description change for visitors and shared links, but search engines may take time to notice.
+- No extra Firestore rules are needed. The existing `settings` rule already covers the new data.

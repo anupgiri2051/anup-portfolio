@@ -1,3 +1,4 @@
+let siteTitle = document.title || "Anup Giri";
 document.addEventListener("DOMContentLoaded", () => {
     setupCleanRouting();
     loadGallery();
@@ -12,6 +13,7 @@ document.addEventListener("DOMContentLoaded", () => {
     loadProjects();
     syncAnnouncement();
     syncMaintenance();
+    syncContent();
 });
 
 // Fade-in-on-scroll micro-interaction for bento cards
@@ -334,7 +336,7 @@ function syncSiteSettings() {
         const each = (sel, fn) => document.querySelectorAll(sel).forEach(fn);
         const https = (u) => typeof u === "string" && /^https:\/\//i.test(u);
         if (s.intro) each('[data-site="intro"]', el => { el.textContent = s.intro; });
-        if (s.location) each('[data-site="location"]', el => { el.textContent = s.location; });
+        if (s.location) each('[data-site="location"]', el => { if (!el.dataset.override) el.textContent = s.location; });
         each('[data-site="status"]', el => { el.textContent = s.status || ""; el.hidden = !s.status; });
         each("[data-site-cv]", a => { a.hidden = !https(s.cvUrl); if (https(s.cvUrl)) a.href = s.cvUrl; });
         if (https(s.instagram)) {
@@ -614,7 +616,7 @@ function openLightbox(url, title, id) {
     img.alt = title || "";
     caption.textContent = title;
     modal.style.display = "flex";
-    document.title = title + " | Anup Giri";
+    document.title = title + " | " + siteTitle;
 
     // counter and previous/next buttons (hidden when there is only one photo)
     const idx = photoOrder.indexOf(currentPhotoId);
@@ -641,7 +643,7 @@ function closeLightbox(updateUrl = true) {
 
     modal.style.display = "none";
     currentPhotoId = null;
-    document.title = "Anup Giri";
+    document.title = siteTitle;
     if (updateUrl && /^\/gallery\/[^\/]+/.test(window.location.pathname)) {
         try { history.pushState(null, null, "/gallery"); } catch (e) {}
     }
@@ -945,4 +947,145 @@ function showPopup(cfg, slides, stamp, preview) {
     closeBtn.addEventListener("click", close);
     ov.addEventListener("click", (e) => { if (e.target === ov) close(); });
     document.addEventListener("keydown", onKey);
+}
+
+
+/* ---------- Editable page content, images and theme (managed in the admin "Content" section) ---------- */
+const DEF_TEXT = { greeting: "Hello, I’m", name: "Anup Giri", btn1: "Say Hello!", btn2: "View gallery" };
+let termSignature = "[]"; // "[]" = no edited lines, keep the default terminal
+
+function remember(el, key) {
+    if (el && el.dataset[key] === undefined) el.dataset[key] = el.textContent;
+    return el ? el.dataset[key] : "";
+}
+
+function applyContent(c) {
+    const $$ = (sel) => document.querySelectorAll(sel);
+    const str = (v) => (typeof v === "string" ? v.trim() : "");
+
+    // heading + buttons
+    $$('[data-site="hero-title"]').forEach(h1 => {
+        h1.replaceChildren(document.createTextNode(str(c.heroGreeting) || DEF_TEXT.greeting), document.createElement("br"), document.createTextNode(str(c.heroName) || DEF_TEXT.name));
+    });
+    $$('[data-site="btn-primary"]').forEach(a => { a.textContent = str(c.btnPrimary) || DEF_TEXT.btn1; });
+    $$('[data-site="btn-secondary"]').forEach(a => { a.textContent = str(c.btnSecondary) || DEF_TEXT.btn2; });
+
+    // home stat cards
+    $$("[data-stat]").forEach(card => {
+        const i = Number(card.dataset.stat);
+        const o = (Array.isArray(c.stats) && c.stats[i]) || {};
+        const b = card.querySelector("b"), sp = card.querySelector("span");
+        const defV = remember(b, "def"), defL = remember(sp, "def");
+        if (str(o.value)) { b.removeAttribute("data-count"); b.dataset.override = "1"; b.textContent = o.value.trim(); }
+        else if (b.dataset.override) { delete b.dataset.override; b.textContent = defV; }
+        sp.textContent = str(o.label) || defL;
+    });
+
+    // about page
+    $$('[data-site="about-bio"]').forEach(p => { p.textContent = str(c.aboutBio); p.hidden = !str(c.aboutBio); });
+    $$("[data-fact]").forEach(card => {
+        const i = Number(card.dataset.fact);
+        const o = (Array.isArray(c.facts) && c.facts[i]) || {};
+        const dt = card.querySelector("dt"), dd = card.querySelector("dd");
+        const last = dt.lastChild;
+        if (last && last.nodeType === 3) {
+            if (dt.dataset.def === undefined) dt.dataset.def = last.nodeValue;
+            last.nodeValue = str(o.label) || dt.dataset.def;
+        }
+        dd.textContent = str(o.value) || remember(dd, "def");
+    });
+
+    // skill cards + their pop-up details
+    const keys = ["ai", "it", "web"];
+    window.siteTopics = {};
+    keys.forEach((key, i) => {
+        const o = (Array.isArray(c.skills) && c.skills[i]) || {};
+        const art = document.querySelector('.skills article[data-topic="' + key + '"]');
+        if (!art) return;
+        const h3 = art.querySelector("h3"), p = art.querySelector("p");
+        h3.textContent = str(o.title) || remember(h3, "def");
+        p.textContent = str(o.summary) || remember(p, "def");
+        window.siteTopics[key] = {
+            intro: str(o.intro),
+            items: Array.isArray(o.items) ? o.items.map(str).filter(Boolean) : [],
+            tags: Array.isArray(o.tags) ? o.tags.map(str).filter(Boolean) : [],
+            goal: str(o.goal)
+        };
+    });
+
+    // home terminal
+    const body = document.querySelector(".term-body");
+    if (body) {
+        if (body.dataset.def === undefined) body.dataset.def = body.innerHTML;
+        const lines = Array.isArray(c.terminal) ? c.terminal.filter(l => l && str(l.cmd)) : [];
+        const sig = JSON.stringify(lines);
+        if (sig !== termSignature) {
+            termSignature = sig;
+            if (lines.length) {
+                body.replaceChildren();
+                lines.forEach(l => {
+                    const cmd = document.createElement("p");
+                    const pr = document.createElement("span");
+                    pr.className = "pr"; pr.textContent = "$";
+                    cmd.append(pr, str(l.cmd));
+                    body.appendChild(cmd);
+                    if (str(l.out)) { const out = document.createElement("p"); out.className = "out"; out.textContent = str(l.out); body.appendChild(out); }
+                });
+                const end = document.createElement("p");
+                const pr = document.createElement("span");
+                pr.className = "pr"; pr.textContent = "$";
+                const cur = document.createElement("i");
+                cur.className = "cur";
+                end.append(pr, cur);
+                body.appendChild(end);
+            } else {
+                body.innerHTML = body.dataset.def;
+            }
+            if (window.startTerminal) window.startTerminal();
+        }
+    }
+
+    // contact + footer text
+    $$('[data-site="contact-text"]').forEach(el => { el.textContent = str(c.contactText) || remember(el, "def"); });
+    $$('[data-site="footer-text"]').forEach(el => { el.textContent = str(c.footerText) || remember(el, "def"); });
+
+    // browser title + search description
+    siteTitle = str(c.pageTitle) || siteTitle;
+    const lb = document.getElementById("lightbox-modal");
+    if (!lb || lb.style.display !== "flex") document.title = siteTitle;
+    const desc = str(c.metaDescription);
+    if (desc) {
+        ['meta[name="description"]', 'meta[property="og:description"]', 'meta[name="twitter:description"]'].forEach(sel => {
+            const m = document.querySelector(sel); if (m) m.setAttribute("content", desc);
+        });
+    }
+    if (str(c.pageTitle)) {
+        ['meta[property="og:title"]', 'meta[name="twitter:title"]'].forEach(sel => {
+            const m = document.querySelector(sel); if (m) m.setAttribute("content", c.pageTitle.trim());
+        });
+    }
+
+    // color theme (cached so the next visit has no flash)
+    if (window.applyTheme) {
+        const theme = window.THEMES && window.THEMES[c.theme] ? c.theme : "sky";
+        window.applyTheme(theme);
+        try { if (theme === "sky") localStorage.removeItem("siteTheme"); else localStorage.setItem("siteTheme", theme); } catch (e) {}
+    }
+}
+
+function syncContent() {
+    db.collection("settings").doc("content").onSnapshot(doc => {
+        applyContent(doc.exists ? (doc.data() || {}) : {});
+    }, () => {});
+
+    // profile photo (home page) and feature image (About page) uploaded in the admin
+    db.collection("settings").doc("images").onSnapshot(doc => {
+        const im = doc.exists ? (doc.data() || {}) : {};
+        [[".photo-card img", im.profile], [".robot img", im.feature]].forEach(([sel, url]) => {
+            const img = document.querySelector(sel);
+            if (!img) return;
+            if (!img.dataset.def) img.dataset.def = img.getAttribute("src");
+            img.src = (typeof url === "string" && url.startsWith("data:image/")) ? url : img.dataset.def;
+        });
+    }, () => {});
 }
