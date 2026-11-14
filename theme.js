@@ -23,4 +23,54 @@
         var saved = localStorage.getItem("siteTheme");
         if (saved && THEMES[saved]) apply(saved);
     } catch (e) {}
+
+    /* ---------- light / dark mode (each visitor chooses; follows the device setting until they do) ---------- */
+    var root = document.documentElement;
+    var mq = window.matchMedia ? window.matchMedia("(prefers-color-scheme: dark)") : null;
+
+    function savedMode() {
+        try { var m = localStorage.getItem("siteMode"); return m === "dark" || m === "light" ? m : null; } catch (e) { return null; }
+    }
+    function currentMode() { return savedMode() || (mq && mq.matches ? "dark" : "light"); }
+
+    function syncButtons() {
+        var dark = root.getAttribute("data-mode") === "dark";
+        var btns = document.querySelectorAll("[data-mode-toggle]");
+        for (var i = 0; i < btns.length; i++) {
+            btns[i].setAttribute("aria-pressed", String(dark));
+            btns[i].setAttribute("aria-label", dark ? "Switch to light mode" : "Switch to dark mode");
+            btns[i].title = dark ? "Light mode" : "Dark mode";
+        }
+    }
+
+    function applyMode(mode) {
+        root.setAttribute("data-mode", mode);
+        var meta = document.querySelector('meta[name="theme-color"]');
+        if (meta) {
+            if (!meta.getAttribute("data-light")) meta.setAttribute("data-light", meta.getAttribute("content") || "");
+            meta.setAttribute("content", mode === "dark" ? "#0b1220" : meta.getAttribute("data-light"));
+        }
+        syncButtons();
+        try { window.dispatchEvent(new Event("themechange")); } catch (e) {}
+    }
+
+    applyMode(currentMode());
+    if (mq) {
+        var follow = function () { if (!savedMode()) applyMode(currentMode()); };
+        if (mq.addEventListener) mq.addEventListener("change", follow); else if (mq.addListener) mq.addListener(follow);
+    }
+
+    window.toggleMode = function () {
+        var next = root.getAttribute("data-mode") === "dark" ? "light" : "dark";
+        try { localStorage.setItem("siteMode", next); } catch (e) {}
+        root.classList.add("mode-anim");
+        applyMode(next);
+        setTimeout(function () { root.classList.remove("mode-anim"); }, 450);
+    };
+
+    document.addEventListener("DOMContentLoaded", function () {
+        var btns = document.querySelectorAll("[data-mode-toggle]");
+        for (var i = 0; i < btns.length; i++) btns[i].addEventListener("click", window.toggleMode);
+        syncButtons();
+    });
 })();

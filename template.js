@@ -14,7 +14,7 @@
   const rv = new IntersectionObserver(es => es.forEach(e => {
     if (e.isIntersecting) { e.target.classList.add("in"); rv.unobserve(e.target); }
   }), { threshold: .12 });
-  document.querySelectorAll(".eyebrow,section h2,.facts div,.skills article,.robot,.code,.gallery-grid,#contact-form,.stats").forEach(el => {
+  document.querySelectorAll(".eyebrow,section h2,.facts div,.journey,.skills article,.robot,.code,.gallery-grid,#contact-form,.stats").forEach(el => {
     el.style.setProperty("--d", [...el.parentElement.children].indexOf(el) * .08 + "s");
     el.classList.add("rv"); rv.observe(el);
   });
@@ -52,7 +52,9 @@
   const x = c.getContext("2d"), dpr = Math.min(devicePixelRatio || 1, 2), G = 48;
   const dirs = [[1,0],[1,1],[0,1],[-1,1],[-1,0],[-1,-1],[0,-1],[1,-1]];
   const rnd = n => Math.random() * n | 0;
-  let w, h, base, paths = [], pulses = [], glyphs = [];
+  let w, h, base, paths = [], pulses = [], glyphs = [], running = true;
+  // pause the animation while the tab is hidden (saves battery on phones and laptops)
+  document.addEventListener("visibilitychange", () => { running = !document.hidden; });
   let ACC = "14,165,233", ACC2 = "59,130,246";
   const GL = ["</>", "{ }", "01", "( )", "[ ]", "=>", "//", "&&", "#", ";"];
 
@@ -101,6 +103,7 @@
   };
 
   (function draw() {
+    if (!running) { requestAnimationFrame(draw); return; }
     x.clearRect(0, 0, w, h);
     x.drawImage(base, 0, 0, w, h);
     x.textBaseline = "middle";

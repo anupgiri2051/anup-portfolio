@@ -247,3 +247,50 @@ input[type=file]::file-selector-button{margin-right:.8rem;padding:.4rem .9rem;bo
 .swatch i{display:block;width:26px;height:26px;border-radius:50%}
 .swatch:hover{border-color:#94a3b8}
 .swatch[aria-pressed="true"]{border-color:var(--sky);box-shadow:0 0 0 4px rgba(14,165,233,.18)}
+
+/* ===================================================================
+   2026 upgrade: dark mode switch, sender names
+   =================================================================== */
+.mode-btn{display:grid;place-items:center;width:40px;height:40px;margin-left:auto;padding:0;border:1px solid var(--line);border-radius:10px;background:var(--card);color:var(--text);cursor:pointer;transition:color .2s,transform .2s}
+.mode-btn:hover{color:var(--sky-d);transform:rotate(-12deg)}
+.mode-btn svg{width:19px;height:19px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.mode-btn .i-sun{display:none}
+[data-mode="dark"] .mode-btn .i-sun{display:block}
+[data-mode="dark"] .mode-btn .i-moon{display:none}
+.topbar .user{margin-left:.4rem}
+.msg-name{margin-right:.5rem}
+.msg-name+.msg-email{font-size:.86rem}
+html.mode-anim *,html.mode-anim *::before,html.mode-anim *::after{transition:background-color .4s,border-color .4s,color .4s!important}
+
+/* ---------- dark mode ---------- */
+html[data-mode="dark"]{color-scheme:dark;--bg:#0b1220;--card:#121a2b;--line:rgba(255,255,255,.08);--text:#e6ebf5;--muted:#9aa6bf}
+[data-mode="dark"] .login-screen{background:var(--bg)}
+[data-mode="dark"] .login-card,[data-mode="dark"] .stat,[data-mode="dark"] .admin-card,[data-mode="dark"] .message-card,[data-mode="dark"] .dlg{background:var(--card);border-color:var(--line)}
+[data-mode="dark"] .login-card{box-shadow:0 20px 50px rgba(0,0,0,.4)}
+[data-mode="dark"] .topbar{background:rgba(11,18,32,.85)}
+[data-mode="dark"] .menu-btn,[data-mode="dark"] .btn-secondary,[data-mode="dark"] .btn-mini{background:var(--card);border-color:rgba(255,255,255,.14);color:var(--text)}
+[data-mode="dark"] .btn-secondary:hover,[data-mode="dark"] .btn-mini:hover{background:#1a2438}
+[data-mode="dark"] .btn-delete{background:rgba(220,38,38,.12);border-color:rgba(248,113,113,.3);color:#f87171}
+[data-mode="dark"] .btn-delete:hover{background:var(--danger);color:#fff}
+[data-mode="dark"] input,[data-mode="dark"] textarea,[data-mode="dark"] select{background:#0e1626;border-color:rgba(255,255,255,.12);color:var(--text)}
+[data-mode="dark"] input:focus,[data-mode="dark"] textarea:focus,[data-mode="dark"] select:focus{background:#101a2e}
+[data-mode="dark"] .form-group label{color:#c3cde0}
+[data-mode="dark"] .dropzone{background:#0e1626;border-color:#2a3a58}
+[data-mode="dark"] .dropzone.over{background:rgba(14,165,233,.12)}
+[data-mode="dark"] .preview-container{border-color:#2a3a58}
+[data-mode="dark"] .message-card{border-left-color:#334155}
+[data-mode="dark"] .message-card.unread{background:#13213a;border-left-color:var(--sky)}
+[data-mode="dark"] .msg-email{color:#7dd3fc}
+[data-mode="dark"] .group,[data-mode="dark"] .img-block{background:#0e1626}
+[data-mode="dark"] .img-block img{background:var(--card)}
+[data-mode="dark"] .swatch{background:var(--card);border-color:rgba(255,255,255,.12);color:var(--text)}
+[data-mode="dark"] .pill{background:rgba(14,165,233,.16);color:#7dd3fc}
+[data-mode="dark"] .track{background:#1a2438}
+[data-mode="dark"] .progress{background:#1a2438}
+[data-mode="dark"] .text-link{color:#7dd3fc}
+[data-mode="dark"] .c1{background:rgba(14,165,233,.15);color:#7dd3fc}
+[data-mode="dark"] .c2{background:rgba(139,92,246,.15);color:#c4b5fd}
+[data-mode="dark"] .c3{background:rgba(249,115,22,.15);color:#fdba74}
+[data-mode="dark"] .c4{background:rgba(34,197,94,.15);color:#86efac}
+[data-mode="dark"] .switch span{background:#334155}
+[data-mode="dark"] .sidebar{background:#070d19;border-right:1px solid var(--line)}

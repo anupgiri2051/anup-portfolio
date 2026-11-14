@@ -106,3 +106,21 @@ Good to know:
 - Uploaded pictures are stored in Firestore (resized automatically).
 - The browser title and description change for visitors and shared links, but search engines may take time to notice.
 - No extra Firestore rules are needed. The existing `settings` rule already covers the new data.
+
+## 2026 upgrade (new)
+**You must publish the updated `firestore.rules` again.** The contact form now has an optional "Your name" field, and the rules now also make sure each message's time comes from the server. Until you publish, messages still arrive: the name is put at the top of the message text instead.
+
+What's new on the website:
+- **Dark mode**: a moon/sun button in the menu bar. Each visitor's choice is remembered; until they choose, it follows their phone or computer setting. Works with all five color themes.
+- **My journey**: a timeline on the About page for your education and milestones (it starts with your BCA). Edit it in the admin under **Content → My journey**.
+- **Contact form**: optional name field and a live character counter.
+- **Photo viewer**: a **Share / Copy link** button and a **Download** button. Keyboard users stay inside the viewer, and the page behind no longer scrolls.
+- **Browser tab titles** per page ("About · Anup Giri", "Gallery · Anup Giri").
+- **Mobile menu** rebuilt: closes on Escape, when you tap outside it, or after choosing a page. It looks right in dark mode too.
+- The animated background pauses while the tab is hidden. Some unused code was removed.
+
+What's new in the admin portal:
+- **Dark mode** button in the top bar (uses the same setting as the website).
+- Messages show the sender's **name**, have a **Copy email** button, and the reply email starts with "Hi <name>,". The CSV export has a Name column.
+- The browser tab shows the number of unread messages, for example "(3) Admin · Anup Giri".
+- The JSON backup now includes your Content settings.

@@ -15,7 +15,10 @@ service cloud.firestore {
 
     // Contact form: visitors may only CREATE a valid message; only the admin can read/edit/delete
     match /messages/{id} {
-      allow create: if request.resource.data.keys().hasOnly(['email', 'message', 'read', 'createdAt'])
+      allow create: if request.resource.data.keys().hasOnly(['name', 'email', 'message', 'read', 'createdAt'])
+                    && (!('name' in request.resource.data)
+                        || (request.resource.data.name is string && request.resource.data.name.size() <= 80))
+                    && request.resource.data.createdAt == request.time
                     && request.resource.data.email is string
                     && request.resource.data.email.size() > 3
                     && request.resource.data.email.size() < 200

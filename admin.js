@@ -379,7 +379,7 @@ function renderRecent() {
         a.addEventListener("click", e => { e.preventDefault(); go("messages"); });
         const who = document.createElement("strong");
         if (!m.read) { const dot = document.createElement("span"); dot.className = "dot"; who.appendChild(dot); }
-        who.append(m.email || "(no email)");
+        who.append(m.name || m.email || "(no email)");
         const text = document.createElement("p");
         text.textContent = m.message || "";
         const when = document.createElement("small");
@@ -713,6 +713,7 @@ function loadMessages() {
         const badge = $("nav-unread");
         badge.textContent = unread;
         badge.hidden = !unread;
+        document.title = (unread ? `(${unread}) ` : "") + "Admin · Anup Giri"; // unread count visible in the browser tab
         renderMessages();
         renderRecent();
         renderChart();
@@ -725,7 +726,7 @@ function renderMessages() {
     const onlyUnread = $("msg-filter").value === "unread";
     const list = allMessages.filter(m =>
         (!onlyUnread || !m.read) &&
-        (!q || (m.email || "").toLowerCase().includes(q) || (m.message || "").toLowerCase().includes(q)));
+        (!q || [m.name, m.email, m.message].some(v => (v || "").toLowerCase().includes(q))));
 
     if (!allMessages.length) { container.innerHTML = `<p class="empty">No messages received yet.</p>`; return; }
     if (!list.length) { container.innerHTML = `<p class="empty">No messages match your search.</p>`; return; }
@@ -738,7 +739,8 @@ function renderMessages() {
         const head = document.createElement("div");
         head.className = "message-header";
         const who = document.createElement("div");
-        const email = document.createElement("strong");
+        if (m.name) { const nm = document.createElement("strong"); nm.className = "msg-name"; nm.textContent = m.name; who.appendChild(nm); }
+        const email = document.createElement(m.name ? "span" : "strong");
         email.className = "msg-email";
         email.textContent = m.email || "(no email)";
         who.appendChild(email);
@@ -758,8 +760,17 @@ function renderMessages() {
         const reply = document.createElement("a");
         reply.className = "btn-mini";
         reply.textContent = "Reply";
-        reply.href = `mailto:${encodeURIComponent(m.email || "")}?subject=${encodeURIComponent("Re: your message to Anup Giri")}`;
+        reply.href = `mailto:${encodeURIComponent(m.email || "")}?subject=${encodeURIComponent("Re: your message to Anup Giri")}` +
+            (m.name ? `&body=${encodeURIComponent("Hi " + m.name + ",\n\n")}` : "");
         reply.addEventListener("click", () => { if (!m.read) db.collection("messages").doc(m.id).update({ read: true }); });
+
+        const copy = document.createElement("button");
+        copy.className = "btn-mini";
+        copy.textContent = "Copy email";
+        copy.addEventListener("click", async () => {
+            try { await navigator.clipboard.writeText(m.email || ""); toast("Email copied"); }
+            catch (e) { toast("Could not copy", "error"); }
+        });
 
         const toggle = document.createElement("button");
         toggle.className = "btn-mini";
@@ -776,7 +787,7 @@ function renderMessages() {
             }
         });
 
-        actions.append(reply, toggle, del);
+        actions.append(reply, copy, toggle, del);
         card.append(head, body, actions);
         container.appendChild(card);
     });
@@ -798,8 +809,8 @@ function setupMessageTools() {
     $("msg-export").addEventListener("click", () => {
         if (!allMessages.length) { toast("There are no messages to export", "error"); return; }
         const cell = v => `"${String(v ?? "").replace(/"/g, '""')}"`;
-        const rows = [["Date", "Email", "Message", "Read"].map(cell).join(",")];
-        allMessages.forEach(m => rows.push([messageDate(m), m.email, m.message, m.read ? "yes" : "no"].map(cell).join(",")));
+        const rows = [["Date", "Name", "Email", "Message", "Read"].map(cell).join(",")];
+        allMessages.forEach(m => rows.push([messageDate(m), m.name, m.email, m.message, m.read ? "yes" : "no"].map(cell).join(",")));
         const blob = new Blob(["\ufeff" + rows.join("\r\n")], { type: "text/csv;charset=utf-8" });
         const a = document.createElement("a");
         a.href = URL.createObjectURL(blob);
@@ -1237,7 +1248,7 @@ function setupBackup() {
                 list("photos"), list("projects"), list("messages"), list("popupSlides"), list("statsDaily")
             ]);
             const settings = {};
-            for (const id of ["site", "popup", "announce", "maintenance"]) {
+            for (const id of ["site", "content", "popup", "announce", "maintenance"]) {
                 const doc = await db.collection("settings").doc(id).get();
                 if (doc.exists) settings[id] = plain(doc.data());
             }
@@ -1287,6 +1298,14 @@ const CONTENT_CARDS = [
         { key: "facts", type: "group", count: 3, item: "Info card", subs: [
             { k: "label", label: "Label", max: 24, ph: ["Name", "Based in", "Interests"] },
             { k: "value", label: "Value", max: 60, ph: ["Anup Giri", "Ramrekha-01, Baglung", "IT and AI"] }
+        ] }
+    ] },
+    { id: "journey", title: "My journey (About page)", hint: "Your education and milestones, shown as a timeline on the About page. Fill in the steps you want, newest first. Leave all empty to show the default.", fields: [
+        { key: "journey", type: "group", count: 5, item: "Step", subs: [
+            { k: "when", label: "When (e.g. 2025 – now)", max: 24, ph: ["Now", "Ongoing", "", "", ""] },
+            { k: "title", label: "Title", max: 80, ph: ["Bachelor of Computer Applications (BCA)", "Learning by building", "", "", ""] },
+            { k: "place", label: "Place / school", max: 80, ph: ["International Center for Academics, Kathmandu · IGNOU", "Personal projects", "", "", ""] },
+            { k: "text", label: "Short description", type: "textarea", max: 220, rows: 2 }
         ] }
     ] },
     { id: "skills", title: "Skill cards", hint: "The three cards on the About page and the details that open when a visitor clicks one.", fields: [

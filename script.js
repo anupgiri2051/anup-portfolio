@@ -1,11 +1,19 @@
 let siteTitle = document.title || "Anup Giri";
+let pageLabel = ""; // "About", "Gallery"... shown in the browser tab before the site title
+
+// Browser tab title: "<photo> | <site>" in the lightbox, "<page> · <site>" on a page, "<site>" on home
+function updateTitle() {
+    const lb = document.getElementById("lightbox-modal");
+    if (lb && lb.style.display === "flex") return;
+    document.title = pageLabel ? pageLabel + " · " + siteTitle : siteTitle;
+}
+
 document.addEventListener("DOMContentLoaded", () => {
+    setupMobileMenu();
     setupCleanRouting();
     loadGallery();
     setupContactForm();
     setupLightbox();
-    setupMobileMenu();
-    setupScrollReveal();
     syncSiteSettings();
     countVisit();
     setupGalleryTools();
@@ -15,28 +23,6 @@ document.addEventListener("DOMContentLoaded", () => {
     syncMaintenance();
     syncContent();
 });
-
-// Fade-in-on-scroll micro-interaction for bento cards
-function setupScrollReveal() {
-    const items = document.querySelectorAll(".reveal");
-    if (!items.length) return;
-
-    if (!("IntersectionObserver" in window)) {
-        items.forEach(item => item.classList.add("in-view"));
-        return;
-    }
-
-    const observer = new IntersectionObserver((entries) => {
-        entries.forEach(entry => {
-            if (entry.isIntersecting) {
-                entry.target.classList.add("in-view");
-                observer.unobserve(entry.target);
-            }
-        });
-    }, { threshold: 0.15, rootMargin: "0px 0px -40px 0px" });
-
-    items.forEach(item => observer.observe(item));
-}
 
 // Dynamic Clean URL Routing (/about, /gallery, /contact, /)
 function setupCleanRouting() {
@@ -64,12 +50,7 @@ function navigateTo(path) {
         try { history.pushState(null, null, path); } catch (e) {}
     }
     handleCurrentRoute(path);
-
-    // Close mobile menu if open
-    const navLinksContainer = document.getElementById("nav-links");
-    if (window.innerWidth <= 768 && navLinksContainer) {
-        navLinksContainer.style.display = "none";
-    }
+    if (window.closeMobileMenu) window.closeMobileMenu();
 }
 
 // Gallery and About are their own views: hidden on the home page, shown after clicking them
@@ -80,8 +61,15 @@ function setView(name) {
     if (name !== was) window.scrollTo(0, 0);
 }
 
+const PAGE_LABELS = { gallery: "Gallery", about: "About", projects: "Projects", home: "" };
+
 function handleCurrentRoute(path, initial) {
-    setView(/^\/gallery(\/|$)/.test(path) ? "gallery" : /^\/about\/?$/.test(path) ? "about" : /^\/projects\/?$/.test(path) ? "projects" : "home");
+    const view = /^\/gallery(\/|$)/.test(path) ? "gallery" : /^\/about\/?$/.test(path) ? "about" : /^\/projects\/?$/.test(path) ? "projects" : "home";
+    setView(view);
+    pageLabel = PAGE_LABELS[view] || (/^\/contact\/?$/.test(path) ? "Contact" : "");
+    updateTitle();
+    const canon = document.querySelector('link[rel="canonical"]');
+    if (canon) canon.href = "https://anupgiri.com" + (view === "home" ? "/" : "/" + view);
     // /gallery/<photo-id> opens that photo (shareable link, back button closes it)
     const photo = path.match(/^\/gallery\/([^\/]+)\/?$/);
     if (photo) {
@@ -182,7 +170,7 @@ function loadGallery() {
             item.dataset.cat = (data.category || "").trim().toLowerCase();
             item.style.animationDelay = Math.min(galleryContainer.children.length, 12) * 0.06 + "s";
             item.innerHTML = `
-                <img src="${esc(data.url)}" alt="${esc(data.title)}" loading="lazy">
+                <img src="${esc(data.url)}" alt="${esc(data.title)}" loading="lazy" decoding="async">
                 <span class="gallery-open" aria-hidden="true">↗</span>
                 <div class="gallery-item-title"><span>${esc(data.title)}</span>${when ? `<small>${esc(when)}</small>` : ""}</div>
             `;
@@ -516,13 +504,28 @@ function setupContactForm() {
     if (!contactForm) return;
 
     const say = (text, ok) => {
-        statusMsg.style.color = ok ? "#10b981" : "var(--danger-red)";
+        statusMsg.classList.toggle("ok", !!ok);
+        statusMsg.classList.toggle("bad", !ok && !!text);
         statusMsg.textContent = text;
     };
+
+    // live character counter under the message box
+    const msgBox = document.getElementById("contact-message");
+    const counter = document.getElementById("contact-count");
+    const count = () => {
+        if (!counter) return;
+        const n = msgBox.value.length;
+        counter.textContent = n + " / 2000";
+        counter.classList.toggle("warn", n > 1800);
+    };
+    msgBox.addEventListener("input", count);
+    contactForm.addEventListener("reset", () => setTimeout(count, 0));
 
     contactForm.addEventListener("submit", async (e) => {
         e.preventDefault();
 
+        const nameEl = document.getElementById("contact-name");
+        const name = nameEl ? nameEl.value.trim().slice(0, 80) : "";
         const email = document.getElementById("contact-email").value.trim();
         const message = document.getElementById("contact-message").value.trim();
         const trap = document.getElementById("contact-website");
@@ -548,12 +551,14 @@ function setupContactForm() {
             submitBtn.disabled = true;
             submitBtn.textContent = "Sending...";
 
-            await db.collection("messages").add({
-                email: email,
-                message: message,
-                read: false,
-                createdAt: firebase.firestore.FieldValue.serverTimestamp()
-            });
+            const base = { email: email, message: message, read: false, createdAt: firebase.firestore.FieldValue.serverTimestamp() };
+            try {
+                await db.collection("messages").add(name ? { ...base, name: name } : base);
+            } catch (err) {
+                // Older Firestore rules don't allow a "name" field yet: send it inside the message instead
+                if (!name || err.code !== "permission-denied") throw err;
+                await db.collection("messages").add({ ...base, message: ("From: " + name + "\n\n" + message).slice(0, 2000) });
+            }
 
             try { localStorage.setItem("lastMessageAt", String(Date.now())); } catch (err) {}
             say("Your message has been sent successfully!", true);
@@ -586,7 +591,36 @@ function setupLightbox() {
         if (e.key === "Escape") closeLightbox();
         if (e.key === "ArrowLeft") stepPhoto(-1);
         if (e.key === "ArrowRight") stepPhoto(1);
+        if (e.key === "Tab") { // keep keyboard focus inside the photo viewer
+            const f = [...modal.querySelectorAll("button,a[href]")].filter(el => el.offsetParent !== null);
+            if (!f.length) return;
+            const i = f.indexOf(document.activeElement);
+            e.preventDefault();
+            f[(i + (e.shiftKey ? -1 : 1) + f.length) % f.length].focus();
+        }
     });
+
+    // share the photo's own address (phone share sheet, or copy to clipboard)
+    const share = document.getElementById("lightbox-share");
+    if (share) {
+        if (navigator.share) share.textContent = "Share";
+        share.addEventListener("click", async (e) => {
+            e.stopPropagation();
+            const url = location.href;
+            const label = navigator.share ? "Share" : "Copy link";
+            try {
+                if (navigator.share) { await navigator.share({ title: document.title, url }); return; }
+                await navigator.clipboard.writeText(url);
+                share.textContent = "Link copied ✓";
+            } catch (err) {
+                if (err && err.name === "AbortError") return; // closed the share sheet
+                share.textContent = "Could not copy";
+            }
+            setTimeout(() => { share.textContent = label; }, 2000);
+        });
+    }
+    const dl = document.getElementById("lightbox-download");
+    if (dl) dl.addEventListener("click", (e) => e.stopPropagation());
 
     const prev = document.getElementById("lightbox-prev");
     const next = document.getElementById("lightbox-next");
@@ -611,12 +645,22 @@ function openLightbox(url, title, id) {
 
     if (!modal || !img || !caption) return;
 
+    const wasOpen = modal.style.display === "flex";
+    if (!wasOpen) lightboxOpener = document.activeElement;
     currentPhotoId = id || null;
     img.src = url;
     img.alt = title || "";
     caption.textContent = title;
     modal.style.display = "flex";
+    document.body.classList.add("lb-open");
     document.title = title + " | " + siteTitle;
+    if (!wasOpen) { const c = document.getElementById("lightbox-close"); if (c) c.focus(); }
+
+    const dl = document.getElementById("lightbox-download");
+    if (dl) {
+        dl.href = url;
+        dl.download = (String(title || "photo").replace(/[^\w\- ]+/g, "").trim().replace(/\s+/g, "-") || "photo") + ".jpg";
+    }
 
     // counter and previous/next buttons (hidden when there is only one photo)
     const idx = photoOrder.indexOf(currentPhotoId);
@@ -627,7 +671,14 @@ function openLightbox(url, title, id) {
         const btn = document.getElementById(bid);
         if (btn) btn.style.display = many ? "" : "none";
     });
+
+    // load the next and previous photos in the background so arrows feel instant
+    if (many) [1, -1].forEach(d => {
+        const p = photoCache[photoOrder[(idx + d + photoOrder.length) % photoOrder.length]];
+        if (p && p.url) { const pre = new Image(); pre.src = p.url; }
+    });
 }
+let lightboxOpener = null;
 
 function stepPhoto(dir) {
     const n = photoOrder.length;
@@ -642,11 +693,15 @@ function closeLightbox(updateUrl = true) {
     if (!modal || modal.style.display !== "flex") return;
 
     modal.style.display = "none";
+    document.body.classList.remove("lb-open");
     currentPhotoId = null;
-    document.title = siteTitle;
     if (updateUrl && /^\/gallery\/[^\/]+/.test(window.location.pathname)) {
         try { history.pushState(null, null, "/gallery"); } catch (e) {}
+        pageLabel = "Gallery";
     }
+    updateTitle();
+    if (lightboxOpener && lightboxOpener.focus && document.contains(lightboxOpener)) lightboxOpener.focus();
+    lightboxOpener = null;
 }
 
 // Mobile Menu Navigation
@@ -656,31 +711,25 @@ function setupMobileMenu() {
 
     if (!menuBtn || !navLinks) return;
 
-    menuBtn.addEventListener("click", () => {
-        const isFlex = navLinks.style.display === "flex";
-        navLinks.style.display = isFlex ? "none" : "flex";
-        if (!isFlex) {
-            navLinks.style.flexDirection = "column";
-            navLinks.style.position = "absolute";
-            navLinks.style.top = "100%";
-            navLinks.style.left = "0";
-            navLinks.style.right = "0";
-            navLinks.style.background = "rgba(10, 14, 23, 0.98)";
-            navLinks.style.padding = "1.5rem";
-            navLinks.style.borderBottom = "1px solid var(--card-border)";
-        }
+    const set = (open) => {
+        navLinks.classList.toggle("open", open);
+        menuBtn.setAttribute("aria-expanded", String(open));
+        menuBtn.setAttribute("aria-label", open ? "Close menu" : "Open menu");
+        menuBtn.textContent = open ? "✕" : "☰";
+    };
+    window.closeMobileMenu = () => set(false);
+
+    menuBtn.addEventListener("click", () => set(!navLinks.classList.contains("open")));
+    document.addEventListener("click", (e) => {
+        if (navLinks.classList.contains("open") && !navLinks.contains(e.target) && !menuBtn.contains(e.target)) set(false);
     });
+    document.addEventListener("keydown", (e) => {
+        if (e.key === "Escape" && navLinks.classList.contains("open")) { set(false); menuBtn.focus(); }
+    });
+    window.addEventListener("resize", () => { if (window.innerWidth > 820) set(false); });
 }
 
-/* ===== Visual effects ===== */
-document.addEventListener("DOMContentLoaded", () => {
-    constellation();
-    trackScroll();
-    window.addEventListener("resize", () => {
-        const nav = document.getElementById("nav-links");
-        if (window.innerWidth > 768 && nav) nav.removeAttribute("style");
-    });
-});
+document.addEventListener("DOMContentLoaded", trackScroll);
 
 function esc(s) {
     return String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
@@ -703,50 +752,6 @@ function trackScroll() {
     }), { rootMargin: "-45% 0px -50% 0px" });
     Object.keys(map).forEach(id => { const el = document.getElementById(id); if (el) io.observe(el); });
 }
-
-// Night-sky background: twinkling stars joined like a neural network,
-// reaching toward the pointer, with a rare shooting star (the logo's streak)
-function constellation() {
-    const c = document.getElementById("bg");
-    if (!c || matchMedia("(prefers-reduced-motion: reduce)").matches) return;
-    const x = c.getContext("2d");
-    let w, h, stars = [], shot = null;
-    const m = { x: -999, y: -999 };
-    const size = () => {
-        w = c.width = innerWidth; h = c.height = innerHeight;
-        stars = Array.from({ length: Math.min(90, Math.round(w * h / 16000)) }, () => ({
-            x: Math.random() * w, y: Math.random() * h, r: Math.random() * 1.3 + .4,
-            vx: (Math.random() - .5) * .22, vy: (Math.random() - .5) * .22, t: Math.random() * 6
-        }));
-    };
-    size();
-    addEventListener("resize", size);
-    addEventListener("pointermove", e => { m.x = e.clientX; m.y = e.clientY; });
-    (function draw(now) {
-        x.clearRect(0, 0, w, h);
-        stars.forEach((a, i) => {
-            a.x = (a.x + a.vx + w) % w; a.y = (a.y + a.vy + h) % h;
-            x.fillStyle = `rgba(242,240,255,${.45 + .4 * Math.sin(now / 900 + a.t)})`;
-            x.beginPath(); x.arc(a.x, a.y, a.r, 0, 7); x.fill();
-            for (let j = i + 1; j < stars.length; j++) {
-                const b = stars[j], d = Math.hypot(a.x - b.x, a.y - b.y);
-                if (d < 120) { x.strokeStyle = `rgba(140,160,255,${.2 * (1 - d / 120)})`; x.beginPath(); x.moveTo(a.x, a.y); x.lineTo(b.x, b.y); x.stroke(); }
-            }
-            const dm = Math.hypot(a.x - m.x, a.y - m.y);
-            if (dm < 150) { x.strokeStyle = `rgba(255,59,71,${.55 * (1 - dm / 150)})`; x.beginPath(); x.moveTo(a.x, a.y); x.lineTo(m.x, m.y); x.stroke(); }
-        });
-        if (!shot && Math.random() < .0018) shot = { x: Math.random() * w * .5, y: Math.random() * h * .35 };
-        if (shot) {
-            const g = x.createLinearGradient(shot.x - 160, shot.y - 70, shot.x, shot.y);
-            g.addColorStop(0, "rgba(255,59,71,0)"); g.addColorStop(1, "rgba(255,120,120,.9)");
-            x.strokeStyle = g; x.lineWidth = 2; x.beginPath(); x.moveTo(shot.x - 160, shot.y - 70); x.lineTo(shot.x, shot.y); x.stroke(); x.lineWidth = 1;
-            shot.x += 9; shot.y += 4;
-            if (shot.x > w + 200 || shot.y > h + 100) shot = null;
-        }
-        requestAnimationFrame(draw);
-    })(0);
-}
-
 
 /* ---------- Home page popup (photos and videos managed from the admin panel) ---------- */
 function parsePopupVideo(raw) {
@@ -1049,10 +1054,30 @@ function applyContent(c) {
     $$('[data-site="contact-text"]').forEach(el => { el.textContent = str(c.contactText) || remember(el, "def"); });
     $$('[data-site="footer-text"]').forEach(el => { el.textContent = str(c.footerText) || remember(el, "def"); });
 
+    // "My journey" timeline on the About page (education, milestones)
+    const tl = document.getElementById("timeline");
+    if (tl) {
+        if (tl.dataset.def === undefined) tl.dataset.def = tl.innerHTML;
+        const steps = Array.isArray(c.journey) ? c.journey.filter(s => s && str(s.title)) : [];
+        if (steps.length) {
+            tl.replaceChildren();
+            steps.forEach(s => {
+                const li = document.createElement("li");
+                if (str(s.when)) { const w = document.createElement("span"); w.className = "tl-when"; w.textContent = str(s.when); li.appendChild(w); }
+                const h = document.createElement("h4"); h.textContent = str(s.title); li.appendChild(h);
+                if (str(s.place)) { const p = document.createElement("p"); p.className = "tl-where"; p.textContent = str(s.place); li.appendChild(p); }
+                if (str(s.text)) { const p = document.createElement("p"); p.textContent = str(s.text); li.appendChild(p); }
+                tl.appendChild(li);
+            });
+        } else if (tl.innerHTML !== tl.dataset.def) {
+            tl.innerHTML = tl.dataset.def;
+        }
+    }
+
     // browser title + search description
-    siteTitle = str(c.pageTitle) || siteTitle;
-    const lb = document.getElementById("lightbox-modal");
-    if (!lb || lb.style.display !== "flex") document.title = siteTitle;
+    if (!document.documentElement.dataset.defTitle) document.documentElement.dataset.defTitle = siteTitle;
+    siteTitle = str(c.pageTitle) || document.documentElement.dataset.defTitle;
+    updateTitle();
     const desc = str(c.metaDescription);
     if (desc) {
         ['meta[name="description"]', 'meta[property="og:description"]', 'meta[name="twitter:description"]'].forEach(sel => {
