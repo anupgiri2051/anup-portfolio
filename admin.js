@@ -36,13 +36,17 @@ document.addEventListener("DOMContentLoaded", () => {
     setupAnnouncementTools();
     setupBackup();
     buildContentForms();
+    setupExtras();
 });
 
 /* ---------- small UI helpers ---------- */
 function toast(message, type = "ok") {
     const t = document.createElement("div");
     t.className = "toast " + type;
-    t.textContent = message;
+    t.innerHTML = icon(type === "error" ? "alert" : "check");
+    const span = document.createElement("span");
+    span.textContent = message;
+    t.appendChild(span);
     $("toasts").appendChild(t);
     setTimeout(() => t.classList.add("out"), 3200);
     setTimeout(() => t.remove(), 3700);
@@ -173,7 +177,7 @@ function initAuth() {
         const p = $("admin-password");
         const show = p.type === "password";
         p.type = show ? "text" : "password";
-        $("toggle-pass").textContent = show ? "Hide" : "Show";
+        $("toggle-pass").innerHTML = icon(show ? "eye-off" : "eye");
         $("toggle-pass").setAttribute("aria-label", show ? "Hide password" : "Show password");
     });
 
@@ -309,6 +313,18 @@ function messageDate(m) {
     const d = messageTime(m);
     return d ? d.toLocaleString() : "Recently";
 }
+// "5 minutes ago", "yesterday", "3 days ago" (full date shown when hovering)
+function timeAgo(m) {
+    const d = messageTime(m);
+    if (!d) return "Just now";
+    const sec = Math.round((d - Date.now()) / 1000);
+    const rtf = new Intl.RelativeTimeFormat(undefined, { numeric: "auto" });
+    const steps = [[60, "second"], [3600, "minute", 60], [86400, "hour", 3600], [604800, "day", 86400], [2629800, "week", 604800], [31557600, "month", 2629800], [Infinity, "year", 31557600]];
+    for (const [limit, unit, div] of steps) {
+        if (Math.abs(sec) < limit) return Math.abs(sec) < 45 && unit === "second" ? "Just now" : rtf.format(Math.round(sec / (div || 1)), unit);
+    }
+    return d.toLocaleDateString();
+}
 
 function drawBars(box, labels, counts) {
     if (!box) return;
@@ -383,7 +399,8 @@ function renderRecent() {
         const text = document.createElement("p");
         text.textContent = m.message || "";
         const when = document.createElement("small");
-        when.textContent = messageDate(m);
+        when.textContent = timeAgo(m);
+        when.title = messageDate(m);
         a.append(who, text, when);
         box.appendChild(a);
     });
@@ -599,7 +616,8 @@ function setupUploadForm() {
             bar.hidden = false;
             bar.firstElementChild.style.width = "0%";
             let done = 0;
-            btn.textContent = `Uploading 0/${files.length}...`;
+            btn.classList.add("busy");
+            setLabel(btn, "refresh", `Uploading 0/${files.length}...`);
             for (let i = 0; i < files.length; i++) {
                 const name = files.length > 1 ? `${title} - ${i + 1}` : title;
                 const url = await compressImage(files[i]);
@@ -610,7 +628,7 @@ function setupUploadForm() {
                     createdAt: firebase.firestore.FieldValue.serverTimestamp()
                 });
                 done++;
-                btn.textContent = `Uploading ${done}/${files.length}...`;
+                setLabel(btn, "refresh", `Uploading ${done}/${files.length}...`);
                 bar.firstElementChild.style.width = (done / files.length * 100) + "%";
             }
             status.style.color = "var(--ok)";
@@ -626,7 +644,8 @@ function setupUploadForm() {
             toast("Upload failed", "error");
         } finally {
             btn.disabled = false;
-            btn.textContent = "Upload photos";
+            btn.classList.remove("busy");
+            setLabel(btn, "upload", "Upload photos");
             setTimeout(() => { bar.hidden = true; }, 1200);
         }
     });
@@ -649,6 +668,7 @@ function loadAdminGallery() {
             const data = doc.data();
             const card = document.createElement("div");
             card.className = "admin-card";
+            card.dataset.search = ((data.title || "") + " " + (data.category || "")).toLowerCase();
 
             const img = document.createElement("img");
             img.src = data.url;
@@ -664,7 +684,7 @@ function loadAdminGallery() {
 
             const rename = document.createElement("button");
             rename.className = "btn-mini";
-            rename.textContent = "Rename";
+            setLabel(rename, "pencil", "Rename");
             rename.addEventListener("click", async () => {
                 const next = await ask({ title: "Rename photo", ok: "Save", input: { value: data.title || "", max: 80 } });
                 if (next && next !== data.title) {
@@ -675,7 +695,7 @@ function loadAdminGallery() {
 
             const del = document.createElement("button");
             del.className = "btn-delete";
-            del.textContent = "Delete";
+            setLabel(del, "trash", "Delete");
             del.addEventListener("click", async () => {
                 if (await ask({ title: "Delete this photo?", text: "It will be removed from your gallery. This cannot be undone.", ok: "Delete", danger: true })) {
                     await db.collection("photos").doc(doc.id).delete();
@@ -685,7 +705,7 @@ function loadAdminGallery() {
 
             const cat = document.createElement("button");
             cat.className = "btn-mini";
-            cat.textContent = data.category ? "Category: " + data.category : "Category";
+            setLabel(cat, "tag", data.category ? data.category : "Category");
             cat.addEventListener("click", async () => {
                 const next = await ask({ title: "Photo category", text: "Used for the filter buttons on your gallery page. Leave empty for none.", ok: "Save", input: { value: data.category || "", max: 30 } });
                 if (next !== null && next !== (data.category || "")) {
@@ -699,7 +719,24 @@ function loadAdminGallery() {
             card.append(img, info);
             grid.appendChild(card);
         });
+        filterAdminPhotos();
     });
+}
+
+// search box above the photo list (title or category)
+function filterAdminPhotos() {
+    const q = ($("photo-search") ? $("photo-search").value : "").trim().toLowerCase();
+    let shown = 0, total = 0;
+    document.querySelectorAll("#admin-gallery-grid .admin-card").forEach(c => {
+        total++;
+        const ok = !q || (c.dataset.search || "").includes(q);
+        c.hidden = !ok;
+        if (ok) shown++;
+    });
+    let msg = $("photo-search-empty");
+    if (total && !shown) {
+        if (!msg) { msg = document.createElement("p"); msg.id = "photo-search-empty"; msg.className = "empty"; msg.style.gridColumn = "1/-1"; msg.textContent = "No photos match your search."; $("admin-gallery-grid").appendChild(msg); }
+    } else if (msg) msg.remove();
 }
 
 /* ---------- messages ---------- */
@@ -723,9 +760,9 @@ function loadMessages() {
 function renderMessages() {
     const container = $("messages-container");
     const q = $("msg-search").value.trim().toLowerCase();
-    const onlyUnread = $("msg-filter").value === "unread";
+    const filter = $("msg-filter").value;
     const list = allMessages.filter(m =>
-        (!onlyUnread || !m.read) &&
+        (filter !== "unread" || !m.read) && (filter !== "read" || m.read) &&
         (!q || [m.name, m.email, m.message].some(v => (v || "").toLowerCase().includes(q))));
 
     if (!allMessages.length) { container.innerHTML = `<p class="empty">No messages received yet.</p>`; return; }
@@ -747,7 +784,9 @@ function renderMessages() {
         if (!m.read) { const tag = document.createElement("span"); tag.className = "new-tag"; tag.textContent = "New"; who.appendChild(tag); }
         const date = document.createElement("span");
         date.className = "msg-date";
-        date.textContent = messageDate(m);
+        date.innerHTML = icon("clock");
+        date.append(" " + timeAgo(m));
+        date.title = messageDate(m);
         head.append(who, date);
 
         const body = document.createElement("p");
@@ -759,14 +798,14 @@ function renderMessages() {
 
         const reply = document.createElement("a");
         reply.className = "btn-mini";
-        reply.textContent = "Reply";
+        setLabel(reply, "reply", "Reply");
         reply.href = `mailto:${encodeURIComponent(m.email || "")}?subject=${encodeURIComponent("Re: your message to Anup Giri")}` +
             (m.name ? `&body=${encodeURIComponent("Hi " + m.name + ",\n\n")}` : "");
         reply.addEventListener("click", () => { if (!m.read) db.collection("messages").doc(m.id).update({ read: true }); });
 
         const copy = document.createElement("button");
         copy.className = "btn-mini";
-        copy.textContent = "Copy email";
+        setLabel(copy, "copy", "Copy email");
         copy.addEventListener("click", async () => {
             try { await navigator.clipboard.writeText(m.email || ""); toast("Email copied"); }
             catch (e) { toast("Could not copy", "error"); }
@@ -774,12 +813,12 @@ function renderMessages() {
 
         const toggle = document.createElement("button");
         toggle.className = "btn-mini";
-        toggle.textContent = m.read ? "Mark unread" : "Mark read";
+        setLabel(toggle, m.read ? "mail" : "check", m.read ? "Mark unread" : "Mark read");
         toggle.addEventListener("click", () => db.collection("messages").doc(m.id).update({ read: !m.read }));
 
         const del = document.createElement("button");
         del.className = "btn-delete";
-        del.textContent = "Delete";
+        setLabel(del, "trash", "Delete");
         del.addEventListener("click", async () => {
             if (await ask({ title: "Delete this message?", text: "This cannot be undone.", ok: "Delete", danger: true })) {
                 await db.collection("messages").doc(m.id).delete();
@@ -932,7 +971,7 @@ function loadSlides() {
                 if (v && v.thumb) { const img = document.createElement("img"); img.src = v.thumb; img.alt = ""; media.appendChild(img); }
                 const badge = document.createElement("span");
                 badge.className = "play-badge";
-                badge.textContent = "▶ Video";
+                setLabel(badge, "play", "Video");
                 media.appendChild(badge);
             }
 
@@ -944,13 +983,13 @@ function loadSlides() {
             actions.className = "card-actions";
 
             const left = document.createElement("button");
-            left.className = "btn-mini"; left.textContent = "←"; left.title = "Move earlier"; left.disabled = i === 0;
+            left.className = "btn-mini icon-only"; left.innerHTML = icon("chevron-left"); left.title = "Move earlier"; left.setAttribute("aria-label", "Move earlier"); left.disabled = i === 0;
             left.addEventListener("click", () => moveSlide(i, -1));
             const right = document.createElement("button");
-            right.className = "btn-mini"; right.textContent = "→"; right.title = "Move later"; right.disabled = i === slides.length - 1;
+            right.className = "btn-mini icon-only"; right.innerHTML = icon("chevron-right"); right.title = "Move later"; right.setAttribute("aria-label", "Move later"); right.disabled = i === slides.length - 1;
             right.addEventListener("click", () => moveSlide(i, 1));
             const del = document.createElement("button");
-            del.className = "btn-delete"; del.textContent = "Delete";
+            del.className = "btn-delete"; setLabel(del, "trash", "Delete");
             del.addEventListener("click", async () => {
                 if (await ask({ title: "Remove from popup?", text: "This photo or video will be removed from the popup.", ok: "Remove", danger: true })) {
                     await db.collection("popupSlides").doc(sl.id).delete();
@@ -1034,7 +1073,7 @@ function setupPopupTools() {
                     createdAt: firebase.firestore.FieldValue.serverTimestamp()
                 });
                 n++;
-                btn.textContent = `Uploading ${n}/${files.length}...`;
+                setLabel(btn, "refresh", `Uploading ${n}/${files.length}...`);
             }
             say(slideStatus, `${n} photo(s) added to the popup.`, true);
             toast(`${n} photo(s) added`);
@@ -1045,7 +1084,7 @@ function setupPopupTools() {
             toast("Upload failed", "error");
         } finally {
             btn.disabled = false;
-            btn.textContent = "Upload photos";
+            setLabel(btn, "upload", "Upload photos");
         }
     });
 
@@ -1123,16 +1162,16 @@ function loadProjects() {
             actions.className = "card-actions";
 
             const left = document.createElement("button");
-            left.className = "btn-mini"; left.textContent = "←"; left.title = "Move earlier"; left.disabled = i === 0;
+            left.className = "btn-mini icon-only"; left.innerHTML = icon("chevron-left"); left.title = "Move earlier"; left.setAttribute("aria-label", "Move earlier"); left.disabled = i === 0;
             left.addEventListener("click", () => moveProject(i, -1));
             const right = document.createElement("button");
-            right.className = "btn-mini"; right.textContent = "→"; right.title = "Move later"; right.disabled = i === projects.length - 1;
+            right.className = "btn-mini icon-only"; right.innerHTML = icon("chevron-right"); right.title = "Move later"; right.setAttribute("aria-label", "Move later"); right.disabled = i === projects.length - 1;
             right.addEventListener("click", () => moveProject(i, 1));
             const edit = document.createElement("button");
-            edit.className = "btn-mini"; edit.textContent = "Edit";
+            edit.className = "btn-mini"; setLabel(edit, "pencil", "Edit");
             edit.addEventListener("click", () => startEditProject(p));
             const del = document.createElement("button");
-            del.className = "btn-delete"; del.textContent = "Delete";
+            del.className = "btn-delete"; setLabel(del, "trash", "Delete");
             del.addEventListener("click", async () => {
                 if (await ask({ title: "Delete this project?", text: "It will be removed from your website. This cannot be undone.", ok: "Delete", danger: true })) {
                     await db.collection("projects").doc(p.id).delete();
@@ -1162,7 +1201,7 @@ function resetProjectForm() {
     editingProject = null;
     $("project-form").reset();
     $("proj-form-title").textContent = "Add a project";
-    $("proj-save").textContent = "Add project";
+    setLabel($("proj-save"), "plus", "Add project");
     $("proj-cancel").hidden = true;
     $("proj-rm-wrap").hidden = true;
 }
@@ -1177,7 +1216,7 @@ function startEditProject(p) {
     $("proj-rm-img").checked = false;
     $("proj-rm-wrap").hidden = !p.imageUrl;
     $("proj-form-title").textContent = "Edit project";
-    $("proj-save").textContent = "Save changes";
+    setLabel($("proj-save"), "save", "Save changes");
     $("proj-cancel").hidden = false;
     $("proj-status").textContent = "";
     $("project-form").scrollIntoView({ behavior: "smooth", block: "start" });
@@ -1288,6 +1327,7 @@ const CONTENT_CARDS = [
         { key: "heroName", label: "Your name (large)", ph: "Anup Giri", max: 40 },
         { key: "btnPrimary", label: "Main button text", ph: "Say Hello!", max: 24 },
         { key: "btnSecondary", label: "Second button text", ph: "View gallery", max: 24 },
+        { key: "heroRoles", label: "Rotating words under your name (separate with commas)", ph: "Web Developer, AI Explorer, BCA Student, IT Enthusiast", max: 160 },
         { key: "stats", type: "group", count: 3, item: "Small card", subs: [
             { k: "value", label: "Big text", max: 20, ph: ["3", "IT + AI", "Baglung"] },
             { k: "label", label: "Small text", max: 24, ph: ["Focus areas", "Interests", "Based in"] }
@@ -1383,8 +1423,8 @@ function buildContentForms() {
         box.innerHTML = `<h4>${esc(b.title)}</h4><p class="hint">${esc(b.hint)}</p>
             <img id="img-${b.key}-prev" alt="" src="${b.def}">
             <input type="file" id="img-${b.key}-file" accept="image/*">
-            <div class="row"><button type="button" class="btn btn-primary btn-sm" id="img-${b.key}-up">Upload</button>
-            <button type="button" class="btn btn-secondary btn-sm" id="img-${b.key}-reset">Use default</button></div>
+            <div class="row"><button type="button" class="btn btn-primary btn-sm" id="img-${b.key}-up">${icon("upload")}Upload</button>
+            <button type="button" class="btn btn-secondary btn-sm" id="img-${b.key}-reset">${icon("refresh")}Use default</button></div>
             <div class="status-msg" id="img-${b.key}-status" role="status"></div>`;
         imgGrid.appendChild(box);
     });
@@ -1404,7 +1444,7 @@ function buildContentForms() {
         reset.type = "button";
         reset.className = "btn-mini";
         reset.id = "creset-" + card.id;
-        reset.textContent = "Reset to default";
+        setLabel(reset, "refresh", "Reset to default");
         head.appendChild(reset);
         form.appendChild(head);
         if (card.hint) { const p = document.createElement("p"); p.className = "hint"; p.textContent = card.hint; form.appendChild(p); }
@@ -1453,7 +1493,7 @@ function buildContentForms() {
 
         const row = document.createElement("div");
         row.className = "row";
-        row.innerHTML = `<button type="submit" class="btn btn-primary" id="csave-${card.id}">Save</button><div class="status-msg" id="cstatus-${card.id}" role="status"></div>`;
+        row.innerHTML = `<button type="submit" class="btn btn-primary" id="csave-${card.id}">${icon("save")}Save</button><div class="status-msg" id="cstatus-${card.id}" role="status"></div>`;
         form.appendChild(row);
         root.appendChild(form);
 
@@ -1591,4 +1631,107 @@ async function resetContentCard(card) {
         console.error(err);
         toast("Could not reset", "error");
     }
+}
+
+
+/* ---------- extras: photo search, password strength, offline badge, command palette (Ctrl+K) ---------- */
+function setupExtras() {
+    const ps = $("photo-search");
+    if (ps) ps.addEventListener("input", filterAdminPhotos);
+
+    // password strength meter
+    const np = $("new-pass"), meter = $("pw-strength");
+    if (np && meter) {
+        np.addEventListener("input", () => {
+            const v = np.value;
+            meter.hidden = !v;
+            let score = 0;
+            if (v.length >= 8) score++;
+            if (v.length >= 12) score++;
+            if (/[a-z]/.test(v) && /[A-Z]/.test(v)) score++;
+            if (/\d/.test(v)) score++;
+            if (/[^A-Za-z0-9]/.test(v)) score++;
+            const levels = ["Too short", "Weak", "Fair", "Good", "Strong", "Very strong"];
+            const lvl = v.length < 8 ? 0 : Math.min(score, 5);
+            meter.dataset.level = lvl;
+            meter.querySelector("i").style.width = (lvl / 5 * 100) + "%";
+            meter.querySelector("span").textContent = levels[lvl];
+        });
+        $("pass-form").addEventListener("reset", () => { meter.hidden = true; });
+    }
+
+    // offline badge in the top bar
+    const net = $("net-badge");
+    const sync = () => { if (net) net.hidden = navigator.onLine; };
+    addEventListener("online", () => { sync(); toast("Back online"); });
+    addEventListener("offline", () => { sync(); toast("You are offline. Changes will save when you reconnect.", "error"); });
+    sync();
+
+    setupCommandPalette();
+}
+
+function setupCommandPalette() {
+    const ov = $("cmdk"), input = $("cmdk-input"), list = $("cmdk-list");
+    if (!ov) return;
+    const pages = Object.entries(VIEWS).map(([v, label]) => ({ label: "Go to " + label, hint: "Page", icon: { overview: "grid", content: "pencil", photos: "image", projects: "folder", messages: "mail", popup: "sparkles", settings: "tag", account: "user" }[v] || "arrow-right", run: () => go(v), words: v }));
+    const actions = [
+        { label: "Upload photos", hint: "Action", icon: "upload", run: () => { go("photos"); setTimeout(() => $("photo-title").focus(), 50); } },
+        { label: "Add a project", hint: "Action", icon: "plus", run: () => { go("projects"); setTimeout(() => $("proj-title").focus(), 50); } },
+        { label: "Show unread messages", hint: "Action", icon: "mail", run: () => { go("messages"); $("msg-filter").value = "unread"; renderMessages(); } },
+        { label: "Export messages (CSV)", hint: "Action", icon: "download", run: () => $("msg-export").click() },
+        { label: "Download backup (JSON)", hint: "Action", icon: "download", run: () => $("backup-btn").click() },
+        { label: "Edit announcement bar", hint: "Action", icon: "message", run: () => { go("settings"); setTimeout(() => $("ann-text").focus(), 50); } },
+        { label: "Change color theme", hint: "Action", icon: "sparkles", run: () => { go("content"); setTimeout(() => { const t = $("cform-theme"); if (t) t.scrollIntoView({ behavior: "smooth" }); }, 50); } },
+        { label: "Switch light / dark mode", hint: "Action", icon: "moon", run: () => window.toggleMode && window.toggleMode() },
+        { label: "Open website", hint: "Link", icon: "external", run: () => window.open("/", "_blank", "noopener") },
+        { label: "Sign out", hint: "Account", icon: "logout", run: () => auth && auth.signOut() }
+    ];
+    const all = [...pages, ...actions];
+    let shown = [], active = 0, opener = null;
+
+    const render = () => {
+        const q = input.value.trim().toLowerCase();
+        shown = all.filter(c => !q || q.split(/\s+/).every(w => (c.label + " " + (c.words || "") + " " + c.hint).toLowerCase().includes(w)));
+        active = Math.min(active, Math.max(shown.length - 1, 0));
+        list.innerHTML = "";
+        if (!shown.length) { list.innerHTML = '<li class="cmdk-empty">Nothing found</li>'; return; }
+        shown.forEach((c, i) => {
+            const li = document.createElement("li");
+            li.id = "cmdk-" + i;
+            li.setAttribute("role", "option");
+            li.setAttribute("aria-selected", String(i === active));
+            li.innerHTML = icon(c.icon) + "<span></span><small></small>";
+            li.querySelector("span").textContent = c.label;
+            li.querySelector("small").textContent = c.hint;
+            li.addEventListener("mousemove", () => { if (active !== i) { active = i; mark(); } });
+            li.addEventListener("click", () => pick(i));
+            list.appendChild(li);
+        });
+        input.setAttribute("aria-activedescendant", "cmdk-" + active);
+    };
+    const mark = () => {
+        list.querySelectorAll("li[role=option]").forEach((li, i) => li.setAttribute("aria-selected", String(i === active)));
+        const cur = $("cmdk-" + active);
+        if (cur) { cur.scrollIntoView({ block: "nearest" }); input.setAttribute("aria-activedescendant", cur.id); }
+    };
+    const open = () => {
+        if ($("admin-dashboard").style.display === "none") return;
+        opener = document.activeElement;
+        ov.hidden = false; input.value = ""; active = 0; render(); input.focus();
+    };
+    const close = () => { ov.hidden = true; if (opener && opener.focus) opener.focus(); };
+    const pick = i => { const c = shown[i]; close(); if (c) c.run(); };
+
+    $("cmdk-btn").addEventListener("click", open);
+    input.addEventListener("input", () => { active = 0; render(); });
+    ov.addEventListener("click", e => { if (e.target === ov) close(); });
+    document.addEventListener("keydown", e => {
+        if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "k") { e.preventDefault(); ov.hidden ? open() : close(); return; }
+        if (ov.hidden) return;
+        if (e.key === "Escape") { e.preventDefault(); close(); }
+        else if (e.key === "ArrowDown") { e.preventDefault(); active = (active + 1) % Math.max(shown.length, 1); mark(); }
+        else if (e.key === "ArrowUp") { e.preventDefault(); active = (active - 1 + shown.length) % Math.max(shown.length, 1); mark(); }
+        else if (e.key === "Enter") { e.preventDefault(); pick(active); }
+        else if (e.key === "Tab") { e.preventDefault(); input.focus(); }
+    });
 }

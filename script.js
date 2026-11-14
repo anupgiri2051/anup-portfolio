@@ -171,7 +171,7 @@ function loadGallery() {
             item.style.animationDelay = Math.min(galleryContainer.children.length, 12) * 0.06 + "s";
             item.innerHTML = `
                 <img src="${esc(data.url)}" alt="${esc(data.title)}" loading="lazy" decoding="async">
-                <span class="gallery-open" aria-hidden="true">↗</span>
+                <span class="gallery-open" aria-hidden="true">${icon("maximize")}</span>
                 <div class="gallery-item-title"><span>${esc(data.title)}</span>${when ? `<small>${esc(when)}</small>` : ""}</div>
             `;
 
@@ -366,7 +366,7 @@ function syncAnnouncement() {
         const x = document.createElement("button");
         x.type = "button";
         x.setAttribute("aria-label", "Dismiss announcement");
-        x.textContent = "×";
+        x.innerHTML = icon("x");
         x.addEventListener("click", () => { try { localStorage.setItem("announceOff", stamp); } catch (e) {} bar.remove(); });
         bar.appendChild(x);
         const skip = document.querySelector(".skip");
@@ -447,7 +447,7 @@ function projectCard(p) {
         a.href = p.url;
         a.target = "_blank";
         a.rel = "noopener";
-        a.textContent = "View project ↗";
+        setLabel(a, "external", "View project", true);
         body.appendChild(a);
     }
     card.append(media, body);
@@ -468,14 +468,53 @@ function loadProjects() {
         if (section) section.hidden = !has;
         if (page) {
             page.innerHTML = "";
-            if (has) list.forEach(p => page.appendChild(projectCard(p)));
+            if (has) list.forEach(p => {
+                const card = projectCard(p);
+                card.dataset.tags = "|" + (p.tags || []).map(t => String(t).toLowerCase()).join("|") + "|";
+                page.appendChild(card);
+            });
             else page.innerHTML = '<p class="gallery-empty" style="grid-column:1/-1">Projects are coming soon.</p>';
+            buildProjectTags(list);
         }
         if (home) {
             home.innerHTML = "";
             list.slice(0, 3).forEach(p => home.appendChild(projectCard(p)));
         }
     }, () => {});
+}
+
+// Tag buttons above the projects (All, HTML, Firebase...) to filter the cards
+let projectTag = "";
+function buildProjectTags(list) {
+    const box = document.getElementById("project-tags");
+    if (!box) return;
+    const names = new Map();
+    list.forEach(p => (p.tags || []).forEach(t => { const k = String(t).trim().toLowerCase(); if (k && !names.has(k)) names.set(k, String(t).trim()); }));
+    if (names.size < 2) { box.hidden = true; box.innerHTML = ""; projectTag = ""; filterProjects(); return; }
+    if (projectTag && !names.has(projectTag)) projectTag = "";
+    box.hidden = false;
+    box.innerHTML = "";
+    const make = (label, key) => {
+        const b = document.createElement("button");
+        b.type = "button";
+        b.innerHTML = (key ? "" : icon("filter")) + "<span></span>";
+        b.lastChild.textContent = label;
+        b.setAttribute("aria-pressed", String(projectTag === key));
+        b.addEventListener("click", () => {
+            projectTag = key;
+            box.querySelectorAll("button").forEach(x => x.setAttribute("aria-pressed", String(x === b)));
+            filterProjects();
+        });
+        box.appendChild(b);
+    };
+    make("All", "");
+    [...names].slice(0, 14).forEach(([k, v]) => make(v, k));
+    filterProjects();
+}
+function filterProjects() {
+    document.querySelectorAll("#projects-container .project-card").forEach(c => {
+        c.hidden = !!projectTag && !(c.dataset.tags || "").includes("|" + projectTag + "|");
+    });
 }
 
 // Counts one visit per browser session (shown in the admin overview)
@@ -549,7 +588,8 @@ function setupContactForm() {
 
         try {
             submitBtn.disabled = true;
-            submitBtn.textContent = "Sending...";
+            setLabel(submitBtn, "refresh", "Sending...");
+            submitBtn.classList.add("busy");
 
             const base = { email: email, message: message, read: false, createdAt: firebase.firestore.FieldValue.serverTimestamp() };
             try {
@@ -562,13 +602,16 @@ function setupContactForm() {
 
             try { localStorage.setItem("lastMessageAt", String(Date.now())); } catch (err) {}
             say("Your message has been sent successfully!", true);
+            siteToast("Message sent. Thank you!");
             contactForm.reset();
         } catch (err) {
             console.error("Error sending message:", err);
             say("Failed to send message. Please try again.");
+            siteToast("Message not sent. Please try again.", "error");
         } finally {
             submitBtn.disabled = false;
-            submitBtn.textContent = "Send message";
+            setLabel(submitBtn, "send", "Send message", true);
+            submitBtn.classList.remove("busy");
         }
     });
 }
@@ -603,7 +646,8 @@ function setupLightbox() {
     // share the photo's own address (phone share sheet, or copy to clipboard)
     const share = document.getElementById("lightbox-share");
     if (share) {
-        if (navigator.share) share.textContent = "Share";
+        const shareLabel = (t, ic) => setLabel(share, ic || (navigator.share ? "share" : "link"), t);
+        if (navigator.share) shareLabel("Share");
         share.addEventListener("click", async (e) => {
             e.stopPropagation();
             const url = location.href;
@@ -611,16 +655,37 @@ function setupLightbox() {
             try {
                 if (navigator.share) { await navigator.share({ title: document.title, url }); return; }
                 await navigator.clipboard.writeText(url);
-                share.textContent = "Link copied ✓";
+                shareLabel("Link copied", "check");
+                siteToast("Photo link copied");
             } catch (err) {
                 if (err && err.name === "AbortError") return; // closed the share sheet
-                share.textContent = "Could not copy";
+                shareLabel("Could not copy", "alert");
             }
-            setTimeout(() => { share.textContent = label; }, 2000);
+            setTimeout(() => shareLabel(label), 2000);
         });
     }
     const dl = document.getElementById("lightbox-download");
     if (dl) dl.addEventListener("click", (e) => e.stopPropagation());
+
+    // slideshow: next photo every 3.5 seconds
+    const play = document.getElementById("lightbox-play");
+    if (play) play.addEventListener("click", (e) => { e.stopPropagation(); slideTimer ? stopSlideshow() : startSlideshow(); });
+
+    // full screen
+    const full = document.getElementById("lightbox-full");
+    if (full) {
+        if (!modal.requestFullscreen) full.hidden = true;
+        full.addEventListener("click", (e) => {
+            e.stopPropagation();
+            if (document.fullscreenElement) document.exitFullscreen().catch(() => {});
+            else modal.requestFullscreen().catch(() => {});
+        });
+        document.addEventListener("fullscreenchange", () => {
+            const on = document.fullscreenElement === modal;
+            full.innerHTML = icon(on ? "minimize" : "maximize");
+            full.setAttribute("aria-label", on ? "Exit full screen" : "Full screen");
+        });
+    }
 
     const prev = document.getElementById("lightbox-prev");
     const next = document.getElementById("lightbox-next");
@@ -679,6 +744,20 @@ function openLightbox(url, title, id) {
     });
 }
 let lightboxOpener = null;
+let slideTimer = null;
+
+function startSlideshow() {
+    const play = document.getElementById("lightbox-play");
+    if (photoOrder.length < 2) return;
+    slideTimer = setInterval(() => stepPhoto(1), 3500);
+    if (play) { play.innerHTML = icon("pause"); play.setAttribute("aria-label", "Pause slideshow"); play.classList.add("on"); }
+}
+function stopSlideshow() {
+    const play = document.getElementById("lightbox-play");
+    clearInterval(slideTimer);
+    slideTimer = null;
+    if (play) { play.innerHTML = icon("play"); play.setAttribute("aria-label", "Play slideshow"); play.classList.remove("on"); }
+}
 
 function stepPhoto(dir) {
     const n = photoOrder.length;
@@ -694,6 +773,8 @@ function closeLightbox(updateUrl = true) {
 
     modal.style.display = "none";
     document.body.classList.remove("lb-open");
+    stopSlideshow();
+    if (document.fullscreenElement) document.exitFullscreen().catch(() => {});
     currentPhotoId = null;
     if (updateUrl && /^\/gallery\/[^\/]+/.test(window.location.pathname)) {
         try { history.pushState(null, null, "/gallery"); } catch (e) {}
@@ -715,7 +796,7 @@ function setupMobileMenu() {
         navLinks.classList.toggle("open", open);
         menuBtn.setAttribute("aria-expanded", String(open));
         menuBtn.setAttribute("aria-label", open ? "Close menu" : "Open menu");
-        menuBtn.textContent = open ? "✕" : "☰";
+        menuBtn.innerHTML = icon(open ? "x" : "menu");
     };
     window.closeMobileMenu = () => set(false);
 
@@ -729,7 +810,78 @@ function setupMobileMenu() {
     window.addEventListener("resize", () => { if (window.innerWidth > 820) set(false); });
 }
 
-document.addEventListener("DOMContentLoaded", trackScroll);
+document.addEventListener("DOMContentLoaded", () => {
+    trackScroll();
+    if (!rolesStarted) startRoles(DEFAULT_ROLES);
+    watchConnection();
+    setupShortcuts();
+});
+
+/* ---------- small notifications in the corner ---------- */
+function siteToast(text, type = "ok") {
+    let box = document.getElementById("site-toasts");
+    if (!box) {
+        box = document.createElement("div");
+        box.id = "site-toasts";
+        box.className = "site-toasts";
+        box.setAttribute("aria-live", "polite");
+        document.body.appendChild(box);
+    }
+    const t = document.createElement("div");
+    t.className = "site-toast " + type;
+    t.innerHTML = icon(type === "error" ? "alert" : type === "info" ? "wifi-off" : "check");
+    const span = document.createElement("span");
+    span.textContent = text;
+    t.appendChild(span);
+    box.appendChild(t);
+    setTimeout(() => t.classList.add("out"), 3400);
+    setTimeout(() => t.remove(), 3900);
+}
+
+/* ---------- rotating words under the name (typing effect) ---------- */
+const DEFAULT_ROLES = ["Web Developer", "AI Explorer", "BCA Student", "IT Enthusiast"];
+let rolesStarted = false, rolesKey = "", rolesRun = 0;
+function startRoles(list) {
+    const el = document.getElementById("role-word");
+    if (!el || !list.length) return;
+    const key = list.join("|");
+    if (key === rolesKey) return;
+    rolesKey = key; rolesStarted = true;
+    const run = ++rolesRun;
+    const calm = matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const wait = ms => new Promise(r => setTimeout(r, ms));
+    el.textContent = list[0];
+    if (list.length < 2) return;
+    (async () => {
+        let i = 0;
+        while (run === rolesRun) {
+            await wait(2200);
+            if (run !== rolesRun) return;
+            i = (i + 1) % list.length;
+            if (calm) { el.textContent = list[i]; continue; }
+            while (el.textContent.length) { if (run !== rolesRun) return; el.textContent = el.textContent.slice(0, -1); await wait(40); }
+            for (const ch of list[i]) { if (run !== rolesRun) return; el.textContent += ch; await wait(70); }
+        }
+    })();
+}
+
+/* ---------- offline / back online notice ---------- */
+function watchConnection() {
+    addEventListener("offline", () => siteToast("You are offline. Showing saved content.", "info"));
+    addEventListener("online", () => siteToast("Back online"));
+}
+
+/* ---------- keyboard: "/" searches the gallery ---------- */
+function setupShortcuts() {
+    document.addEventListener("keydown", (e) => {
+        if (e.key !== "/" || e.ctrlKey || e.metaKey || e.altKey) return;
+        const t = e.target;
+        if (t && (t.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test(t.tagName))) return;
+        e.preventDefault();
+        if (!document.body.classList.contains("view-gallery")) navigateTo("/gallery");
+        setTimeout(() => { const s = document.getElementById("gallery-search"); if (s) s.focus(); }, 60);
+    });
+}
 
 function esc(s) {
     return String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
@@ -832,7 +984,7 @@ function showPopup(cfg, slides, stamp, preview) {
     closeBtn.className = "pop-close";
     closeBtn.type = "button";
     closeBtn.setAttribute("aria-label", "Close");
-    closeBtn.textContent = "×";
+    closeBtn.innerHTML = icon("x");
     card.appendChild(closeBtn);
 
     if (preview) {
@@ -883,10 +1035,10 @@ function showPopup(cfg, slides, stamp, preview) {
         media.appendChild(stage);
         if (slides.length > 1) {
             const prev = document.createElement("button");
-            prev.className = "pop-nav pop-prev"; prev.type = "button"; prev.setAttribute("aria-label", "Previous"); prev.textContent = "‹";
+            prev.className = "pop-nav pop-prev"; prev.type = "button"; prev.setAttribute("aria-label", "Previous"); prev.innerHTML = icon("chevron-left");
             prev.addEventListener("click", () => renderSlide(index - 1));
             const next = document.createElement("button");
-            next.className = "pop-nav pop-next"; next.type = "button"; next.setAttribute("aria-label", "Next"); next.textContent = "›";
+            next.className = "pop-nav pop-next"; next.type = "button"; next.setAttribute("aria-label", "Next"); next.innerHTML = icon("chevron-right");
             next.addEventListener("click", () => renderSlide(index + 1));
             const dotBox = document.createElement("div");
             dotBox.className = "pop-dots";
@@ -970,10 +1122,17 @@ function applyContent(c) {
 
     // heading + buttons
     $$('[data-site="hero-title"]').forEach(h1 => {
-        h1.replaceChildren(document.createTextNode(str(c.heroGreeting) || DEF_TEXT.greeting), document.createElement("br"), document.createTextNode(str(c.heroName) || DEF_TEXT.name));
+        const nm = document.createElement("span");
+        nm.className = "grad";
+        nm.textContent = str(c.heroName) || DEF_TEXT.name;
+        h1.replaceChildren(document.createTextNode(str(c.heroGreeting) || DEF_TEXT.greeting), document.createElement("br"), nm);
     });
     $$('[data-site="btn-primary"]').forEach(a => { a.textContent = str(c.btnPrimary) || DEF_TEXT.btn1; });
     $$('[data-site="btn-secondary"]').forEach(a => { a.textContent = str(c.btnSecondary) || DEF_TEXT.btn2; });
+
+    // rotating words under the name (comma separated in the admin)
+    const roles = str(c.heroRoles).split(",").map(x => x.trim()).filter(Boolean).slice(0, 8);
+    startRoles(roles.length ? roles : DEFAULT_ROLES);
 
     // home stat cards
     $$("[data-stat]").forEach(card => {

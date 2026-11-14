@@ -124,3 +124,23 @@ What's new in the admin portal:
 - Messages show the sender's **name**, have a **Copy email** button, and the reply email starts with "Hi <name>,". The CSV export has a Name column.
 - The browser tab shows the number of unread messages, for example "(3) Admin · Anup Giri".
 - The JSON backup now includes your Content settings.
+
+## Icons, design refresh and new tools (new)
+**Upload the new file `icons.js`** together with the others. Both the website and the admin load it. Without it, buttons show no icons. No new Firestore rules are needed for this update.
+
+Website:
+- One modern line-icon set everywhere: menu, buttons, gallery, photo viewer, footer and pop-ups. The old ☰ × ‹ › ↗ symbols are gone.
+- New look: gradient name, shine effect on the main button, accent lines on section titles, cards that glow on hover, and a new footer with page links, socials and "Back to top".
+- **Rotating words** under your name ("Web Developer", "AI Explorer"...). Change them in **Content → Home page → Rotating words**.
+- **Projects page**: tag buttons (All, HTML, Firebase...) filter your projects.
+- **Photo viewer**: slideshow (play/pause) and full-screen buttons.
+- Small notifications in the corner (message sent, link copied, offline / back online).
+- Press **/** anywhere to jump to the gallery search.
+
+Admin portal:
+- Icons on every button, a gradient welcome card, and a glowing marker on the current menu item.
+- **Search or jump (Ctrl+K / Cmd+K)**: open any page or run an action (upload photos, add project, export, backup, dark mode, sign out) from the keyboard.
+- Messages show "5 minutes ago" style times (hover for the full date) and have a new **Read only** filter.
+- **Photo search** in Photos (by title or category).
+- **Password strength meter** when changing your password.
+- An **Offline** badge appears in the top bar when the connection drops.

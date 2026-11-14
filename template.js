@@ -164,7 +164,7 @@
 // Back-to-top button
 (() => {
   const b = document.createElement("button");
-  b.className = "totop"; b.type = "button"; b.setAttribute("aria-label", "Back to top"); b.textContent = "↑";
+  b.className = "totop"; b.type = "button"; b.setAttribute("aria-label", "Back to top"); b.innerHTML = window.icon ? icon("arrow-up") : "↑";
   b.addEventListener("click", () => scrollTo({ top: 0, behavior: "smooth" }));
   document.body.appendChild(b);
   addEventListener("scroll", () => b.classList.toggle("show", scrollY > 700), { passive: true });
@@ -177,7 +177,7 @@
 
   const overlay = document.createElement("div");
   overlay.className = "topic-overlay"; overlay.hidden = true;
-  overlay.innerHTML = '<div class="topic-card" role="dialog" aria-modal="true" aria-labelledby="topic-title"><button class="topic-close" type="button" aria-label="Close">×</button><div class="topic-head"><span class="ico"></span><h3 id="topic-title"></h3></div><div class="topic-body"></div></div>';
+  overlay.innerHTML = '<div class="topic-card" role="dialog" aria-modal="true" aria-labelledby="topic-title"><button class="topic-close" type="button" aria-label="Close">' + (window.icon ? icon("x") : "×") + '</button><div class="topic-head"><span class="ico"></span><h3 id="topic-title"></h3></div><div class="topic-body"></div></div>';
   document.body.appendChild(overlay);
   const card = overlay.querySelector(".topic-card");
   const closeBtn = overlay.querySelector(".topic-close");
