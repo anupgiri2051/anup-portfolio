@@ -58,7 +58,13 @@ function setView(name) {
     const views = ["gallery", "about", "projects"];
     const was = views.find(v => document.body.classList.contains("view-" + v)) || "home";
     views.forEach(v => document.body.classList.toggle("view-" + v, name === v));
-    if (name !== was) window.scrollTo(0, 0);
+    if (name !== was) {
+        window.scrollTo(0, 0);
+        // replay the page entrance animation
+        document.body.classList.remove("page-in");
+        void document.body.offsetWidth;
+        document.body.classList.add("page-in");
+    }
 }
 
 const PAGE_LABELS = { gallery: "Gallery", about: "About", projects: "Projects", home: "" };
@@ -713,6 +719,11 @@ function openLightbox(url, title, id) {
     const wasOpen = modal.style.display === "flex";
     if (!wasOpen) lightboxOpener = document.activeElement;
     currentPhotoId = id || null;
+    if (wasOpen) { // slide the new photo in from the side you moved to
+        img.classList.remove("swap-next", "swap-prev");
+        void img.offsetWidth;
+        img.classList.add(lbDir < 0 ? "swap-prev" : "swap-next");
+    }
     img.src = url;
     img.alt = title || "";
     caption.textContent = title;
@@ -744,6 +755,7 @@ function openLightbox(url, title, id) {
     });
 }
 let lightboxOpener = null;
+let lbDir = 1;
 let slideTimer = null;
 
 function startSlideshow() {
@@ -763,6 +775,7 @@ function stepPhoto(dir) {
     const n = photoOrder.length;
     const i = photoOrder.indexOf(currentPhotoId);
     if (n < 2 || i < 0) return;
+    lbDir = dir;
     navigateTo("/gallery/" + encodeURIComponent(photoOrder[(i + dir + n) % n]));
 }
 

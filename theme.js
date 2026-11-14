@@ -60,9 +60,27 @@
         if (mq.addEventListener) mq.addEventListener("change", follow); else if (mq.addListener) mq.addListener(follow);
     }
 
-    window.toggleMode = function () {
+    window.toggleMode = function (ev) {
         var next = root.getAttribute("data-mode") === "dark" ? "light" : "dark";
         try { localStorage.setItem("siteMode", next); } catch (e) {}
+
+        // circle that grows from the switch button (browsers with View Transitions)
+        var calm = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+        if (document.startViewTransition && !calm) {
+            var src = ev && ev.currentTarget && ev.currentTarget.getBoundingClientRect ? ev.currentTarget : document.querySelector("[data-mode-toggle]");
+            var x = window.innerWidth / 2, y = 0;
+            if (src) { var r = src.getBoundingClientRect(); if (r.width) { x = r.left + r.width / 2; y = r.top + r.height / 2; } }
+            var end = Math.hypot(Math.max(x, window.innerWidth - x), Math.max(y, window.innerHeight - y));
+            var vt = document.startViewTransition(function () { applyMode(next); });
+            vt.ready.then(function () {
+                root.animate(
+                    { clipPath: ["circle(0px at " + x + "px " + y + "px)", "circle(" + end + "px at " + x + "px " + y + "px)"] },
+                    { duration: 650, easing: "cubic-bezier(.4,0,.2,1)", pseudoElement: "::view-transition-new(root)" }
+                );
+            }).catch(function () {});
+            return;
+        }
+
         root.classList.add("mode-anim");
         applyMode(next);
         setTimeout(function () { root.classList.remove("mode-anim"); }, 450);

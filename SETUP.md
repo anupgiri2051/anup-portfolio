@@ -144,3 +144,21 @@ Admin portal:
 - **Photo search** in Photos (by title or category).
 - **Password strength meter** when changing your password.
 - An **Offline** badge appears in the top bar when the connection drops.
+
+## Animations (new)
+**Upload the new file `fx.js`** together with the others (the website and the admin both load it). No Firestore changes are needed.
+
+Website:
+- **Intro splash**: your "A" logo with a spinning ring and loading bar, shown once per visit.
+- **Dark mode switch**: the new color spreads out in a circle from the button (Chrome, Edge and other browsers with View Transitions; others fade smoothly).
+- **Page changes** fade and rise in. Section titles draw an accent line under themselves.
+- **Menu**: a highlight slides between links as you hover and scroll.
+- **Cards** glow where the mouse is; skill and project cards tilt in 3D.
+- **Magnetic buttons**: the main buttons lean toward the mouse. Buttons show a ripple when clicked.
+- **Scroll effects**: the hero drifts and fades, project cards and timeline steps slide in one after another, and a "Scroll" mouse icon sits under the hero.
+- **Photo viewer**: the next or previous photo slides in from the side you moved to.
+
+Admin:
+- Cards rise in one after another on every page, chart bars grow from the bottom, numbers on the Overview count up, cards glow under the mouse, buttons ripple, and the login card pops in.
+
+Visitors who turn on "reduce motion" on their phone or computer get no animations; everything still works.

@@ -386,3 +386,69 @@ kbd{padding:.1rem .4rem;border:1px solid var(--line);border-bottom-width:2px;bor
 [data-mode="dark"] .net{background:rgba(245,158,11,.15);color:#fbbf24}
 [data-mode="dark"] .cmdk-list li[aria-selected="true"] .icon{color:#7dd3fc}
 [data-mode="dark"] .hello{background:linear-gradient(130deg,#0e1a33,#0b3b6f 60%,#0ea5e9 150%)}
+
+/* ===================================================================
+   Animations (fx.js). All switched off by prefers-reduced-motion.
+   =================================================================== */
+::view-transition-old(root),::view-transition-new(root){animation:none;mix-blend-mode:normal}
+::view-transition-new(root){z-index:2}
+
+/* each page: cards rise in one after another */
+.view>*,.content-forms>*{animation:rise .5s cubic-bezier(.2,.8,.2,1) backwards}
+.view>*:nth-child(2),.content-forms>*:nth-child(2){animation-delay:.06s}
+.view>*:nth-child(3),.content-forms>*:nth-child(3){animation-delay:.12s}
+.view>*:nth-child(4),.content-forms>*:nth-child(4){animation-delay:.18s}
+.view>*:nth-child(5),.content-forms>*:nth-child(5){animation-delay:.24s}
+.view>*:nth-child(n+6),.content-forms>*:nth-child(n+6){animation-delay:.3s}
+.stats>.stat{animation:rise .5s cubic-bezier(.2,.8,.2,1) backwards}
+.stats>.stat:nth-child(2){animation-delay:.08s}
+.stats>.stat:nth-child(3){animation-delay:.16s}
+.stats>.stat:nth-child(4){animation-delay:.24s}
+@keyframes rise{from{opacity:0;translate:0 16px}}
+
+/* chart bars grow from the bottom */
+.track i{transform-origin:bottom;animation:grow .8s cubic-bezier(.2,.8,.2,1) backwards}
+@keyframes grow{from{transform:scaleY(0)}}
+.bar:nth-child(2) .track i{animation-delay:0.04s}
+.bar:nth-child(3) .track i{animation-delay:0.08s}
+.bar:nth-child(4) .track i{animation-delay:0.12s}
+.bar:nth-child(5) .track i{animation-delay:0.16s}
+.bar:nth-child(6) .track i{animation-delay:0.2s}
+.bar:nth-child(7) .track i{animation-delay:0.24s}
+.bar:nth-child(8) .track i{animation-delay:0.28s}
+.bar:nth-child(9) .track i{animation-delay:0.32s}
+.bar:nth-child(10) .track i{animation-delay:0.36s}
+.bar:nth-child(11) .track i{animation-delay:0.4s}
+.bar:nth-child(12) .track i{animation-delay:0.44s}
+.bar:nth-child(13) .track i{animation-delay:0.48s}
+.bar:nth-child(14) .track i{animation-delay:0.52s}
+
+/* spotlight glow on cards */
+html.anim-on .spot.spot{background-image:radial-gradient(360px circle at var(--mx,-500px) var(--my,-500px),rgba(14,165,233,.08),transparent 45%)}
+[data-mode="dark"] .spot.spot{background-image:radial-gradient(360px circle at var(--mx,-500px) var(--my,-500px),rgba(56,189,248,.12),transparent 45%)}
+
+/* click ripple */
+.has-ripple{position:relative;overflow:hidden}
+.ripple{position:absolute;border-radius:50%;background:currentColor;opacity:.2;transform:scale(0);pointer-events:none;animation:ripple .65s ease-out forwards}
+@keyframes ripple{to{transform:scale(1);opacity:0}}
+
+/* login: card pops in, feature list slides in */
+.login-card{animation:pop .55s cubic-bezier(.2,.8,.2,1) both}
+.login-brand li{animation:slideIn .5s cubic-bezier(.2,.8,.2,1) backwards}
+.login-brand li:nth-child(1){animation-delay:.15s}
+.login-brand li:nth-child(2){animation-delay:.25s}
+.login-brand li:nth-child(3){animation-delay:.35s}
+.login-brand li::before{animation:glow 2s ease-in-out infinite}
+@keyframes slideIn{from{opacity:0;translate:-20px 0}}
+@keyframes glow{50%{box-shadow:0 0 18px #38bdf8;scale:1.25}}
+
+/* small touches */
+.hello::after{animation:float2 8s ease-in-out infinite alternate}
+@keyframes float2{to{translate:-40px 30px;scale:1.2}}
+.s-ico{transition:transform .3s cubic-bezier(.3,1.6,.5,1)}
+.stat:hover .s-ico{transform:rotate(-8deg) scale(1.1)}
+.count.badge{animation:badgePop .5s cubic-bezier(.3,1.6,.5,1)}
+@keyframes badgePop{from{scale:0}}
+.new-tag{animation:badgePop .5s cubic-bezier(.3,1.6,.5,1)}
+.mode-btn .icon,.mode-btn svg{transition:transform .4s}
+.mode-btn:active .icon{transform:rotate(90deg) scale(.8)}

@@ -296,7 +296,22 @@ function listen(query, onData, onError) {
 
 function setStat(id, value) {
     const el = $(id);
-    if (el) el.textContent = value;
+    if (!el) return;
+    const to = Number(value), from = Number(el.textContent);
+    const calm = matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (/^stat-/.test(id) && value !== "" && el.textContent !== "" && Number.isFinite(to) && Number.isFinite(from) && to !== from && !calm) {
+        // count up (or down) smoothly to the new number
+        cancelAnimationFrame(el._raf);
+        const t0 = performance.now(), dur = 800;
+        const step = now => {
+            const k = Math.min(1, (now - t0) / dur), ease = 1 - Math.pow(1 - k, 3);
+            el.textContent = Math.round(from + (to - from) * ease);
+            if (k < 1) el._raf = requestAnimationFrame(step);
+        };
+        el._raf = requestAnimationFrame(step);
+        return;
+    }
+    el.textContent = value;
 }
 
 /* ---------- overview ---------- */
