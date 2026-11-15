@@ -24,6 +24,7 @@
 <script src="theme.js"></script>
 <script src="icons.js"></script>
 <script src="fx.js"></script>
+<script src="fx3d.js" defer></script>
 <link rel="icon" type="image/svg+xml" href="favicon.svg">
 <link rel="alternate icon" href="favicon.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -75,6 +76,7 @@
   </div>
   <div class="photo-card">
     <img src="profile.jpg" alt="Portrait of Anup Giri" width="900" height="900" fetchpriority="high" decoding="async">
+    <canvas class="globe hero-globe" data-globe aria-hidden="true"></canvas>
     <i class="dash" aria-hidden="true"></i><i class="orbit" aria-hidden="true"></i><i class="orbit r2" aria-hidden="true"></i><i class="scan" aria-hidden="true"></i><i class="hud" aria-hidden="true"></i>
     <span class="fx f1" aria-hidden="true">AI</span>
     <span class="fx f2" aria-hidden="true">IT</span>
@@ -141,6 +143,25 @@
       <p><u class="c">// building small projects along the way</u></p>
     </div>
   </div>
+  <div class="cube-wrap">
+    <div class="cube-scene" data-cube tabindex="0" role="img" aria-label="3D cube showing my skills: AI, web development, IT, databases, Firebase and cloud, always learning. Drag it or use the arrow keys to turn it.">
+      <div class="cube">
+        <div class="face f-front"><i data-icon="cpu"></i><b>AI</b><span>Machine learning</span></div>
+        <div class="face f-right"><i data-icon="code"></i><b>Web</b><span>HTML · CSS · JS</span></div>
+        <div class="face f-back"><i data-icon="server"></i><b>IT</b><span>Systems &amp; networks</span></div>
+        <div class="face f-left"><i data-icon="database"></i><b>Data</b><span>Databases</span></div>
+        <div class="face f-top"><i data-icon="cloud"></i><b>Cloud</b><span>Firebase · Vercel</span></div>
+        <div class="face f-bottom"><i data-icon="sparkles"></i><b>Learn</b><span>Every day</span></div>
+      </div>
+      <i class="cube-shadow" aria-hidden="true"></i>
+    </div>
+    <div class="cube-copy">
+      <p class="eyebrow">In 3D</p>
+      <h3>My toolkit, one cube</h3>
+      <p class="muted">Six things I work with, one on each side. Grab the cube and spin it, or focus it and use the arrow keys.</p>
+      <p class="cube-tip"><i data-icon="move"></i>Drag to rotate</p>
+    </div>
+  </div>
   <div class="skills">
     <article data-topic="ai" tabindex="0" role="button" aria-haspopup="dialog"><span class="ico"><svg class="ic" viewBox="0 0 24 24"><path d="M12 3l1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8z"/><path d="M19 16l.7 2 2 .7-2 .7-.7 2-.7-2-2-.7 2-.7z"/></svg></span><h3>Artificial Intelligence</h3><p>Exploring how AI works and trying small experiments.</p><span class="more-link">Learn more <i data-icon="arrow-right"></i></span></article>
     <article data-topic="it" tabindex="0" role="button" aria-haspopup="dialog"><span class="ico"><svg class="ic" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="7" rx="2"/><rect x="3" y="13" width="18" height="7" rx="2"/><path d="M7 7.5h.01M7 16.5h.01"/></svg></span><h3>Information Technology</h3><p>Learning how systems, networks and tools fit together.</p><span class="more-link">Learn more <i data-icon="arrow-right"></i></span></article>
@@ -205,10 +226,18 @@
     <div class="layout-toggle" role="group" aria-label="Gallery layout">
       <button type="button" data-layout="mosaic" aria-pressed="true"><i data-icon="grid"></i>Mosaic</button>
       <button type="button" data-layout="masonry" aria-pressed="false"><i data-icon="columns"></i>Masonry</button>
+      <button type="button" data-layout="carousel" aria-pressed="false"><i data-icon="box"></i>3D</button>
     </div>
   </div>
   <div id="gallery-cats" class="cats" hidden role="group" aria-label="Photo categories"></div>
   <div id="gallery-container" class="gallery-grid" data-layout="mosaic"></div>
+  <div id="carousel-ctrl" class="carousel-ctrl" hidden>
+    <button type="button" id="car-prev" aria-label="Previous photo"><i data-icon="chevron-left"></i></button>
+    <span id="carousel-count" class="car-count" aria-live="polite"></span>
+    <button type="button" id="car-spin" aria-label="Rotate automatically"><i data-icon="play"></i></button>
+    <button type="button" id="car-next" aria-label="Next photo"><i data-icon="chevron-right"></i></button>
+    <span class="car-hint"><i data-icon="move"></i>Drag, swipe or use the arrow keys. Click the front photo to open it.</span>
+  </div>
 </section>
 
 <section id="contact-section">

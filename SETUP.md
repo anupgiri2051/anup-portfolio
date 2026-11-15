@@ -162,3 +162,20 @@ Admin:
 - Cards rise in one after another on every page, chart bars grow from the bottom, numbers on the Overview count up, cards glow under the mouse, buttons ripple, and the login card pops in.
 
 Visitors who turn on "reduce motion" on their phone or computer get no animations; everything still works.
+
+## 3D animation and 3D design (new)
+**Upload the new file `fx3d.js`** together with the others (the website and the admin both load it). No extra libraries and no Firestore changes are needed. Everything is drawn by the browser, so it also works offline.
+
+Website:
+- **3D globe** behind your profile photo: a spinning network of points with orbiting satellites that leans toward the mouse and uses your color theme.
+- **Floating layers**: the photo, the AI / IT / WEB chips and the "hello, world" tag sit at different depths, so they move apart in 3D when the photo tilts. Your name has a raised 3D look.
+- **3D skill cube** on the About page: six sides (AI, Web, IT, Data, Cloud, Learn). Drag it, flick it, or focus it and use the arrow keys. It floats and spins gently by itself.
+- **3D gallery**: a new **3D** button next to Mosaic and Masonry puts your photos on a rotating ring. Drag or swipe it, use the arrow keys or the buttons, or press play to spin it. Click a side photo to bring it to the front, then click the front photo to open it. Search and categories still work.
+- **3D cards**: the icon and text of the skill cards float above the card when it tilts. The image and code box on the About page face each other like two screens, and the terminal leans back like a laptop screen (they straighten on hover).
+- **3D push buttons** that press down when clicked. Headings, cards, pop-ups, the mobile menu, the photo viewer and notifications flip in with 3D motion.
+
+Admin:
+- 3D globe on the login screen and a small one on the Overview welcome card. The login card and stat cards tilt in 3D with the icons popping out.
+- Chart bars look like 3D columns. Pages, dialogs, the Ctrl+K search and notifications flip in. The buttons press down.
+
+With "reduce motion" turned on, the globe shows one still frame, nothing spins by itself, and the cube can still be turned by hand.

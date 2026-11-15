@@ -28,7 +28,7 @@
 
     /* ---------- which elements get which effect ---------- */
     const SPOT = ".skills article,.project-card,.facts div,.timeline li,#contact-form,.hero .stats,.card,.stat,.admin-card,.login-card";
-    const TILT = ".project-card,.skills article";
+    const TILT = ".project-card,.skills article,.stat,.login-card,.timeline li";
     const REVEAL = [[".project-card", "up"], [".timeline li", "left"], [".term", "zoom"], [".hp-head", "up"], [".site-footer .f-top", "up"]];
 
     let io;

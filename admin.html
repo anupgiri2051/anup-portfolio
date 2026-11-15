@@ -10,6 +10,7 @@
     <script src="/theme.js"></script>
     <script src="/icons.js"></script>
     <script src="/fx.js"></script>
+    <script src="/fx3d.js" defer></script>
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -28,6 +29,7 @@
 <!-- ================= Login ================= -->
 <div id="login-modal" class="login-screen" style="display: flex;">
     <div class="login-brand">
+        <canvas class="globe login-globe" data-globe aria-hidden="true"></canvas>
         <div class="lb-top"><img src="/logo.png" alt=""><span>Anup Giri</span></div>
         <div>
             <h1>Admin portal</h1>
@@ -103,6 +105,7 @@
             <!-- Overview -->
             <section class="view" id="view-overview">
                 <div class="hello">
+                    <canvas class="globe hello-globe" data-globe="small" aria-hidden="true"></canvas>
                     <h2 id="greeting">Welcome back</h2>
                     <p class="sub">Here is what is happening on your site.</p>
                 </div>

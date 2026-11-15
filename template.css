@@ -679,3 +679,121 @@ html.anim-on .hero-copy{will-change:transform,opacity}
 .status-badge::before{animation:okping 2s infinite}
 
 @media(prefers-reduced-motion:reduce){#intro{display:none}.fx-wait{opacity:1}.scroll-cue .mouse i{animation:none}}
+
+/* ===================================================================
+   3D UI (fx3d.js + fx.js). Motion is switched off by prefers-reduced-motion.
+   =================================================================== */
+
+/* hero: 3D globe behind the photo, layers float at different depths */
+.photo-card{transform-style:preserve-3d}
+.hero-globe{position:absolute;left:-55%;top:-55%;width:210%;height:210%;z-index:-1;pointer-events:none;transform:translateZ(-80px)}
+.photo-card img{translate:0 0 26px}
+.photo-card .fx{transform:translateZ(70px)}
+.photo-card .status{transform:translateZ(50px)}
+.photo-card .orbit,.photo-card .dash{transform:translateZ(12px)}
+.photo-card .hud{transform:translateZ(36px)}
+
+/* 3D name: stacked shadows give the letters thickness */
+.grad{filter:drop-shadow(0 1px 0 rgba(var(--acc-rgb),.55)) drop-shadow(0 2px 0 rgba(var(--acc-rgb),.45)) drop-shadow(0 3px 0 rgba(var(--acc2-rgb),.35)) drop-shadow(0 14px 18px rgba(var(--acc-rgb),.28))}
+
+/* 3D push buttons */
+.btn.primary{box-shadow:0 5px 0 var(--acc-dd),0 14px 26px rgba(var(--acc-rgb),.3)}
+.btn.primary:hover{box-shadow:0 7px 0 var(--acc-dd),0 20px 34px rgba(var(--acc-rgb),.38)}
+.btn.primary:active{transform:translateY(4px)!important;box-shadow:0 1px 0 var(--acc-dd),0 6px 12px rgba(var(--acc-rgb),.25)}
+.btn.ghost{box-shadow:0 4px 0 rgba(17,29,59,.1),0 8px 18px rgba(20,30,70,.06)}
+.btn.ghost:active{transform:translateY(3px)!important;box-shadow:0 1px 0 rgba(17,29,59,.1)}
+#nav-links a.cta{box-shadow:0 4px 0 var(--acc-dd)}
+#nav-links a.cta:active{transform:translateY(3px);box-shadow:0 1px 0 var(--acc-dd)}
+[data-mode="dark"] .btn.ghost{box-shadow:0 4px 0 rgba(0,0,0,.45)}
+
+/* skill cards: icon and text float above the card when it tilts */
+.skills article.tilt{transform-style:preserve-3d}
+.skills article.tilt>.ico{transform:translateZ(50px)}
+.skills article.tilt>h3{transform:translateZ(30px)}
+.skills article.tilt>p{transform:translateZ(16px)}
+.skills article.tilt>.more-link{transform:translateZ(24px)}
+
+/* About page: image and code box face each other like two screens */
+@media(min-width:901px){
+  .duo .robot{transform:perspective(1200px) rotateY(14deg);transition:transform .8s cubic-bezier(.2,.8,.2,1)}
+  .duo .code{transform:perspective(1200px) rotateY(-10deg);transition:transform .8s cubic-bezier(.2,.8,.2,1)}
+  .duo .robot:hover,.duo .code:hover{transform:perspective(1200px) rotateY(0)}
+  /* terminal leans back like a laptop screen, straightens on hover */
+  .term{transform:perspective(1400px) rotateX(16deg);transform-origin:50% 100%;transition:transform .9s cubic-bezier(.2,.8,.2,1),box-shadow .9s}
+  .term:hover{transform:perspective(1400px) rotateX(0);box-shadow:0 40px 80px rgba(11,23,48,.35)}
+}
+
+/* 3D skill cube */
+.cube-wrap{display:grid;grid-template-columns:auto 1fr;align-items:center;gap:2.5rem;margin:2.8rem 0 1rem;padding:2.2rem 2.6rem;border:1px solid var(--line);border-radius:var(--r);background:linear-gradient(135deg,rgba(var(--acc-rgb),.08),transparent 60%),var(--card);box-shadow:var(--shadow);overflow:hidden}
+.cube-scene{--s:190px;position:relative;width:var(--s);height:var(--s);margin:1.6rem 2.2rem 2.6rem;perspective:900px;cursor:grab;touch-action:none;user-select:none;-webkit-user-select:none;border-radius:20px;animation:cubeFloat 5s ease-in-out infinite}
+.cube-scene.grabbing{cursor:grabbing}
+.cube-scene:focus-visible{outline:3px solid var(--acc);outline-offset:14px}
+.cube{position:relative;width:100%;height:100%;transform-style:preserve-3d;transform:rotateX(-20deg) rotateY(-30deg)}
+.cube.snap{transition:transform .6s cubic-bezier(.2,.8,.2,1)}
+.face{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:.3rem;border-radius:18px;border:1px solid rgba(var(--acc-rgb),.4);background:linear-gradient(145deg,#fff 10%,var(--acc-tint) 100%);color:var(--navy);box-shadow:inset 0 0 0 6px rgba(255,255,255,.5),inset 0 0 50px rgba(var(--acc-rgb),.2);backface-visibility:hidden;-webkit-backface-visibility:hidden}
+.face .icon{width:46px;height:46px;color:var(--acc);filter:drop-shadow(0 4px 8px rgba(var(--acc-rgb),.35))}
+.face b{font-size:1.7rem;line-height:1.1}
+.face span{color:var(--muted);font-size:.8rem;font-weight:600}
+.f-front{transform:translateZ(calc(var(--s) / 2))}
+.f-back{transform:rotateY(180deg) translateZ(calc(var(--s) / 2))}
+.f-right{transform:rotateY(90deg) translateZ(calc(var(--s) / 2))}
+.f-left{transform:rotateY(-90deg) translateZ(calc(var(--s) / 2))}
+.f-top{transform:rotateX(90deg) translateZ(calc(var(--s) / 2))}
+.f-bottom{transform:rotateX(-90deg) translateZ(calc(var(--s) / 2))}
+.cube-shadow{position:absolute;left:8%;right:8%;bottom:-62px;height:26px;border-radius:50%;background:radial-gradient(rgba(var(--acc-rgb),.45),transparent 70%);filter:blur(6px);animation:shadowPulse 5s ease-in-out infinite}
+@keyframes cubeFloat{50%{translate:0 -12px}}
+@keyframes shadowPulse{50%{scale:.8;opacity:.6}}
+.cube-copy h3{font-size:1.6rem;margin-bottom:.5rem}
+.cube-tip{display:inline-flex;align-items:center;gap:.45rem;margin-top:1rem;padding:.35rem .9rem;border-radius:99px;background:rgba(var(--acc-rgb),.1);color:var(--acc-dd);font-weight:600;font-size:.85rem}
+.cube-tip .icon{width:16px;height:16px}
+[data-mode="dark"] .face{background:linear-gradient(145deg,#1b2742 10%,#0f1830 100%);color:var(--navy);box-shadow:inset 0 0 0 6px rgba(255,255,255,.03),inset 0 0 50px rgba(var(--acc-rgb),.22)}
+[data-mode="dark"] .cube-tip{color:var(--acc-ll)}
+@media(max-width:700px){.cube-wrap{grid-template-columns:1fr;justify-items:center;text-align:center;padding:1.6rem 1.2rem}.cube-copy .eyebrow{justify-content:center}.cube-scene{--s:160px}}
+
+/* 3D gallery ring */
+.gallery-grid[data-layout="carousel"]{display:block;position:relative;height:420px;margin:.5rem 0;touch-action:pan-y;user-select:none;-webkit-user-select:none;cursor:grab}
+.gallery-grid[data-layout="carousel"].dragging,.gallery-grid[data-layout="carousel"].dragging .gallery-item{transition:none;cursor:grabbing}
+/* the ring itself lets clicks through to the photos (only photos can be clicked or dragged) */
+.gallery-grid[data-layout="carousel"]{pointer-events:none}
+.gallery-grid[data-layout="carousel"] .gallery-item{pointer-events:auto}
+.gallery-grid[data-layout="carousel"] .gallery-item{position:absolute;left:50%;top:50%;width:260px;height:340px;margin:-170px 0 0 -130px;aspect-ratio:auto;transform:var(--t,none)!important;animation:none;transition:transform .9s cubic-bezier(.2,.8,.2,1),filter .6s,box-shadow .6s;filter:brightness(.6) saturate(.8);backface-visibility:hidden;-webkit-backface-visibility:hidden}
+.gallery-grid[data-layout="carousel"] .gallery-item img{height:100%;pointer-events:none}
+.gallery-grid[data-layout="carousel"] .gallery-item.front{filter:none;box-shadow:0 34px 70px rgba(var(--acc-rgb),.35)}
+.gallery-grid[data-layout="carousel"] .gallery-item.front .gallery-item-title{transform:none;opacity:1}
+.gallery-grid[data-layout="carousel"] .gallery-item:not(.front):hover img{transform:none}
+.gallery-grid[data-layout="carousel"] .gallery-skel{position:absolute;left:50%;top:50%;width:260px;height:340px;margin:-170px 0 0 -130px}
+.gallery-grid[data-layout="carousel"]>p{position:absolute;left:0;right:0;top:45%}
+.carousel-ctrl{display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:.7rem 1rem;margin-top:1.8rem}
+.carousel-ctrl button{display:grid;place-items:center;width:46px;height:46px;border:1px solid var(--line);border-radius:50%;background:var(--card);color:var(--navy);cursor:pointer;box-shadow:0 4px 0 rgba(17,29,59,.08),var(--shadow);transition:background .2s,color .2s,transform .2s}
+.carousel-ctrl button:hover{color:var(--acc);transform:translateY(-2px)}
+.carousel-ctrl button:active{transform:translateY(2px)}
+.carousel-ctrl button.on{background:var(--acc);border-color:var(--acc);color:#fff}
+.carousel-ctrl .icon{width:20px;height:20px}
+.car-count{min-width:4.5ch;text-align:center;font-weight:700;color:var(--muted)}
+.car-hint{flex-basis:100%;display:flex;align-items:center;justify-content:center;gap:.4rem;color:var(--muted);font-size:.85rem}
+.car-hint .icon{width:15px;height:15px}
+@media(max-width:600px){
+  .gallery-grid[data-layout="carousel"]{height:330px}
+  .gallery-grid[data-layout="carousel"] .gallery-item,.gallery-grid[data-layout="carousel"] .gallery-skel{width:190px;height:250px;margin:-125px 0 0 -95px}
+}
+
+/* 3D entrances (individual rotate/translate so they never fight the tilt) */
+.rv.in{animation-name:up3d}
+.gallery-grid.rv.in{animation-name:up}
+@keyframes up3d{from{opacity:0;translate:0 34px;rotate:x 32deg}to{opacity:1;translate:0 0;rotate:none}}
+@keyframes fxUp{from{opacity:0;translate:0 40px;rotate:x 35deg;scale:.96}}
+@keyframes fxLeft{from{opacity:0;translate:-46px 0;rotate:y 28deg}}
+@keyframes pageIn{from{opacity:0;translate:0 24px;rotate:x 6deg}}
+.topic-card,.pop-card{animation-name:pop3d}
+.topic-overlay,.pop-overlay{perspective:1000px}
+@keyframes pop3d{from{opacity:0;translate:0 40px;rotate:x -28deg;scale:.92}}
+#lightbox-modal{perspective:1200px}
+#lightbox-img{animation-name:zoom3d}
+@keyframes zoom3d{from{opacity:0;rotate:y -22deg;scale:.82}}
+.nav{perspective:900px}
+@media(max-width:820px){#nav-links.open{transform-origin:50% 0;animation:menu3d .4s cubic-bezier(.2,.8,.2,1) both}}
+@keyframes menu3d{from{opacity:0;rotate:x -75deg}}
+.site-toast{animation-name:toast3d}
+@keyframes toast3d{from{opacity:0;rotate:x 70deg;translate:0 20px}}
+
+@media(prefers-reduced-motion:reduce){.cube-scene,.cube-shadow{animation:none}.term,.duo .robot,.duo .code{transform:none}}

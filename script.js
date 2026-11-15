@@ -241,6 +241,7 @@ function applyGalleryFilter() {
         msg.remove();
     }
     updateGalleryCount(shown, items.length);
+    if (window.refreshCarousel) window.refreshCarousel(); // keep the 3D ring in sync with search and categories
 }
 
 function buildCategoryChips() {
@@ -277,10 +278,11 @@ function setupGalleryTools() {
         grid.dataset.layout = layout;
         buttons.forEach(b => b.setAttribute("aria-pressed", String(b.dataset.layout === layout)));
         try { localStorage.setItem("galleryLayout", layout); } catch (e) {}
+        if (window.refreshCarousel) requestAnimationFrame(window.refreshCarousel);
     };
     let saved = "mosaic";
     try { saved = localStorage.getItem("galleryLayout") || "mosaic"; } catch (e) {}
-    setLayout(saved === "masonry" ? "masonry" : "mosaic");
+    setLayout(["masonry", "carousel"].includes(saved) ? saved : "mosaic");
     buttons.forEach(b => b.addEventListener("click", () => setLayout(b.dataset.layout)));
 
     const search = document.getElementById("gallery-search");
