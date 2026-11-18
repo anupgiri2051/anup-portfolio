@@ -179,3 +179,11 @@ Admin:
 - Chart bars look like 3D columns. Pages, dialogs, the Ctrl+K search and notifications flip in. The buttons press down.
 
 With "reduce motion" turned on, the globe shows one still frame, nothing spins by itself, and the cube can still be turned by hand.
+
+## Security hardening (new)
+See **SECURITY.md** for the full list. In short:
+1. **Publish the new `firestore.rules`** (required).
+2. Firebase → Authentication → Settings: turn **off** sign-up and deletion, and turn **on** email enumeration protection.
+3. Turn on 2-Step Verification for your Gmail, Google, Vercel and GitHub accounts.
+4. Optional but strongly recommended: App Check (reCAPTCHA v3) and API key restrictions.
+Upload all files, including the updated `vercel.json`, which now sends strict security headers.

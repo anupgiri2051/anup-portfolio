@@ -188,18 +188,43 @@ function initAuth() {
 
     auth.onAuthStateChanged(user => (user ? showDashboard(user) : showLoginModal()));
 
+    // Sign-in stays only for this browser session: closing the browser signs you out
+    try { auth.setPersistence(firebase.auth.Auth.Persistence.SESSION); } catch (e) {}
+
+    // After several wrong passwords the form locks for a while (doubling each time).
+    // Firebase also blocks repeated attempts on its servers; this just stops guessing early.
+    const LOCK_KEY = "adminLoginLock";
+    const readLock = () => { try { return JSON.parse(localStorage.getItem(LOCK_KEY)) || { fails: 0, until: 0 }; } catch (e) { return { fails: 0, until: 0 }; } };
+    const writeLock = v => { try { localStorage.setItem(LOCK_KEY, JSON.stringify(v)); } catch (e) {} };
+    const lockedFor = () => Math.max(0, Math.ceil((readLock().until - Date.now()) / 1000));
+
     $("login-form").addEventListener("submit", async e => {
         e.preventDefault();
         const btn = $("login-btn");
         errorMsg.textContent = "";
         errorMsg.style.color = "";
+        const wait = lockedFor();
+        if (wait) { errorMsg.textContent = `Too many wrong attempts. Try again in ${wait} seconds.`; return; }
         btn.disabled = true;
         try {
+            await auth.setPersistence(firebase.auth.Auth.Persistence.SESSION);
             await auth.signInWithEmailAndPassword($("admin-email").value.trim(), $("admin-password").value);
             $("admin-password").value = "";
+            writeLock({ fails: 0, until: 0 });
         } catch (err) {
-            console.error("Sign-in error:", err.code, err.message);
+            console.error("Sign-in error:", err.code);
             errorMsg.textContent = authError(err.code);
+            if (/credential|password|user-not-found|invalid-email/.test(err.code || "")) {
+                const l = readLock();
+                l.fails += 1;
+                if (l.fails >= 5) {
+                    const secs = Math.min(3600, 60 * Math.pow(2, l.fails - 5)); // 1 min, 2, 4, 8 ... up to 1 hour
+                    l.until = Date.now() + secs * 1000;
+                    errorMsg.textContent = `Too many wrong attempts. Sign-in is locked for ${Math.round(secs / 60)} minute(s).`;
+                }
+                writeLock(l);
+            }
+            $("admin-password").value = "";
         } finally {
             btn.disabled = false;
         }
@@ -862,7 +887,13 @@ function setupMessageTools() {
 
     $("msg-export").addEventListener("click", () => {
         if (!allMessages.length) { toast("There are no messages to export", "error"); return; }
-        const cell = v => `"${String(v ?? "").replace(/"/g, '""')}"`;
+        // Excel runs cells starting with = + - @ as formulas. Visitors write these messages,
+        // so such cells get a leading apostrophe and are shown as plain text instead.
+        const cell = v => {
+            let t = String(v ?? "");
+            if (/^[=+\-@\t\r]/.test(t)) t = "'" + t;
+            return `"${t.replace(/"/g, '""')}"`;
+        };
         const rows = [["Date", "Name", "Email", "Message", "Read"].map(cell).join(",")];
         allMessages.forEach(m => rows.push([messageDate(m), m.name, m.email, m.message, m.read ? "yes" : "no"].map(cell).join(",")));
         const blob = new Blob(["\ufeff" + rows.join("\r\n")], { type: "text/csv;charset=utf-8" });
@@ -902,7 +933,10 @@ function setupPasswordForm() {
     $("pass-form").addEventListener("submit", async e => {
         e.preventDefault();
         const cur = $("cur-pass").value, next = $("new-pass").value, again = $("new-pass2").value;
-        if (next.length < 8) { say("The new password must be at least 8 characters."); return; }
+        if (next.length < 12) { say("The new password must be at least 12 characters."); return; }
+        const kinds = [/[a-z]/, /[A-Z]/, /\d/, /[^A-Za-z0-9]/].filter(r => r.test(next)).length;
+        if (kinds < 3) { say("Use at least three of: small letters, capital letters, numbers, symbols."); return; }
+        if (/anup|giri|password|admin|qwerty|123456/i.test(next)) { say("Avoid your name and common words like “password” or “123456”."); return; }
         if (next !== again) { say("The new passwords do not match."); return; }
         if (next === cur) { say("Choose a password different from the current one."); return; }
         const user = auth && auth.currentUser;
@@ -1667,7 +1701,7 @@ function setupExtras() {
             if (/\d/.test(v)) score++;
             if (/[^A-Za-z0-9]/.test(v)) score++;
             const levels = ["Too short", "Weak", "Fair", "Good", "Strong", "Very strong"];
-            const lvl = v.length < 8 ? 0 : Math.min(score, 5);
+            const lvl = v.length < 12 ? 0 : Math.min(score, 5);
             meter.dataset.level = lvl;
             meter.querySelector("i").style.width = (lvl / 5 * 100) + "%";
             meter.querySelector("span").textContent = levels[lvl];

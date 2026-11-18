@@ -577,8 +577,9 @@ function setupContactForm() {
         const message = document.getElementById("contact-message").value.trim();
         const trap = document.getElementById("contact-website");
 
-        // Hidden field only bots fill in: pretend it worked, send nothing
-        if (trap && trap.value) {
+        // Hidden field only bots fill in, or a form sent within 3 seconds of opening the page
+        // (people can't type that fast): pretend it worked, send nothing
+        if ((trap && trap.value) || performance.now() < 3000) {
             say("Your message has been sent successfully!", true);
             contactForm.reset();
             return;
@@ -827,6 +828,8 @@ function setupMobileMenu() {
 
 document.addEventListener("DOMContentLoaded", () => {
     trackScroll();
+    const topBtn = document.getElementById("f-top-btn");
+    if (topBtn) topBtn.addEventListener("click", () => scrollTo({ top: 0, behavior: "smooth" }));
     if (!rolesStarted) startRoles(DEFAULT_ROLES);
     watchConnection();
     setupShortcuts();

@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<script>if(location.protocol!=="file:")document.write('<base href="/">')</script>
+<base href="/">
 <title>Anup Giri</title>
 <meta name="description" content="Personal site of Anup Giri, a student from Baglung, Nepal exploring IT, AI and web development.">
 <link rel="canonical" href="https://anupgiri.com/">
@@ -33,6 +33,7 @@
 <link rel="stylesheet" href="template.css">
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-check-compat.js"></script>
 </head>
 <body>
 <div id="intro" aria-hidden="true"><div class="intro-mark"><span>A</span></div><p class="intro-name">Anup Giri</p><div class="intro-bar"><i></i></div></div>
@@ -273,7 +274,7 @@
   </div>
   <div class="f-bottom">
     <span data-site="footer-text">© 2026 Anup Giri. All rights reserved.</span>
-    <button type="button" class="f-top-btn" onclick="scrollTo({top:0,behavior:'smooth'})"><i data-icon="arrow-up"></i>Back to top</button>
+    <button type="button" class="f-top-btn" id="f-top-btn"><i data-icon="arrow-up"></i>Back to top</button>
   </div>
 </footer>
 

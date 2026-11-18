@@ -2,9 +2,17 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
-    // CHANGE THIS to the email of the admin user you create in Firebase Authentication
+    // ---------------------------------------------------------------
+    // WHO IS THE ADMIN
+    // Signed in with email + password, as this exact email address.
+    // Stronger (recommended, see SECURITY.md step 1): replace the whole
+    // line below with   return request.auth != null && request.auth.uid == "YOUR_UID";
+    // using the "User UID" shown in Firebase -> Authentication -> Users.
+    // ---------------------------------------------------------------
     function isAdmin() {
-      return request.auth != null && request.auth.token.email == "anupgiri2051@gmail.com";
+      return request.auth != null
+          && request.auth.token.email == "anupgiri2051@gmail.com"
+          && request.auth.token.firebase.sign_in_provider == "password";
     }
 
     // Public gallery: anyone can read, only the admin can change
@@ -13,23 +21,30 @@ service cloud.firestore {
       allow write: if isAdmin();
     }
 
-    // Contact form: visitors may only CREATE a valid message; only the admin can read/edit/delete
+    // Contact form: visitors may only CREATE one well-formed message.
+    // They can never read, change or delete messages (not even their own).
     match /messages/{id} {
       allow create: if request.resource.data.keys().hasOnly(['name', 'email', 'message', 'read', 'createdAt'])
-                    && (!('name' in request.resource.data)
-                        || (request.resource.data.name is string && request.resource.data.name.size() <= 80))
-                    && request.resource.data.createdAt == request.time
+                    && request.resource.data.keys().hasAll(['email', 'message', 'read', 'createdAt'])
                     && request.resource.data.email is string
-                    && request.resource.data.email.size() > 3
+                    && request.resource.data.email.size() > 5
                     && request.resource.data.email.size() < 200
+                    && request.resource.data.email.matches('^[^@\\s]+@[^@\\s]+\\.[^@\\s]{2,}$')
                     && request.resource.data.message is string
                     && request.resource.data.message.size() >= 5
                     && request.resource.data.message.size() <= 2000
-                    && request.resource.data.read == false;
-      allow read, update, delete: if isAdmin();
+                    && (!('name' in request.resource.data)
+                        || (request.resource.data.name is string && request.resource.data.name.size() <= 80))
+                    && request.resource.data.read == false
+                    && request.resource.data.createdAt == request.time;
+      allow read, delete: if isAdmin();
+      // the admin may only flip the read / unread flag, never rewrite a message
+      allow update: if isAdmin()
+                    && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['read'])
+                    && request.resource.data.read is bool;
     }
 
-    // Site settings (intro text, location, Instagram link): public read, admin write
+    // Site settings (text, links, images, popup, announcement, maintenance): public read, admin write
     match /settings/{id} {
       allow read: if true;
       allow write: if isAdmin();
@@ -41,31 +56,42 @@ service cloud.firestore {
       allow write: if isAdmin();
     }
 
-    // Visits per day (admin chart): visitors can only add +1 to "count"
-    match /statsDaily/{id} {
-      allow read: if isAdmin();
-      allow create: if request.resource.data.keys().hasOnly(['count', 'day'])
-                    && request.resource.data.count == 1
-                    && request.resource.data.day is string
-                    && request.resource.data.day.size() == 10;
-      allow update: if isAdmin()
-                    || (request.resource.data.diff(resource.data).affectedKeys().hasOnly(['count'])
-                        && request.resource.data.count == resource.data.count + 1);
-    }
-
     // Home page popup photos and videos: public read, admin write
     match /popupSlides/{id} {
       allow read: if true;
       allow write: if isAdmin();
     }
 
-    // Visit counter: visitors can only add +1 to "count"; only the admin can read it
-    match /stats/{id} {
+    // Visits per day (admin chart). Visitors may only add +1 to today's-style document,
+    // whose name must be a date like 2026-11-18 (no junk documents).
+    match /statsDaily/{day} {
       allow read: if isAdmin();
-      allow create: if request.resource.data.keys().hasOnly(['count']) && request.resource.data.count == 1;
+      allow create: if day.matches('^20[0-9]{2}-[01][0-9]-[0-3][0-9]$')
+                    && request.resource.data.keys().hasOnly(['count', 'day'])
+                    && request.resource.data.count == 1
+                    && request.resource.data.day == day;
       allow update: if isAdmin()
                     || (request.resource.data.diff(resource.data).affectedKeys().hasOnly(['count'])
                         && request.resource.data.count == resource.data.count + 1);
+      allow delete: if isAdmin();
+    }
+
+    // Total visit counter: only the single "visits" document, visitors may only add +1
+    match /stats/{id} {
+      allow read: if isAdmin();
+      allow create: if id == 'visits'
+                    && request.resource.data.keys().hasOnly(['count'])
+                    && request.resource.data.count == 1;
+      allow update: if isAdmin()
+                    || (id == 'visits'
+                        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['count'])
+                        && request.resource.data.count == resource.data.count + 1);
+    }
+
+    // Everything else is locked. (Firestore already denies anything not listed above;
+    // this line makes that explicit so a future collection is never open by mistake.)
+    match /{document=**} {
+      allow read, write: if false;
     }
   }
 }
