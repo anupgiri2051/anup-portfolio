@@ -1389,11 +1389,11 @@ const CONTENT_CARDS = [
             { k: "value", label: "Value", max: 60, ph: ["Anup Giri", "Ramrekha-01, Baglung", "IT and AI"] }
         ] }
     ] },
-    { id: "journey", title: "My journey (About page)", hint: "Your education and milestones, shown as a timeline on the About page. Fill in the steps you want, newest first. Leave all empty to show the default.", fields: [
-        { key: "journey", type: "group", count: 5, item: "Step", subs: [
-            { k: "when", label: "When (e.g. 2025 – now)", max: 24, ph: ["Now", "Ongoing", "", "", ""] },
-            { k: "title", label: "Title", max: 80, ph: ["Bachelor of Computer Applications (BCA)", "Learning by building", "", "", ""] },
-            { k: "place", label: "Place / school", max: 80, ph: ["International Center for Academics, Kathmandu · IGNOU", "Personal projects", "", "", ""] },
+    { id: "journey", title: "My journey (About page)", hint: "Your education and milestones, shown as a timeline on the About page, from first to latest. Leave all empty to show the default (school, +2, BCA, learning by building).", fields: [
+        { key: "journey", type: "group", count: 6, item: "Step", subs: [
+            { k: "when", label: "When (e.g. 2022 or School)", max: 24, ph: ["School", "+2", "Now", "Ongoing", "", ""] },
+            { k: "title", label: "Title", max: 80, ph: ["Class 10", "Higher Secondary (+2)", "Bachelor of Computer Applications (BCA)", "Learning by building", "", ""] },
+            { k: "place", label: "Place / school", max: 80, ph: ["Children Life English Boarding School, Baglung", "Ammar Aadarsha Boarding School, Baglung", "International Center for Academics, Kathmandu · IGNOU", "Personal projects", "", ""] },
             { k: "text", label: "Short description", type: "textarea", max: 220, rows: 2 }
         ] }
     ] },
