@@ -25,6 +25,9 @@ if (APP_CHECK_SITE_KEY && typeof firebase.appCheck === "function") {
     catch (e) { console.warn("App Check could not start:", e); }
 }
 
+// Only show real Firestore errors in the browser console, not "will be deprecated" notices
+firebase.firestore.setLogLevel("error");
+
 // Global Firebase Instances
 const db = firebase.firestore();
 // Authentication is only loaded on the admin page

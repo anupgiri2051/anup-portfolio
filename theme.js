@@ -1,4 +1,20 @@
 // theme.js — color themes for the website. Loaded in <head> so a saved theme is applied before the page paints.
+
+// Quiet console on the public website: visitors see no messages from this site in Inspect → Console.
+// Messages still show on localhost, in the admin portal, or when you add ?debug=1 to the address.
+(function () {
+    try {
+        var local = /^(localhost|127\.0\.0\.1)$/.test(location.hostname) || location.protocol === "file:";
+        var admin = /^\/admin(\/|\.html|$)/.test(location.pathname);
+        var debug = /[?&]debug=1/.test(location.search);
+        if (local || admin || debug || !window.console) return;
+        var noop = function () {};
+        ["log", "info", "warn", "error", "debug", "trace", "table", "dir", "group", "groupCollapsed", "groupEnd", "time", "timeEnd"].forEach(function (m) {
+            if (typeof console[m] === "function") console[m] = noop;
+        });
+    } catch (e) {}
+})();
+
 (function () {
     var THEMES = {
         sky:     { name: "Sky blue",  vars: { "--acc": "#0ea5e9", "--acc-d": "#0284c7", "--acc-dd": "#0369a1", "--acc2": "#3b82f6", "--acc-rgb": "14,165,233", "--acc2-rgb": "59,130,246", "--acc-tint": "#e6f4fd", "--acc-tint2": "#f2f9fe", "--acc-l": "#38bdf8", "--acc-ll": "#7dd3fc", "--bg-page": "#e8f1f8", "--orb-a": "#a5d8f5", "--orb-b": "#bfe6fb", "--orb-c": "#cfe9ff" } },
