@@ -1092,12 +1092,6 @@ function showPopup(cfg, slides, stamp, preview) {
         a.textContent = cfg.buttonText;
         actions.appendChild(a);
     }
-    if (!preview) {
-        const skip = document.createElement("button");
-        skip.className = "pop-skip"; skip.type = "button"; skip.textContent = "Don’t show again";
-        skip.addEventListener("click", () => { try { localStorage.setItem("popupOff", stamp); } catch (e) {} close(); });
-        actions.appendChild(skip);
-    }
     if (actions.children.length) body.appendChild(actions);
     if (body.children.length) card.appendChild(body);
 
