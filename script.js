@@ -1018,11 +1018,16 @@ function showPopup(cfg, slides, stamp, preview) {
         index = (i + slides.length) % slides.length;
         const sl = slides[index];
         stage.replaceChildren();
+        stage.classList.toggle("is-photo", sl.type === "photo");
         if (sl.type === "photo") {
+            // soft blurred copy of the photo fills the empty space around tall or wide pictures
+            const bg = document.createElement("div");
+            bg.className = "pop-blur";
+            bg.style.backgroundImage = 'url("' + String(sl.url).replace(/["\\\n\r]/g, "") + '")';
             const img = document.createElement("img");
             img.src = sl.url;
             img.alt = cfg.title || "";
-            stage.appendChild(img);
+            stage.append(bg, img);
         } else {
             const v = parsePopupVideo(sl.url);
             if (v && v.kind === "iframe") {

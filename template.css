@@ -797,3 +797,22 @@ html.anim-on .hero-copy{will-change:transform,opacity}
 @keyframes toast3d{from{opacity:0;rotate:x 70deg;translate:0 20px}}
 
 @media(prefers-reduced-motion:reduce){.cube-scene,.cube-shadow{animation:none}.term,.duo .robot,.duo .code{transform:none}}
+
+/* ===== popup: bigger photos and videos ===== */
+.pop-card:not(.no-media){width:min(1000px,100%);max-height:96vh}
+.pop-card:not(.no-media) .pop-media{aspect-ratio:auto;height:min(72vh,640px)}
+.pop-stage{overflow:hidden;background:#05070f}
+.pop-blur{position:absolute;inset:-30px;background-position:center;background-size:cover;filter:blur(26px) brightness(.55) saturate(1.2);transform:scale(1.1)}
+.pop-stage.is-photo img{position:relative;z-index:1;background:transparent;filter:drop-shadow(0 12px 30px rgba(0,0,0,.45))}
+.pop-stage video,.pop-stage iframe{background:#000}
+.pop-nav{width:50px;height:50px;z-index:3}
+.pop-prev{left:1rem}.pop-next{right:1rem}
+.pop-dots{z-index:3;bottom:1rem}
+.pop-body{padding:1.3rem 1.8rem 1.5rem}
+@media(max-width:700px){
+  .pop-overlay{padding:.5rem}
+  .pop-card:not(.no-media){width:100%;max-height:98vh;border-radius:20px}
+  .pop-card:not(.no-media) .pop-media{height:min(62vh,520px)}
+  .pop-nav{width:42px;height:42px}
+  .pop-prev{left:.5rem}.pop-next{right:.5rem}
+}

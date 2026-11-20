@@ -26,7 +26,7 @@ if (APP_CHECK_SITE_KEY && typeof firebase.appCheck === "function") {
 }
 
 // Only show real Firestore errors in the browser console, not "will be deprecated" notices
-firebase.firestore.setLogLevel("error");
+try { if (typeof firebase.firestore.setLogLevel === "function") firebase.firestore.setLogLevel("error"); } catch (e) {}
 
 // Global Firebase Instances
 const db = firebase.firestore();
